@@ -24,6 +24,7 @@ var page_default = `<!doctype html>
     .brand-name{font-weight:650;letter-spacing:-.35px}.brand-sub{font-size:12px;letter-spacing:0;font-weight:400}.season{font-size:12px;font-weight:400;color:var(--muted);letter-spacing:0}.eyebrow{font-size:12px;font-weight:400;letter-spacing:0;color:var(--muted)}h1{font-weight:600;line-height:1.12;letter-spacing:-.7px}.intro-rule strong{font-weight:600}.catalog-heading h2{font-size:16px;font-weight:600;letter-spacing:0}.count{font-size:12px}.chip{font-weight:500}.chip[aria-pressed="true"]{color:#20313d}.team-number{font-weight:500}.card-title{font-weight:600;line-height:1.25}.rank{font-size:11px}.stat-value{font-weight:600;letter-spacing:-.6px;color:var(--ink)}.stat-label{font-weight:400;letter-spacing:.2px}.add-team{font-weight:600}.add-team:not(:disabled):hover,.selected .add-team,.selected .add-team:hover{color:#20313d}.add-team:not(:disabled):hover .plus,.selected .add-team .plus{color:#20313d}.selected .card-reason{color:#cfdfeb}.roster-title-row h2{font-size:16px;font-weight:600;letter-spacing:0}.slots-count{font-size:12px}.budget-large{font-weight:600;color:var(--ink)}.budget-label{font-size:11px;letter-spacing:0;font-weight:400}.budget-track,.budget-fill{border-radius:3px}.roster-slot{border-radius:4px}.slot-number{border:0;color:#c1cfd9}.slot-name{font-weight:600}.form-label{font-weight:600}.submit,.submit:not(:disabled):hover{color:#20313d;font-weight:600}.submit:disabled{color:#d2d8dc}.sidebar-note strong{font-size:12px;font-weight:600;letter-spacing:0}.success-mark{color:#20313d}.success .eyebrow{font-size:12px;color:var(--muted)}.reload-button{font-weight:500}
     @media(max-width:680px){.brand-name{font-weight:600}.season{border:0;padding-left:0;letter-spacing:0}.catalog-heading h2{font-size:16px;letter-spacing:0}.count{font-size:11px}.eyebrow{font-size:11px}.mobile-roster-link,.mobile-roster-link span{color:#20313d}.mobile-roster-link{font-weight:600;background:#a3bed0;border-color:#b7ccda}.card-title{font-weight:600}.rank{font-size:10px}.stat-value{letter-spacing:-.6px}.stat-label{font-size:8px}.success h2{font-weight:600}}
     @media(max-width:390px){.rank{font-size:9px}.stat-label{font-size:8px}.catalog-heading h2{font-size:15px}}
+    .team-card{grid-template-columns:minmax(0,1fr) auto}.card-bottom{justify-content:flex-end}
     @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
   </style>
 </head>
@@ -149,13 +150,13 @@ var page_default = `<!doctype html>
           const card = node('article', 'team-card' + (isSelected ? ' selected' : '') + (!team.available ? ' unavailable' : ''));
           const top = node('div', 'card-top'); top.append(node('span', 'team-number', '#' + team.number), node('span', 'rank', team.available && team.rank ? '#' + team.rank + ' by avg. OPR' : 'No OPR data'));
           card.append(top, node('h3', 'card-title', team.name));
-          const bottom = node('div', 'card-bottom'); const stat = node('div', 'stat'); stat.append(node('span', 'stat-value', opr(team.averageOpr)), node('span', 'stat-label', 'AVERAGE OPR'));
+          const bottom = node('div', 'card-bottom');
           const button = node('button', 'add-team'); button.type = 'button'; button.dataset.teamId = team.id;
           button.disabled = state.submitting || !isSelected && (!state.open || !team.available || cannotAfford || full);
           button.setAttribute('aria-pressed', String(isSelected));
           button.setAttribute('aria-label', (isSelected ? 'Remove ' : 'Add ') + team.number + ' ' + team.name + (team.available ? ', ' + money(team.price) : ', unavailable'));
           if (team.available) { button.append(node('span', '', money(team.price)), node('span', 'plus', isSelected ? '\u2212' : '+')); } else button.textContent = 'No data';
-          button.addEventListener('click', () => toggleTeam(team.id)); bottom.append(stat, button); card.appendChild(bottom);
+          button.addEventListener('click', () => toggleTeam(team.id)); bottom.append(button); card.appendChild(bottom);
           const reason = !team.available ? 'No event OPR available' : isSelected ? 'On your roster' : !state.open ? 'Draft closed' : full ? 'Your roster is full' : cannotAfford ? 'Over remaining budget' : 'Available to draft';
           card.appendChild(node('p', 'card-reason', reason));
           if (showHighest) card.appendChild(node('div', 'peak', 'Highest event OPR: ' + opr(team.highestOpr)));
