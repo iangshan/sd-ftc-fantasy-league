@@ -4,6 +4,14 @@
   "main": "worker.mjs",
   "compatibility_date": "2026-10-19",
   "workers_dev": true,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ftc-draft-coordination",
+      "database_id": "eb56e65a-14eb-4f7e-8c64-814993720fab",
+      "migrations_dir": "migrations"
+    }
+  ],
   "vars": {
     "SUBMISSIONS_ENABLED": "false"
   }
