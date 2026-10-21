@@ -7,7 +7,13 @@ export function buildWorker(source, names) {
   if (!names || typeof names !== 'object' || Array.isArray(names)) throw new Error('team-names.json must be an object keyed by team number.');
   const ids = new Set([...source.matchAll(/"id": "(\d+)"/g)].map(match => match[1]));
   if (ids.size !== 87) throw new Error('Expected the frozen 87-team source catalog.');
-  if (Object.keys(names).length !== ids.size) throw new Error('Keep all team number keys in team-names.json; only edit names.');
+  const rookieBlock = source.match(/\/\* ROOKIE_TEAMS_START \*\/([\s\S]*?)\/\* ROOKIE_TEAMS_END \*\//);
+  if (!rookieBlock) throw new Error('Expected the rookie team configuration marker in worker.mjs.');
+  for (const [, id] of rookieBlock[1].matchAll(/\[(\d+),/g)) {
+    if (ids.has(id)) throw new Error(`Team ${id} is already in the frozen catalog; remove it from the rookie list.`);
+    ids.add(id);
+  }
+  if (Object.keys(names).length !== ids.size) throw new Error(`Keep all ${ids.size} team number keys in team-names.json; only edit names.`);
   for (const [id, name] of Object.entries(names)) {
     if (!ids.has(id)) throw new Error(`Unknown team number: ${id}`);
     if (typeof name !== 'string' || !name.trim() || name !== name.trim() || name.length > 100 || /[\x00-\x1f\x7f]/.test(name)) throw new Error(`Team ${id}: use a nonempty name of at most 100 characters, without leading/trailing spaces or control characters.`);

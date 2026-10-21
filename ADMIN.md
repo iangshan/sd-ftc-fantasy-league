@@ -19,7 +19,7 @@ Ask the person to sign in to the league website and verify their email. Open **A
 
 Archived entries can be restored if no replacement entry conflicts and the selected teams remain eligible. Restores keep the original picks, prices, and receipt. For older entries, verify the person's identity directly before using **Link account**; a matching name alone is not proof.
 
-**Activity & troubleshooting** shows Sheet connectivity, submission switches, pending writes, mismatched entries, and the latest 100 audit events. Audit history remains stored in D1. Every mutation requires a reason. This dashboard does not expose credentials or reset Firebase passwords. Google is the only sign-in option. Players recover access through Google account recovery; existing league account and roster records are retained.
+**Activity & troubleshooting** shows Sheet connectivity, submission switches, pending writes, mismatched entries, and the latest 100 audit events. Audit history remains stored in D1. Every mutation requires a reason. This dashboard does not expose credentials or reset Firebase passwords. Sign-in is Google, Apple, or GitHub. Players recover access through that provider's own account recovery; existing league account and roster records are retained. A player who signs in with a different provider than they drafted with arrives as a separate account with no roster, so confirm which option they used before resetting or linking anything.
 
 ## Persistence and recovery
 

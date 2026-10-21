@@ -7,7 +7,16 @@
 3. Create a branch and pull request so another developer can review the change. Merge to `main` when ready to publish.
 4. After GitHub Actions → Check and deploy succeeds, refresh the website and search for that team number.
 
-`team-names.json` includes all 87 frozen source teams, including excluded/unavailable ones. Renaming an excluded team does not make it eligible. The draft still has 81 eligible teams. Do not change team numbers, prices, statistics, or the private Sheet Catalog to rename a team.
+`team-names.json` holds 102 entries: the 87 frozen source teams, including the ones excluded this season, plus the 15 teams added for BioBuzz 2026-27. Renaming an excluded team does not make it eligible. The draft has 87 eligible teams. Do not change team numbers, prices, statistics, or the private Sheet Catalog to rename a team.
+
+## Change which teams are eligible
+
+Eligibility lives in two lists in `worker.mjs`, just above `eligibleCatalog`. Both are keyed by team number, and `npm run check` fails if `team-names.json` does not name every team in them.
+
+- `notReturning`: catalog teams that are not competing in San Diego this season, each with a short reason. Adding a number removes that team from the board, from roster validation, and from archive restores.
+- `rookieTeams`: registered teams absent from the frozen DECODE catalog, as `[number, "Name"]`. They are served with no OPR or rank at `rookiePrice`, the cheapest tier. Catalog rows the Sheet marks unavailable are priced the same way, so a registered team that played no scored DECODE event is draftable rather than hidden.
+
+After editing either list, add or remove the matching `team-names.json` key and run `npm run check`. Both lists change the catalog version, so open draft tabs are asked to refresh before submitting. Compare against the region registration sheet linked from [sdftc.org](https://www.sdftc.org/2026-27registration.html) rather than event results, which are empty until the first league meet.
 
 Names are applied after the Sheet catalog's integrity check. The board, participant dashboard, and admin entries display the current names. New submissions save the current name. Existing receipts and stored Sheet/D1 snapshots retain the name at submission time; team number remains the identity. A name change updates the catalog version, so someone with an old draft tab may be asked to refresh before submitting.
 
@@ -34,6 +43,6 @@ Use pull requests and review before merging. No branch protection or paid GitHub
 
 ## Checks after a change
 
-Check the deployment result, the public draft board (81 available teams), Google-only sign-in, and the participant dashboard. For changes to submission or recovery behavior, use the documented TEST roster workflow in README.md; never reset a real player's roster as a test. Existing account/security tests remain in the development workspace.
+Check the deployment result, the public draft board (87 available teams), the Google/Apple/GitHub sign-in buttons, and the participant dashboard. For changes to submission or recovery behavior, use the documented TEST roster workflow in README.md; never reset a real player's roster as a test. Existing account/security tests remain in the development workspace.
 
 No credentials, Google service-account JSON, participant exports, or private response rows belong in Git. Do not rerun production database migrations; see README.md for the existing manual migration history.
