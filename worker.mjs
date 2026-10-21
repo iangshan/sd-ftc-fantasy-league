@@ -340,6 +340,11 @@ async function catalogVersion(catalog) {
   const canonical = catalog.map((t) => ({ id: t.id, number: t.number, name: cleanCell(t.name), averageOpr: t.averageOpr === null ? null : Number(t.averageOpr.toFixed(6)), highestOpr: t.highestOpr === null ? null : Number(t.highestOpr.toFixed(6)), rank: t.rank, price: t.price, available: t.available }));
   return "v1-" + (await sha256(JSON.stringify(canonical))).slice(0, 24);
 }
+// These teams no longer compete in San Diego; retain the frozen source catalog
+// for integrity checks, but exclude them from both display and roster validation.
+function eligibleCatalog(catalog) {
+  return catalog.filter((team) => !["19743", "23673"].includes(team.id));
+}
 function required(value, label, max) {
   if (typeof value !== "string") throw new DraftError("Enter " + label + ".");
   const s = value.trim();
@@ -394,7 +399,8 @@ async function parseState(catalogRows, settingsRows) {
   if (catalog.filter((t) => t.available).length !== 84) throw new DraftError("The draft catalog needs organizer attention.", 503);
   const settings = Object.fromEntries(settingsRows.map((r) => [String(r[0]), r[1]])), priceVersion = String(settings["Price version"]);
   if (priceVersion !== await catalogVersion(catalog) || Number(settings.Budget) !== 15 || Number(settings["Max teams"]) !== 3) throw new DraftError("The draft catalog changed after pricing. Please contact the organizer.", 503);
-  return { title, budget, maxTeams, catalog, priceVersion, open: settings.Open === true };
+  const eligible = eligibleCatalog(catalog);
+  return { title, budget, maxTeams, catalog: eligible, priceVersion: await catalogVersion(eligible), open: settings.Open === true };
 }
 
 // server/sheets.mjs
@@ -681,7 +687,7 @@ async function handle(request, env, context = {}) {
     if (path === '/api/auth/config' && request.method === 'GET') return json(authConfig());
     if (path === '/api/account' && request.method === 'GET' || path === '/api/account/recover' && request.method === 'POST') return json(await accountEndpoint(request,env,path));
     if (path === "/api/draft" && request.method === "GET") {
-      if (!configured(env)) return json({ title, budget, maxTeams, open: true, preview: true, priceVersion: "PREVIEW", catalog: catalog_default });
+      if (!configured(env)) return json({ title, budget, maxTeams, open: true, preview: true, priceVersion: "PREVIEW", catalog: eligibleCatalog(catalog_default) });
       const state = await new Sheets(env).state();
       return json({ ...state, open: state.open && env.SUBMISSIONS_ENABLED === "true", preview: false });
     }
