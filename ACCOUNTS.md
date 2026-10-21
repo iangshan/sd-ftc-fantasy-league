@@ -1,8 +1,8 @@
 # League accounts
 
-Firebase Authentication project: `ftc-fantasy-league` (Spark/free). Google and email/password providers are enabled. Analytics, Firebase Hosting, and paid services are not needed. The public web configuration in the Worker is an app identifier, not a service-account credential. Never place the Sheets service-account key in client code.
+Firebase Authentication project: `ftc-fantasy-league` (Spark/free). Google is the only enabled sign-in provider. Email/password sign-in and registration are disabled; existing account records and rosters are retained. Analytics, Firebase Hosting, and paid services are not needed. The public web configuration in the Worker is an app identifier, not a service-account credential. Never place the Sheets service-account key in client code.
 
-Cloudflare continues to host the site and private roster ownership in D1. `/dashboard` is the participant dashboard. Firebase handles password verification, email verification, reset emails, token refresh, and Google sign-in. The Worker validates every account API token through Google's authenticated account lookup, checks its expected project and uid, and rejects disabled or revoked sessions. Email verification is required to submit.
+Cloudflare continues to host the site and private roster ownership in D1. `/dashboard` is the participant dashboard. Firebase handles token refresh and Google sign-in. The Worker validates every account API token through Google's authenticated account lookup, checks its expected project and uid, and rejects disabled or revoked sessions. Email verification is required to submit.
 
 Apply `migrations/0002_account_rosters.sql` to the existing D1 database before deploying this version. This migration was applied manually through the Cloudflare console on 2026-10-20. It is idempotent. Do not replay `0001_write_locks.sql` on this existing database.
 
@@ -10,7 +10,7 @@ Roster ownership is bound to the authenticated Firebase uid and season. Client-s
 
 Existing submissions made before accounts existed have no authenticated owner. Do not automatically assign them based on a matching name, email, or Discord string. Verify ownership with the organizer before a manual migration. The existing Google Sheets response columns are unchanged.
 
-Sign-up uses a minimum 12-character password policy. Google sign-in requests basic identity only. The authorized production domain is `sd-ftc-fantasy-league.sdftcfantasyleague.workers.dev`. If a custom domain is added, add its exact hostname in Firebase Authentication → Settings → Authorized domains.
+The dashboard offers only Google sign-in, which creates a league account automatically on first use and requests basic identity only. The authorized production domain is `sd-ftc-fantasy-league.sdftcfantasyleague.workers.dev`. If a custom domain is added, add its exact hostname in Firebase Authentication → Settings → Authorized domains.
 
 Submissions are enabled and the draft is open. The old Apps Script deployment is archived. Administration uses verified Firebase roles at `/admin`; no organizer password is needed. Scoring is not configured; dashboard copy explicitly says no points or standings are assigned. The previous hostname has been removed from Firebase authorized domains.
 

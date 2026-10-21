@@ -4,7 +4,7 @@ Live website: https://sd-ftc-fantasy-league.sdftcfantasyleague.workers.dev/
 
 Participant dashboard: `/dashboard`. Administration: `/admin`.
 
-Cloudflare hosts the website and API. Google Sheets stores active entries and the frozen team catalog. D1 stores account ownership, admin roles, archives, audit events, and recoverable write checkpoints. Firebase Authentication handles Google and email/password sign-in.
+Cloudflare hosts the website and API. Google Sheets stores active entries and the frozen team catalog. D1 stores account ownership, admin roles, archives, audit events, and recoverable write checkpoints. Firebase Authentication handles Google sign-in. Email/password sign-in and registration are disabled.
 
 ## Current release
 
