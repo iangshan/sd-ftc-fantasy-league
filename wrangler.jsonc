@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "sd-ftc-fantasy-league",
-  "main": "worker.mjs",
+  "main": "dist/worker.mjs",
   "compatibility_date": "2026-10-20",
   "workers_dev": true,
   "d1_databases": [
@@ -14,5 +14,16 @@
   ],
   "vars": {
     "SUBMISSIONS_ENABLED": "true"
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": false
+    }
   }
 }

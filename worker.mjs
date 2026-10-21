@@ -345,8 +345,12 @@ async function catalogVersion(catalog) {
 }
 // These teams no longer compete in San Diego; retain the frozen source catalog
 // for integrity checks, but exclude them from both display and roster validation.
+const teamNames = /* TEAM_NAMES_START */{}/* TEAM_NAMES_END */;
+function currentTeamName(team) {
+  return { ...team, name: teamNames[String(team.number ?? team.id)] ?? team.name };
+}
 function eligibleCatalog(catalog) {
-  return catalog.filter((team) => !["19743", "23673", "31862"].includes(team.id));
+  return catalog.filter((team) => !["19743", "23673", "31862"].includes(team.id)).map(currentTeamName);
 }
 function required(value, label, max) {
   if (typeof value !== "string") throw new DraftError("Enter " + label + ".");
@@ -598,7 +602,7 @@ async function readAccountRoster(db,uid) {
 }
 function accountRosterView(row) {
   if(!row)return null;
-  return {receipt:JSON.parse(row.receipt_json),teams:JSON.parse(row.teams_json),submittedAt:row.submitted_at,season:row.season};
+  return {receipt:JSON.parse(row.receipt_json),teams:JSON.parse(row.teams_json).map(currentTeamName),submittedAt:row.submitted_at,season:row.season};
 }
 async function persistAccountRoster(db,checkpoint) {
   if(!checkpoint.account)return; // Existing pre-account checkpoints stay recoverable.
@@ -645,7 +649,7 @@ async function requireAdmin(request,env,ownerOnly=false) {
 }
 async function allRows(db,sql,args=[]) {return (await db.prepare(sql).bind(...args).all()).results || [];}
 function adminEntry(row,mapping=null) {
-  return {receiptId:String(row[1]),submittedAt:String(row[0]),playerName:cleanCell(row[5]),playerTeamName:cleanCell(row[6]),discordId:cleanCell(row[7]),teams:[9,12,15].filter(i=>row[i]).map(i=>({number:Number(row[i]),name:cleanCell(row[i+1]),price:Number(row[i+2])})),total:Number(row[18]),remaining:Number(row[19]),uid:mapping?.uid || null};
+  return {receiptId:String(row[1]),submittedAt:String(row[0]),playerName:cleanCell(row[5]),playerTeamName:cleanCell(row[6]),discordId:cleanCell(row[7]),teams:[9,12,15].filter(i=>row[i]).map(i=>({number:Number(row[i]),name:teamNames[String(row[i])] ?? cleanCell(row[i+1]),price:Number(row[i+2])})),total:Number(row[18]),remaining:Number(row[19]),uid:mapping?.uid || null};
 }
 function sameRow(a,b) {return Array.from({length:20},(_,i)=>String(a[i]??'')).join('\u0000')===Array.from({length:20},(_,i)=>String(b[i]??'')).join('\u0000');}
 function blankRow(row) {return !row.some(v=>v!=='' && v!==null && v!==undefined);}

@@ -8,8 +8,8 @@ Cloudflare hosts the website and API. Google Sheets stores active entries and th
 
 ## Current release
 
-- Draft open; $15 fictional budget; one to three teams; 82 eligible teams.
-- Definitely Human #19743 and Mech-A-Mind #23673 are excluded by the server. The original 87-row Catalog tab remains intact for integrity validation. Do not delete those source rows directly.
+- Draft open; $15 fictional budget; one to three teams; 81 eligible teams.
+- Definitely Human #19743, Mech-A-Mind #23673, and SEGFAULT #31862 are excluded by the server. The original 87-row Catalog tab remains intact for integrity validation. Do not delete those source rows directly.
 - Statistics are the frozen DECODE dataset. BioBuzz scoring and standings are not configured yet.
 - Verified email required to submit. One roster per Firebase account and season; duplicate Discord contacts rejected.
 - The verified owner can appoint/revoke admins. See [ADMIN.md](ADMIN.md) for roster reset, restore, linking, draft controls, and recovery. `/organizer` redirects to `/admin`; its old Basic-auth API is disabled. No admin password is required.
@@ -23,11 +23,11 @@ The private workbook contains `Catalog`, `Settings`, and `Responses`. The servic
 
 ## Deployment and database history
 
-Automatic Git builds are **not connected**. A commit alone does not update production. The current workflow commits `worker.mjs`, deploys that same bundle in the Cloudflare editor, and verifies the live website. For an intentionally configured local deployment, `npm install` and `npm run deploy` use the checked-in Wrangler configuration and existing runtime secrets. Verify bindings before deploying.
+GitHub Actions validates pull requests and deploys changes on `main` using `.github/workflows/deploy.yml`. Deployment requires the repository secret `CLOUDFLARE_API_TOKEN`; check the Actions result before considering a change live. The workflow builds `dist/worker.mjs`, keeps the existing runtime secrets and D1 binding, and does not run database migrations. Cloudflare's separate Git Builds integration is not used. For local deployment, `npm install` and `npm run deploy` require an authenticated Cloudflare account.
 
 All three migrations were applied manually to production on 2026-10-20. Do not blindly run migrations against the existing database: `0001_write_locks.sql` is not idempotent, and manual migration history is not tracked by Wrangler. Tables: `write_locks`, `account_rosters`, `league_members`, `league_admins`, `admin_audit`, `roster_archives`. For a new empty database, apply migration files in order.
 
-`worker.mjs` is the deployable bundle; serialized account/admin clients are near its end. Run `npm run check` after edits. The development workspace retains the modular builder and regression tests.
+Edit `team-names.json` to change names on the board, participant dashboard, and admin entries. `worker.mjs` is application source; `npm run check` validates names and generates the deployable `dist/worker.mjs`. See [DEVELOPERS.md](DEVELOPERS.md) for editing, pull requests, deployment commands, and collaborator invitations. The development workspace retains the modular builder and regression tests.
 
 ## Testing and recovery
 
