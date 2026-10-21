@@ -346,7 +346,7 @@ async function catalogVersion(catalog) {
 // These teams no longer compete in San Diego; retain the frozen source catalog
 // for integrity checks, but exclude them from both display and roster validation.
 function eligibleCatalog(catalog) {
-  return catalog.filter((team) => !["19743", "23673"].includes(team.id));
+  return catalog.filter((team) => !["19743", "23673", "31862"].includes(team.id));
 }
 function required(value, label, max) {
   if (typeof value !== "string") throw new DraftError("Enter " + label + ".");
