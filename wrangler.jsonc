@@ -13,6 +13,6 @@
     }
   ],
   "vars": {
-    "SUBMISSIONS_ENABLED": "false"
+    "SUBMISSIONS_ENABLED": "true"
   }
 }
