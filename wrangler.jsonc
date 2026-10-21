@@ -2,7 +2,7 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "sd-ftc-fantasy-league",
   "main": "worker.mjs",
-  "compatibility_date": "2026-10-19",
+  "compatibility_date": "2026-10-20",
   "workers_dev": true,
   "d1_databases": [
     {

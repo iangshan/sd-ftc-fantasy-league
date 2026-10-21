@@ -1,77 +1,42 @@
-# San Diego FTC Fantasy League — Cloudflare deployment
+# San Diego FTC Fantasy League
 
-This is a standalone, bundled release of the working website. Google Apps Script is not required. The same Google response workbook remains the record of teams, settings and entries. No credentials or participant responses are included.
+Live website: https://sd-ftc-fantasy-league.sdftcfantasyleague.workers.dev/
 
-## Upload to GitHub
+Participant dashboard: `/dashboard`. Administration: `/admin`.
 
-1. Create a **private** GitHub repository named `sd-ftc-fantasy-league`.
-2. Extract the ZIP. Upload its contents, not the ZIP itself. `package.json`, `wrangler.jsonc` and `worker.mjs` must appear at the repository's top level; include the `migrations` folder too.
-3. In Cloudflare, choose **Workers & Pages → Create application → GitHub**, then select the repository.
-4. Worker name: `sd-ftc-fantasy-league`; root directory: repository root; build command: leave blank; deploy command: `npm run deploy`.
-5. Deploy. The first version works as a team-picker preview. Submissions are disabled until the existing Google Sheet is connected.
+Cloudflare hosts the website and API. Google Sheets stores active entries and the frozen team catalog. D1 stores account ownership, admin roles, archives, audit events, and recoverable write checkpoints. Firebase Authentication handles Google and email/password sign-in.
 
-Cloudflare can automatically deploy later pushes to your selected production branch. This release has no separate frontend build step. `worker.mjs` bundles all website assets and backend modules so it is easy to deploy; the editable multi-file project remains the source for future releases.
+## Current release
 
-## Connect Google Sheets
+- Draft open; $15 fictional budget; one to three teams; 82 eligible teams.
+- Definitely Human #19743 and Mech-A-Mind #23673 are excluded by the server. The original 87-row Catalog tab remains intact for integrity validation. Do not delete those source rows directly.
+- Statistics are the frozen DECODE dataset. BioBuzz scoring and standings are not configured yet.
+- Verified email required to submit. One roster per Firebase account and season; duplicate Discord contacts rejected.
+- The verified owner can appoint/revoke admins. See [ADMIN.md](ADMIN.md) for roster reset, restore, linking, draft controls, and recovery. `/organizer` redirects to `/admin`; its old Basic-auth API is disabled. No admin password is required.
+- The old Apps Script deployment is archived to avoid simultaneous writers.
 
-The code expects the existing PRIVATE response workbook with `Catalog`, `Responses`, and `Settings` tabs. The old Apps Script property `DRAFT_RESPONSE_SPREADSHEET_ID` identifies it. Do not substitute the public Fantasy Stats workbook or make response data public.
+## Runtime configuration
 
-1. Create a Google Cloud service account and enable the Google Sheets API. Share the private response workbook with the service account email as Editor. A project-wide IAM role or domain-wide delegation is not needed.
-2. In the Worker's **Settings → Variables and Secrets**, add these as runtime **secrets**, not build variables:
-   - `GOOGLE_SERVICE_ACCOUNT_JSON`: the service account key JSON.
-   - `RESPONSES_SHEET_ID`: the existing private response workbook ID.
-   - `ADMIN_PASSWORD`: a unique random password of at least 24 characters.
-3. Keep the Google private key out of GitHub and chat. The secret is used only by the server, not by visitors.
-4. Visit `/organizer`; sign in with username `organizer` and the admin password. Check that existing entries and prices are correct. Participant details are not exposed by the public draft API.
+`wrangler.jsonc` binds the existing `ftc-draft-coordination` D1 database as `DB` and sets `SUBMISSIONS_ENABLED` to `"true"`. Cloudflare runtime secrets are `GOOGLE_SERVICE_ACCOUNT_JSON` and `RESPONSES_SHEET_ID`. Never commit credentials or participant exports. Firebase public web configuration is an app identifier, not a private key.
 
-## Coordinate simultaneous saves
+The private workbook contains `Catalog`, `Settings`, and `Responses`. The service account has Editor access to that workbook, with no project-wide role. The admin draft switch changes `Settings!B2`; both it and `SUBMISSIONS_ENABLED` must permit submissions. Public API responses contain no participant details.
 
-Google Sheets remains the record; a small Cloudflare D1 table is used only to coordinate in-flight writes and recover interrupted saves.
+## Deployment and database history
 
-1. In Cloudflare's **D1 SQL database** page, create `ftc-draft-coordination`.
-2. Open its **Console**, paste the contents of `migrations/0001_write_locks.sql`, and execute it ONCE on this new empty database.
-3. Copy its database ID. In `wrangler.jsonc`, add this top-level field, replacing the placeholder with the actual ID:
+Automatic Git builds are **not connected**. A commit alone does not update production. The current workflow commits `worker.mjs`, deploys that same bundle in the Cloudflare editor, and verifies the live website. For an intentionally configured local deployment, `npm install` and `npm run deploy` use the checked-in Wrangler configuration and existing runtime secrets. Verify bindings before deploying.
 
-```json
-"d1_databases": [
-  {
-    "binding": "DB",
-    "database_name": "ftc-draft-coordination",
-    "database_id": "YOUR_ACTUAL_DATABASE_ID",
-    "migrations_dir": "migrations"
-  }
-]
-```
+All three migrations were applied manually to production on 2026-10-20. Do not blindly run migrations against the existing database: `0001_write_locks.sql` is not idempotent, and manual migration history is not tracked by Wrangler. Tables: `write_locks`, `account_rosters`, `league_members`, `league_admins`, `admin_audit`, `roster_archives`. For a new empty database, apply migration files in order.
 
-The database ID is configuration, not a password. Commit the change to GitHub and let Cloudflare redeploy it. Keep this binding in the configuration file so future Git deployments preserve it. The SQL table created in the dashboard is not tracked by Wrangler migrations; do not replay that same creation migration through the CLI on this database.
+`worker.mjs` is the deployable bundle; serialized account/admin clients are near its end. Run `npm run check` after edits. The development workspace retains the modular builder and regression tests.
 
-## Enable live entries
+## Testing and recovery
 
-1. Archive the old Apps Script web-app deployment so it cannot accept submissions at the same time. Keep its code and spreadsheets.
-2. Verify the organizer page reads the existing workbook successfully and the DB binding is present.
-3. Change `SUBMISSIONS_ENABLED` in `wrangler.jsonc` to `"true"`, commit, and redeploy.
-4. Use the organizer page to open the draft. Submit one identified test entry and check its exact row and receipt in the same Google Sheet before sharing the site.
-5. Avoid inserting, deleting, sorting, or manually editing response rows while entries are being saved; use filter views for inspection. Live team prices are intentionally frozen and catalog edits require a matching price-version update.
+Use a clearly labeled TEST roster. Check receipt, teams, total, and remaining budget in Sheets and the signed-in dashboard. Reset the test through `/admin` when finished. Recoverable archives and audit records intentionally remain. Do not reset another player as a test.
 
-An uncertain Sheets write keeps a checkpoint until the participant retries or the organizer uses **Check interrupted save** after two minutes. Recovery checks the same row instead of appending a duplicate. Completed entries are stored in the response workbook.
+Roster writes and admin mutations share a D1 lock. Uncertain writes retain a checkpoint. After two minutes, participants may recover their own submissions or an admin may use **Check interrupted save**. Recovery verifies the original row to prevent duplicates. Do not sort, insert, delete, or manually edit response rows during a pending save. Use filter views for inspection.
 
-## Add a domain
+Admin health should show Sheets connected, submissions enabled, draft open, and save queue clear. Inspect Cloudflare error metrics during rollout. This release serializes writes and is subject to Google Sheets quotas; it has not been stress-tested for a large simultaneous audience.
 
-After the free `workers.dev` site works, select the Worker and open **Domains**. Search for and purchase a domain through Cloudflare Registrar, reviewing the price, term, contact details and renewal settings, then connect it. If you already own a domain, add it to Cloudflare first and add it as the Worker's Custom Domain. Cloudflare configures DNS and HTTPS for a Worker Custom Domain.
+The free subdomain is `sdftcfantasyleague.workers.dev`. The old name-based address is retired. When changing the hostname, replace its exact authorized domain in Firebase Authentication settings. Users must sign in at the new origin; accounts and rosters remain unchanged.
 
-If Wrangler warns that a later Git deployment will remove a dashboard-configured domain, add it to `wrangler.jsonc` as a top-level `routes` array, using your actual purchased hostname:
-
-```json
-"routes": [{ "pattern": "YOUR_DOMAIN", "custom_domain": true }]
-```
-
-## Validation and limits
-
-The source passed 19 backend regression tests, type checking, a production build, and Cloudflare packaging checks. This bundle is derived from that source. Live Google authorization, a real response write and browser behavior still need to be checked in the configured account. This ZIP does not contain a working Google connection and does not create a Cloudflare account or buy a domain.
-
-Official guidance:
-- https://developers.cloudflare.com/workers/ci-cd/builds/
-- https://developers.cloudflare.com/workers/configuration/secrets/
-- https://developers.cloudflare.com/d1/get-started/
-- https://developers.google.com/workspace/guides/create-credentials
-- https://developers.cloudflare.com/changelog/post/2026-05-14-domains-tab/
+The current Sheets service-account key expires 2027-10-20. Rotate it before expiry and update the Worker secret. Analytics and paid Firebase services remain off.
