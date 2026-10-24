@@ -5,7 +5,7 @@ import {
   validatePredictionHistory,
   summarizePredictionHistories,
   evaluatePredictionHistory,
-} from './prediction-history.mjs';
+} from '../src/predictions/history.mjs';
 
 // Entirely synthetic fixtures. These are never imported into the deployed dataset.
 const row = (teamNumber, opr, qualMatchesPlayed = 6) => ({

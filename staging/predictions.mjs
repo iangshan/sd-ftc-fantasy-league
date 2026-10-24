@@ -1,11 +1,14 @@
-import { getDecodePredictionCatalog, getDraftPredictionCatalog } from './dist/staging-app.mjs';
+import { getDecodePredictionCatalog, getDraftPredictionCatalog } from '../dist/staging-app.mjs';
 import {
   buildEventPredictions,
   buildRosterPredictions,
   selectEventPredictionModel,
-} from './prediction-model.mjs';
-import { summarizePredictionHistories, evaluatePredictionHistory } from './prediction-history.mjs';
-import eventHistory from './prediction-data/decode-event-history.json' with { type: 'json' };
+} from '../src/predictions/model.mjs';
+import {
+  summarizePredictionHistories,
+  evaluatePredictionHistory,
+} from '../src/predictions/history.mjs';
+import eventHistory from '../data/predictions/decode-event-history.json' with { type: 'json' };
 
 // The checked-in evidence is immutable for a deployment. Evaluate it once per isolate;
 // do not replay every event for each authenticated page refresh.

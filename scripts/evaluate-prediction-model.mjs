@@ -1,12 +1,12 @@
 // Reproduce the chronological experiment without changing the live model or data.
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { evaluatePredictionHistory } from '../prediction-history.mjs';
+import { evaluatePredictionHistory } from '../src/predictions/history.mjs';
 
 const args = process.argv.slice(2);
 if (args.length > 2)
   throw new Error('Usage: node scripts/evaluate-prediction-model.mjs [history.json] [report.json]');
-const input = resolve(args[0] ?? 'prediction-data/decode-event-history.json');
+const input = resolve(args[0] ?? 'data/predictions/decode-event-history.json');
 const history = JSON.parse(await readFile(input, 'utf8'));
 const report = evaluatePredictionHistory(history);
 const selection = report.split.selection;

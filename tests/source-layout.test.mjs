@@ -2,9 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { Script } from 'node:vm';
-import { readTeamData, validateTeamData } from './build.mjs';
-import * as production from './dist/worker.mjs';
-import * as staging from './dist/staging-app.mjs';
+import { readTeamData, validateTeamData } from '../build.mjs';
+import * as production from '../dist/worker.mjs';
+import * as staging from '../dist/staging-app.mjs';
 
 const data = await readTeamData();
 const origin = 'https://league.example';

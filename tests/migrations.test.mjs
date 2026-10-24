@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import { readFileSync, readdirSync } from 'node:fs';
 
-const directory = new URL('./migrations/', import.meta.url);
+const directory = new URL('../migrations/', import.meta.url);
 
 test('a fresh database has every application table after the checked-in migrations', (t) => {
   const db = new DatabaseSync(':memory:');

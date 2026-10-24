@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import { readFileSync } from 'node:fs';
-import { getDraftPredictionCatalog } from '../dist/staging-app.mjs';
+import { getDraftPredictionCatalog } from '../../dist/staging-app.mjs';
 
 export const VERSION = 'v1-0123456789abcdef01234567';
 export const payload = (teamIds = ['10809', '24029']) => ({
@@ -18,9 +18,12 @@ export const payload = (teamIds = ['10809', '24029']) => ({
 
 export function createSubmissionFixture(options = {}) {
   const sql = new DatabaseSync(':memory:');
-  sql.exec(readFileSync(new URL('../migrations/0001_write_locks.sql', import.meta.url), 'utf8'));
+  sql.exec(readFileSync(new URL('../../migrations/0001_write_locks.sql', import.meta.url), 'utf8'));
   sql.exec(
-    readFileSync(new URL('../migrations/0004_account_rosters_schema.sql', import.meta.url), 'utf8'),
+    readFileSync(
+      new URL('../../migrations/0004_account_rosters_schema.sql', import.meta.url),
+      'utf8',
+    ),
   );
   const db = {
     prepare(query) {

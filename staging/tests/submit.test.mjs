@@ -2,8 +2,12 @@
 // a memory-only Sheets boundary. No Firebase, Google Sheets, or remote D1 calls.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { submitDraft } from './dist/staging-app.mjs';
-import { createSubmissionFixture, VERSION, payload } from './test-support/submission-fixture.mjs';
+import { submitDraft } from '../../dist/staging-app.mjs';
+import {
+  createSubmissionFixture,
+  VERSION,
+  payload,
+} from '../../tests/support/submission-fixture.mjs';
 
 function fixture(t, options = {}) {
   const instance = createSubmissionFixture(options);

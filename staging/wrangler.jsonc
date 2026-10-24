@@ -1,7 +1,7 @@
 {
-  "$schema": "./node_modules/wrangler/config-schema.json",
+  "$schema": "../node_modules/wrangler/config-schema.json",
   "name": "sd-ftc-fantasy-staging",
-  "main": "staging-worker.mjs",
+  "main": "worker.mjs",
   "compatibility_date": "2026-10-20",
   "workers_dev": true,
   "preview_urls": false,
@@ -9,7 +9,8 @@
     {
       "binding": "DB",
       "database_name": "ftc-draft-staging",
-      "database_id": "0ab567de-9d00-41be-86f9-a42901986063"
+      "database_id": "0ab567de-9d00-41be-86f9-a42901986063",
+      "migrations_dir": "../migrations"
     }
   ],
   "vars": {
@@ -18,5 +19,11 @@
     "STAGING_DRAFT_VIEW": "prediction",
     "RESPONSES_SHEET_ID": "1Md_Ys5uf9x4kka_ltkTPM5SkHnJZAv9VUGkhnheBRJE"
   },
-  "observability": { "enabled": true, "logs": { "enabled": true, "invocation_logs": true } }
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true
+    }
+  }
 }

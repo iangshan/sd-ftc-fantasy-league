@@ -9,15 +9,15 @@ import {
   buildRosterPredictions,
   buildEventPredictions,
   selectEventPredictionModel,
-} from './prediction-model.mjs';
-import { predictionSnapshot } from './staging-predictions.mjs';
-import { createStagingWorker, STAGING_HOST, STAGING_SHEET } from './staging-worker.mjs';
+} from '../src/predictions/model.mjs';
+import { predictionSnapshot } from '../staging/predictions.mjs';
+import { createStagingWorker, STAGING_HOST, STAGING_SHEET } from '../staging/worker.mjs';
 import {
   getDecodePredictionCatalog,
   getDraftPredictionCatalog,
   LEAGUE_OWNER_UID,
-} from './dist/staging-app.mjs';
-import production from './dist/worker.mjs';
+} from '../dist/staging-app.mjs';
+import production from '../dist/worker.mjs';
 
 const team = (id, averageOpr, highestOpr = averageOpr, price = 3) => ({
   id: String(id),
@@ -519,10 +519,7 @@ test('production build has no prediction routes or navigation', async () => {
     await (await production.fetch(request('/'), {})).text(),
     /Prediction leaderboard/,
   );
-  const client = fs.readFileSync(
-    new URL('./staging-predictions-client.js', import.meta.url),
-    'utf8',
-  );
+  const client = fs.readFileSync(new URL('../staging/web/predictions.js', import.meta.url), 'utf8');
   new vm.Script(client);
   assert.doesNotMatch(client, /innerHTML|outerHTML|insertAdjacentHTML/);
 });

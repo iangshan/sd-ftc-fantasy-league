@@ -337,7 +337,7 @@ export function parseSyncArguments(args) {
       countSeen = true;
     } else
       throw new Error(
-        'Usage: node scripts/sync-staging-admins.mjs [--check|--apply] [--expected-count=2]',
+        'Usage: node staging/scripts/sync-admins.mjs [--check|--apply] [--expected-count=2]',
       );
   }
   return { apply, expectedCount: 2 };
@@ -347,10 +347,10 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   try {
     const args = parseSyncArguments(process.argv.slice(2));
     const sourceConfig = JSON.parse(
-      await readFile(new URL('../wrangler.jsonc', import.meta.url), 'utf8'),
+      await readFile(new URL('../../wrangler.jsonc', import.meta.url), 'utf8'),
     );
     const targetConfig = JSON.parse(
-      await readFile(new URL('../wrangler.staging.jsonc', import.meta.url), 'utf8'),
+      await readFile(new URL('../wrangler.jsonc', import.meta.url), 'utf8'),
     );
     const summary = await syncStagingAdmins({
       ...args,
