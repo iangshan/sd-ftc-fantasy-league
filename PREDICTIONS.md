@@ -1,6 +1,6 @@
 # Robot-game PP — private staging experiment
 
-The owner-only **Prediction** section is at `/prediction`; `/admin/predictions` remains an alias. Its data is served by `/api/admin/predictions`. Production does not include these routes, assets, or navigation.
+The owner-only **Prediction** leaderboard is the staging home page at `/`, replacing the draft board as the roster-entry page. `/prediction` and `/admin/predictions` remain aliases. Its forecast data is served by `/api/admin/predictions`; draft settings and submissions use the existing `/api/draft` and `/api/submit` services. Production does not include the replacement page, forecast routes, or navigation. [STAGING.md](STAGING.md) documents the preserved original board and rollback switch.
 
 ## Scoring target
 
@@ -72,7 +72,11 @@ The temporary calculator also accepts a planned event count for each selected te
 
 Counts are explicit assumptions, initially blank, not inferred attendance or known schedules. The calculator supports zero through twelve events per team. It holds that team's current per-event estimate constant across those opportunities; it does not compound the trend or forecast named future events. A missing count or an unscored team with a positive count leaves the scenario incomplete. An explicit zero contributes zero. A scenario is not earned points, a saved entry, or a guarantee of participation.
 
-Saved test rosters remain read-only predictions from the isolated staging D1 database for season 2026–2027. Unknown, ineligible, duplicate, over-budget, malformed, or oversized picks are unranked. Missing measurements are labeled incomplete with a known subtotal. No account IDs or contact details enter the prediction response. Database failure is shown as unavailable rather than falsely empty.
+The leaderboard now supports actual staging roster submissions. All 87 draftable teams appear by default; missing PP never prevents drafting an otherwise eligible team. Current catalog prices, eligibility, open/closed state, preview mode, and `priceVersion` come from `/api/draft`. The page sends selected IDs and the required player details through the existing `leagueAccount.api('/api/submit', ...)`, using Firebase Bearer authentication. It does not submit PP, prices, predicted totals, or planned event counts as authoritative values.
+
+Verified accounts can save one roster per season. Preview mode, closed drafts, existing rosters, pending saves, stale/unavailable account state, invalid picks, and missing details block submission. A confirmed receipt displays the server's actual team IDs and total, including when an idempotent retry returns an earlier saved roster. Failed or ambiguous requests preserve the attempted picks and reconcile account state; My dashboard retains the existing interrupted-save recovery flow. Changing accounts clears contact details, selections, scenarios, and receipt state. No roster is saved merely by selecting a team.
+
+The submitted-roster leaderboard reads the isolated staging D1 database for season 2026–2027. Unknown, ineligible, duplicate, over-budget, malformed, or oversized picks are unranked; a saved roster with missing measurements has incomplete PP and a known subtotal. No account IDs or contact details enter the prediction response. Database failure is shown as unavailable rather than falsely empty. A forecast-data outage still allows drafting from the authoritative catalog with PP marked unavailable; a draft-settings outage pauses submissions.
 
 ## Validation and deployment
 
@@ -81,9 +85,9 @@ npm run check
 node build-staging.mjs
 node --check staging-worker.mjs
 node --check staging-predictions-client.js
-node --test staging.test.mjs prediction.test.mjs staging-navigation.test.mjs prediction-history.test.mjs scripts/import-prediction-history.test.mjs
+node --test staging.test.mjs prediction.test.mjs staging-navigation.test.mjs prediction-history.test.mjs scripts/import-prediction-history.test.mjs staging-submit.test.mjs
 ```
 
-Checks cover chronological leakage, invalid evidence, selection/holdout separation, signed and missing data, roster behavior, current eligibility, owner authentication, workbook isolation, and absence of prediction routes in production. Browser checks exercise filtering, evidence details, per-event and season-scenario arithmetic, input validation, and mobile layout.
+Checks cover chronological leakage, invalid evidence, selection/holdout separation, signed and missing data, roster behavior, current eligibility, owner authentication, workbook isolation, homepage/alias/rollback routing, and absence of prediction routes in production. The original submission service is exercised with real local SQLite and a memory-only Sheets boundary, including duplicate prevention and interrupted-write recovery. Browser integration checks cover the actual client-to-submission-service payload and receipt flow, reloads, unscored picks, stale prices, draft closure, preview mode, forecast outages, event-scenario arithmetic, and mobile entry. External Firebase/Sheets authentication is not simulated as a claim of live verification; no existing remote roster is reset or overwritten during these checks.
 
 Push to `staging` to run **Deploy private staging**, which deploys only `wrangler.staging.jsonc`. Do not push or merge this experiment to `main` without a separate request to publish.

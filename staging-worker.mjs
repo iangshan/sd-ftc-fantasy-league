@@ -34,6 +34,13 @@ function authRequest(request, token) {
   headers.set('Authorization', 'Bearer ' + token);
   return new Request(request.url, { headers });
 }
+function predictionLabels(text) {
+  // Only participant-facing labels change; shared account logic and API paths
+  // remain exactly as shipped by the application.
+  return text.replaceAll('Browse the draft board', 'Browse the prediction leaderboard')
+    .replaceAll('You can return to the draft board.', 'You can return to the prediction leaderboard.')
+    .replaceAll('Back to the draft board', 'Back to the prediction leaderboard');
+}
 const loginPage = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Private staging · FTC Fantasy League</title><style>
 :root{color-scheme:light dark;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f4ef;color:#242b26}*{box-sizing:border-box}body{margin:0;min-height:100svh;display:grid;place-items:center;padding:24px}main{max-width:480px;width:100%;padding:40px 0;border-top:3px solid #48644d}.label{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#657367}h1{font-size:36px;letter-spacing:-1.1px;line-height:1.1;font-weight:600;margin:24px 0 18px}p{line-height:1.6;color:#5b665d}button{font:inherit;cursor:pointer;background:#38543e;color:#fff;border:0;border-radius:9px;padding:14px 22px;margin:14px 0}button:disabled{opacity:.55;cursor:wait}a{color:inherit}#message{font-size:14px;min-height:24px}small{display:block;margin-top:32px;color:#657367}@media(prefers-color-scheme:dark){:root{background:#171d19;color:#eff1e9}p,small,.label{color:#adb7ac}button{background:#b7caac;color:#17221a}}
 </style></head><body><main><div class="label">San Diego FTC Fantasy League</div><h1>Your private workspace.</h1><p>Preview changes and test the league before publishing. Access is limited to the league owner’s Google account.</p><button id="login" type="button" disabled>Continue with Google</button><p id="message" role="status">Loading secure sign-in…</p><small>Test entries stay separate from the public league.<br><a href="https://sd-ftc-fantasy-league.sdftcfantasyleague.workers.dev/">Visit the public website</a></small></main><script type="module" src="/__staging/client.js"></script></body></html>`;
@@ -85,13 +92,16 @@ export function createStagingWorker(application = app, verify = requireAccount) 
     }
     if (path === '/__staging/session' && request.method === 'POST') return json({ ok: true }, 200, { 'Set-Cookie': sessionCookie(token) });
     if (path.startsWith('/__staging/')) return json({ error: 'Not found.' }, 404);
+    // The unchanged application still contains the original draft page. This
+    // explicit staging-only switch restores it without touching saved rosters.
+    const legacyDraft = env.STAGING_DRAFT_VIEW === 'legacy';
     // Never send an authenticated request to the production Worker.
     let result;
     if (path === '/api/admin/predictions') {
       if (request.method !== 'GET') return json({ error: 'Method not allowed.' }, 405, { Allow: 'GET' });
       return json(await predictionSnapshot(env));
     }
-    if (path === '/prediction' || path === '/admin/predictions') {
+    if ((path === '/' && !legacyDraft) || path === '/prediction' || path === '/admin/predictions') {
       if (request.method !== 'GET') return json({ error: 'Method not allowed.' }, 405, { Allow: 'GET' });
       result = response(predictionPage, 200, { 'Content-Type': 'text/html; charset=utf-8' });
     } else if (path === '/assets/predictions.js') {
@@ -102,9 +112,15 @@ export function createStagingWorker(application = app, verify = requireAccount) 
     }
     const resultHeaders = new Headers(result.headers);
     for (const [key, value] of Object.entries(securityHeaders)) resultHeaders.set(key, value);
+    if (!legacyDraft && path === '/assets/accounts.js' && resultHeaders.get('Content-Type')?.includes('javascript')) {
+      const body = predictionLabels(await result.text());
+      resultHeaders.delete('Content-Length');
+      return new Response(body, {status: result.status, headers: resultHeaders});
+    }
     if (resultHeaders.get('Content-Type')?.includes('text/html')) {
-      const banner = '<aside style="padding:10px 18px;background:#354f3c;color:white;font:13px system-ui;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><span><strong>Private staging</strong> · Only you can view this site. Test data only. <a href="/prediction" style="color:inherit;margin-left:12px;text-underline-offset:3px">Prediction leaderboard ↗</a></span><button type="button" id="stagingSignOut" style="font:inherit;background:transparent;color:inherit;border:1px solid #aabdaa;padding:5px 10px;border-radius:6px;cursor:pointer">Leave staging</button></aside>';
-      const html = withStagingNavigation(await result.text(), path).replace(/<body([^>]*)>/i, '<body$1>' + banner).replace('</body>', '<script type="module" src="/__staging/client.js"></script></body>');
+      const banner = '<aside style="padding:10px 18px;background:#354f3c;color:white;font:13px system-ui;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><span><strong>Private staging</strong> · Only you can view this site. Test data only. <a href="' + (legacyDraft ? '/prediction' : '/') + '" style="color:inherit;margin-left:12px;text-underline-offset:3px">Prediction leaderboard ↗</a></span><button type="button" id="stagingSignOut" style="font:inherit;background:transparent;color:inherit;border:1px solid #aabdaa;padding:5px 10px;border-radius:6px;cursor:pointer">Leave staging</button></aside>';
+      const body = await result.text();
+      const html = withStagingNavigation(legacyDraft ? body : predictionLabels(body), path, {legacyDraft}).replace(/<body([^>]*)>/i, '<body$1>' + banner).replace('</body>', '<script type="module" src="/__staging/client.js"></script></body>');
       resultHeaders.delete('Content-Length');
       return new Response(html, { status: result.status, headers: resultHeaders });
     }

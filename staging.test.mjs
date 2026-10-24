@@ -25,7 +25,7 @@ test('valid non-owner and unverified owner cannot access app',async()=>{
  }
 });
 test('valid owner can access app and sees persistent staging identification',async()=>{
- const result=await createStagingWorker(application,async()=>owner).fetch(req('/',cookie),env);
+ const result=await createStagingWorker(application,async()=>owner).fetch(req('/dashboard',cookie),env);
  assert.equal(result.status,200);assert.match(await result.text(),/Private staging.*PRIVATE CONTENT/s);
  assert.match(result.headers.get('Cache-Control'),/no-store/);assert.match(result.headers.get('X-Robots-Tag'),/noindex/);
 });
