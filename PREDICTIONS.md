@@ -1,55 +1,87 @@
-# DECODE PP — staging experiment
+# Robot-game PP — private staging experiment
 
-Model version: `decode-opr-v2`. Available only on the owner-only staging site in the **Prediction** navigation section at `/prediction`. The earlier `/admin/predictions` address remains an alias, and data is served by `/api/admin/predictions`. The production build does not include these routes, assets, or navigation.
+The owner-only **Prediction** section is at `/prediction`; `/admin/predictions` remains an alias. Its data is served by `/api/admin/predictions`. Production does not include these routes, assets, or navigation.
 
-## Eligible DECODE leaderboard
+## Scoring target
 
-The default leaderboard includes the **70 currently draftable San Diego teams with recorded average DECODE OPR** in the frozen catalog. The 14 recorded teams outside the current draft, including Definitely Human (#19743) and SEGFAULT (#31862), are excluded from every leaderboard view and the API's team lists.
+The league owner confirmed that each drafted team's OPR is added after **each event**. A participant's season total is the sum of those event contributions across their drafted teams. Awards, wins, advancement bonuses, and pollen prices do not add points. This experiment predicts the OPR contribution per event; it does not implement or write official earned standings.
 
-The archive contains 87 rows. Three have no recorded average OPR and cannot be ranked from this data; this does not establish that they never competed. The archive is a San Diego export, not a complete worldwide DECODE competitor list. The page reports this coverage explicitly rather than presenting the missing rows as zero-point teams.
+PP now uses **projected OPR per event**, rounded to two decimals, rather than the previous index normalized to a 100-PP leader. The current evidence is DECODE, so these are DECODE-scale preseason estimates. Raw scoring scales differ between games; this is not a calibrated numerical forecast for BioBuzz. Future results must be evaluated within their own season rather than blended directly with old raw OPR.
 
-The full current-draft view includes all 87 eligible teams: the same 70 scored teams and 17 unscored teams. Current-season newcomers receive no invented DECODE performance. Both views rank the scored teams within this eligible pool, with no rank gaps caused by excluded teams. The historical reference used to calculate PP remains unchanged.
+## Historical evidence
 
-## Formula
+`prediction-data/decode-event-history.json` records 388 measured team/event rows for 84 historical teams at 20 completed official DECODE events, November 22, 2025 through June 21, 2026. These include San Diego league events and championships/Premier divisions outside the region. The importer retains only historical/current San Diego catalog teams and excludes unfinished events, scrimmages, offseason events, and parent championship records without qualification results. See [source details](prediction-data/README.md).
 
-For each team in the historical DECODE catalog with a finite average DECODE OPR:
+The metric is FTCScout qualification `opr.totalPointsNp`, excluding points awarded from opponents' penalties. Autonomous and driver-controlled OPR are retained as evidence, but never added again as bonuses to total OPR. Signed measured OPR is preserved. No individual-match OPR is invented.
+
+Only the current draft pool is returned in either API team list. All 70 eligible teams with recorded history have an estimate; the other 17 eligible teams remain unscored. Inactive historical teams can inform testing but cannot appear in a prediction leaderboard or roster. Missing history is not a synthetic zero. A frozen average is an explicitly labeled fallback if a team lacks detailed history; a team lacking both remains unscored.
+
+## Forecast formula
+
+The selected experimental method is `dampedTrend`. For a team's chronologically ordered completed event OPR values \(y_j\), let \(x_j\) be the index of the event completion date (equal dates share an index). The recent mean is
 
 \[
-A_i = \max(0,\overline{\mathrm{OPR}}_{i,\mathrm{DECODE}})
+R = \frac{\sum_j 2^{-(x_{\max}-x_j)} y_j}{\sum_j 2^{-(x_{\max}-x_j)}}.
 \]
+
+The linear trend per event is
+
 \[
-H_i^* = \min\left(\max(H_i,A_i),\;1.5A_i\right)
+b = \frac{\sum_j (x_j-\bar{x})(y_j-\bar{y})}{\sum_j (x_j-\bar{x})^2},\qquad
+\mathrm{PP} = \operatorname{round}_{0.01}(R + 0.5b).
 \]
+
+When there is only one distinct completion date, the trend contribution is zero. No extra peak bonus, normalization, or arbitrary zero floor is applied. Decay 0.5 and trend damping 0.5 are fixed illustrative constants; they were not fitted on the later test block. Event counts, match counts, and historical spread explain the supporting evidence. Spread is not a confidence interval and does not automatically add or subtract PP.
+
+Six fixed candidates are compared: historical mean, latest event, prior peak, the old v2 formula in raw OPR units, recent weighted mean, and recent mean plus half the trend. The early chronological block chooses one candidate by mean absolute error (MAE). The selected candidate is used only if sufficient examples exist and its later-block error is below the historical-mean baseline; otherwise the mean is retained. This gate is an experimental safeguard, not proof of general accuracy. All historical processing is cached for the immutable snapshot; saved-roster reads remain request scoped.
+
+## Chronological evaluation
+
+Each replay forecast uses only events that ended strictly before its target event started. Simultaneous or overlapping events cannot supply prior evidence. All candidate methods use the same examples. The first 70% of distinct target start dates form the selection block; later dates form the test block. Selection outcomes that overlap the test boundary are removed. At least ten examples in each block are required to select a candidate.
+
+The imported snapshot yields 304 usable next-event forecasts. There are 288 selection examples and 16 later examples starting April 29, 2026. Selection narrowly chooses `dampedTrend`; the comparison below is from the later block:
+
+| Method | MAE, OPR | RMSE, OPR |
+| --- | ---: | ---: |
+| Historical mean | 33.713 | 40.719 |
+| Old v2 average/peak formula | 30.588 | 37.209 |
+| Selected recent mean + half trend | 21.166 | 24.894 |
+
+The selected method has about 37.2% lower MAE than the historical mean on these 16 examples. This is **not an accuracy percentage**. Prior peak performs better on that later block (MAE 16.981), but switching to it after seeing those outcomes would reuse the test set for selection. The small, championship-heavy sample is not representative of every regional team. Team/event errors are correlated, and this experiment establishes neither statistical significance nor cross-season calibration. Final corrected source records are not contemporaneous historical snapshots.
+
+Reproduce all methods and optionally save a new detailed report:
+
+```sh
+node scripts/evaluate-prediction-model.mjs
+node scripts/evaluate-prediction-model.mjs prediction-data/decode-event-history.json /tmp/decode-replay-report.json
+```
+
+The report command refuses to overwrite an existing output. Refreshing the source is a separate explicit step using `scripts/import-prediction-history.mjs`; no background feed silently changes PP.
+
+## Roster and season scenarios
+
+A valid roster has one to three distinct eligible teams within 15 pollen. Its per-event PP is the sum of displayed team PP, consistent with the table. Ties use competition ranks (1, 1, 3). Pollen determines affordability and PP per pollen, never the strength estimate.
+
+The temporary calculator also accepts a planned event count for each selected team:
+
 \[
-S_i = 0.85A_i + 0.15H_i^*, \qquad
-\mathrm{PP}_i = \operatorname{round}_{0.01}\left(100\frac{S_i}{\max_{j\in D}S_j}\right)
+\mathrm{ScenarioPP} = \sum_{i\in\mathrm{roster}} n_i\,\mathrm{PP}_i.
 \]
 
-Here `H` is highest DECODE OPR and `D` is the full set of recorded teams in the frozen San Diego DECODE catalog, regardless of current draft eligibility. Missing peak OPR falls back to average OPR. Missing average OPR means **unscored**, including rookies: no synthetic zero or imputed past performance. If all measured strengths are zero, measured teams receive zero; unscored teams remain unscored. Negative measured average OPR is floored at zero.
+Counts are explicit assumptions, initially blank, not inferred attendance or known schedules. The calculator supports zero through twelve events per team. It holds that team's current per-event estimate constant across those opportunities; it does not compound the trend or forecast named future events. A missing count or an unscored team with a positive count leaves the scenario incomplete. An explicit zero contributes zero. A scenario is not earned points, a saved entry, or a guarantee of participation.
 
-Average performance is the main signal. Peak OPR provides a small upside allowance; capping it at 1.5 times average limits that allowance to 7.5% above average strength. This reduces sensitivity to a single exceptional event. It cannot correct for different event counts or uncertainty because those inputs are not present in the frozen export. The 85/15 weights and cap are design choices, not fitted coefficients. No claim of validated prediction accuracy is made.
+Saved test rosters remain read-only predictions from the isolated staging D1 database for season 2026–2027. Unknown, ineligible, duplicate, over-budget, malformed, or oversized picks are unranked. Missing measurements are labeled incomplete with a known subtotal. No account IDs or contact details enter the prediction response. Database failure is shown as unavailable rather than falsely empty.
 
-The normalization is calculated once over all 84 recorded historical teams, before current eligibility, search, price filters, or sorting. Even if the strongest historical team leaves the current draft, other teams retain their PP. One PP is one hundredth of the reference team's strength, not an actual DECODE match point or earned fantasy point. BioBuzz results, current prices, awards, and historical ranks do not enter the formula. PP per pollen is a separate comparison column, not an input to scoring.
-
-Crow Force (#10809) has average OPR 102.63224593582704 and peak OPR 148.91824495149575, yielding strength 109.57514578817734 and 100 PP. Rust-eze Robotics (#24730) retains 86.11 PP and ranks second among eligible teams. This is an index of historical DECODE strength, not a calibrated forecast of BioBuzz results. Version 2 uses recorded historical DECODE teams as its reference cohort; eligibility filtering does not change the formula, PP, or model version.
-
-## Rosters and ranking
-
-For a valid one-to-three-team roster costing at most 15 pollen, roster PP is the sum of the teams' displayed two-decimal PP. Scores do not change prices or the draft budget. Equal displayed totals share competition ranks (1, 1, 3), for both team and roster leaderboards. Team-number order breaks display-order ties without awarding different ranks. Search and price filters preserve these eligible-pool ranks.
-
-A roster containing a team with no DECODE data remains unranked and shows an explicitly labeled known subtotal. Duplicate, unknown, no-longer-eligible, over-budget, malformed, or oversized rosters are also unranked, with an explanation. Existing saved picks are read by team ID; this experiment does not rewrite receipts, account snapshots, or prices.
-
-The team leaderboard reads the frozen historical and current-draft catalogs bundled with the application, not Google Sheets or live event feeds. The API returns 70 eligible scored rows as `teams` and all 87 eligible rows as `draftTeams`. The historical 84-team reference is calculated internally; excluded historical rows are not returned. Both lists use that shared baseline and matching eligible-pool ranks. `coverage` retains the archive counts (87 total, 84 recorded, 3 missing OPR), reports 70 eligible and 14 excluded recorded teams, and reports the current-draft counts (87 total, 70 scored, 17 unscored). The roster leaderboard performs one read-only query against the isolated staging D1 database for saved account rosters in season 2026–2027 and validates their picks against `draftTeams`. Unlinked legacy Sheet rows are not included. Missing database access is shown as an unavailable roster view, never silently as an empty league. The temporary roster calculator does not save anything.
-
-## Build and validation
+## Validation and deployment
 
 ```sh
 npm run check
 node build-staging.mjs
+node --check staging-worker.mjs
 node --check staging-predictions-client.js
-node --test staging.test.mjs prediction.test.mjs staging-navigation.test.mjs
+node --test staging.test.mjs prediction.test.mjs staging-navigation.test.mjs prediction-history.test.mjs scripts/import-prediction-history.test.mjs
 ```
 
-The staging build exports the historical and current draft catalogs only into its generated staging app and packages its HTML/JavaScript separately. Owner verification, staging hostname checks, workbook isolation, noindex, and private/no-store headers cover all prediction routes. Tests verify eligible cohort coverage, exclusion of all 14 ineligible recorded teams, unchanged PP and a shared historical reference even when its leader leaves the draft, ranks within the eligible pool, the formula, peak cap, missing/zero data, ties, roster validity, read-only data access, authentication boundaries, and production route absence.
+Checks cover chronological leakage, invalid evidence, selection/holdout separation, signed and missing data, roster behavior, current eligibility, owner authentication, workbook isolation, and absence of prediction routes in production. Browser checks exercise filtering, evidence details, per-event and season-scenario arithmetic, input validation, and mobile layout.
 
 Push to `staging` to run **Deploy private staging**, which deploys only `wrangler.staging.jsonc`. Do not push or merge this experiment to `main` without a separate request to publish.

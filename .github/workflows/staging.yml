@@ -23,7 +23,7 @@ jobs:
       - run: node build-staging.mjs
       - run: node --check staging-worker.mjs
       - run: node --check staging-predictions-client.js
-      - run: node --test staging.test.mjs prediction.test.mjs staging-navigation.test.mjs
+      - run: node --test staging.test.mjs prediction.test.mjs staging-navigation.test.mjs prediction-history.test.mjs scripts/import-prediction-history.test.mjs
       - name: Deploy staging only
         if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
         run: npx wrangler deploy --config wrangler.staging.jsonc

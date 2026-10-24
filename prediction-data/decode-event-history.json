@@ -1,0 +1,3123 @@
+{
+  "schemaVersion": 1,
+  "season": 2025,
+  "source": {
+    "name": "FTCScout",
+    "url": "https://api.ftcscout.org/graphql",
+    "metric": "opr.totalPointsNp",
+    "fetchedAt": "2026-10-24T02:04:17.566Z",
+    "scope": "All official DECODE events attended by historical/current San Diego catalog teams, including competitions outside the region; final qualification OPR excluding opponent penalties",
+    "completionRule": "Published, finished, not ongoing, past end date, and every scheduled qualification match has a played flag and score record",
+    "queries": [
+      "query TeamEventDiscovery { team10809: teamByNumber(number: 10809) { events(season: 2025) { eventCode event { type } } } team19743: teamByNumber(number: 19743) { events(season: 2025) { eventCode event { type } } } team24730: teamByNumber(number: 24730) { events(season: 2025) { eventCode event { type } } } team31862: teamByNumber(number: 31862) { events(season: 2025) { eventCode event { type } } } team18142: teamByNumber(number: 18142) { events(season: 2025) { eventCode event { type } } } team26013: teamByNumber(number: 26013) { events(season: 2025) { eventCode event { type } } } team12499: teamByNumber(number: 12499) { events(season: 2025) { eventCode event { type } } } team24664: teamByNumber(number: 24664) { events(season: 2025) { eventCode event { type } } } }",
+      "query TeamEventDiscovery { team23673: teamByNumber(number: 23673) { events(season: 2025) { eventCode event { type } } } team3650: teamByNumber(number: 3650) { events(season: 2025) { eventCode event { type } } } team23997: teamByNumber(number: 23997) { events(season: 2025) { eventCode event { type } } } team14535: teamByNumber(number: 14535) { events(season: 2025) { eventCode event { type } } } team11212: teamByNumber(number: 11212) { events(season: 2025) { eventCode event { type } } } team32159: teamByNumber(number: 32159) { events(season: 2025) { eventCode event { type } } } team15097: teamByNumber(number: 15097) { events(season: 2025) { eventCode event { type } } } team26235: teamByNumber(number: 26235) { events(season: 2025) { eventCode event { type } } } }",
+      "query TeamEventDiscovery { team22105: teamByNumber(number: 22105) { events(season: 2025) { eventCode event { type } } } team5131: teamByNumber(number: 5131) { events(season: 2025) { eventCode event { type } } } team32811: teamByNumber(number: 32811) { events(season: 2025) { eventCode event { type } } } team8380: teamByNumber(number: 8380) { events(season: 2025) { eventCode event { type } } } team4262: teamByNumber(number: 4262) { events(season: 2025) { eventCode event { type } } } team7609: teamByNumber(number: 7609) { events(season: 2025) { eventCode event { type } } } team31420: teamByNumber(number: 31420) { events(season: 2025) { eventCode event { type } } } team9266: teamByNumber(number: 9266) { events(season: 2025) { eventCode event { type } } } }",
+      "query TeamEventDiscovery { team18263: teamByNumber(number: 18263) { events(season: 2025) { eventCode event { type } } } team23280: teamByNumber(number: 23280) { events(season: 2025) { eventCode event { type } } } team8097: teamByNumber(number: 8097) { events(season: 2025) { eventCode event { type } } } team24142: teamByNumber(number: 24142) { events(season: 2025) { eventCode event { type } } } team18365: teamByNumber(number: 18365) { events(season: 2025) { eventCode event { type } } } team14968: teamByNumber(number: 14968) { events(season: 2025) { eventCode event { type } } } team23676: teamByNumber(number: 23676) { events(season: 2025) { eventCode event { type } } } team4216: teamByNumber(number: 4216) { events(season: 2025) { eventCode event { type } } } }",
+      "query TeamEventDiscovery { team24218: teamByNumber(number: 24218) { events(season: 2025) { eventCode event { type } } } team22567: teamByNumber(number: 22567) { events(season: 2025) { eventCode event { type } } } team7159: teamByNumber(number: 7159) { events(season: 2025) { eventCode event { type } } } team5015: teamByNumber(number: 5015) { events(season: 2025) { eventCode event { type } } } team31973: teamByNumber(number: 31973) { events(season: 2025) { eventCode event { type } } } team31222: teamByNumber(number: 31222) { events(season: 2025) { eventCode event { type } } } team12778: teamByNumber(number: 12778) { events(season: 2025) { eventCode event { type } } } team31800: teamByNumber(number: 31800) { events(season: 2025) { eventCode event { type } } } }",
+      "query TeamEventDiscovery { team13084: teamByNumber(number: 13084) { events(season: 2025) { eventCode event { type } } } team14338: teamByNumber(number: 14338) { events(season: 2025) { eventCode event { type } } } team32122: teamByNumber(number: 32122) { events(season: 2025) { eventCode event { type } } } team31622: teamByNumber(number: 31622) { events(season: 2025) { eventCode event { type } } } team24111: teamByNumber(number: 24111) { events(season: 2025) { eventCode event { type } } } team24029: teamByNumber(number: 24029) { events(season: 2025) { eventCode event { type } } } team32158: teamByNumber(number: 32158) { events(season: 2025) { eventCode event { type } } } team6226: teamByNumber(number: 6226) { events(season: 2025) { eventCode event { type } } } }",
+      "query TeamEventDiscovery { team6016: teamByNumber(number: 6016) { events(season: 2025) { eventCode event { type } } } team27602: teamByNumber(number: 27602) { events(season: 2025) { eventCode event { type } } } team23696: teamByNumber(number: 23696) { events(season: 2025) { eventCode event { type } } } team3848: teamByNumber(number: 3848) { events(season: 2025) { eventCode event { type } } } team32210: teamByNumber(number: 32210) { events(season: 2025) { eventCode event { type } } } team13089: teamByNumber(number: 13089) { events(season: 2025) { eventCode event { type } } } team9892: teamByNumber(number: 9892) { events(season: 2025) { eventCode event { type } } } team27600: teamByNumber(number: 27600) { events(season: 2025) { eventCode event { type } } } }",
+      "query TeamEventDiscovery { team9164: teamByNumber(number: 9164) { events(season: 2025) { eventCode event { type } } } team9049: teamByNumber(number: 9049) { events(season: 2025) { eventCode event { type } } } team11285: teamByNumber(number: 11285) { events(season: 2025) { eventCode event { type } } } team26982: teamByNumber(number: 26982) { events(season: 2025) { eventCode event { type } } } team32420: teamByNumber(number: 32420) { events(season: 2025) { eventCode event { type } } } team24312: teamByNumber(number: 24312) { events(season: 2025) { eventCode event { type } } } team22321: teamByNumber(number: 22321) { events(season: 2025) { eventCode event { type } } } team20355: teamByNumber(number: 20355) { events(season: 2025) { eventCode event { type } } } }",
+      "query TeamEventDiscovery { team28644: teamByNumber(number: 28644) { events(season: 2025) { eventCode event { type } } } team8606: teamByNumber(number: 8606) { events(season: 2025) { eventCode event { type } } } team32482: teamByNumber(number: 32482) { events(season: 2025) { eventCode event { type } } } team22529: teamByNumber(number: 22529) { events(season: 2025) { eventCode event { type } } } team1622: teamByNumber(number: 1622) { events(season: 2025) { eventCode event { type } } } team10793: teamByNumber(number: 10793) { events(season: 2025) { eventCode event { type } } } team30556: teamByNumber(number: 30556) { events(season: 2025) { eventCode event { type } } } team31139: teamByNumber(number: 31139) { events(season: 2025) { eventCode event { type } } } }",
+      "query TeamEventDiscovery { team26471: teamByNumber(number: 26471) { events(season: 2025) { eventCode event { type } } } team32005: teamByNumber(number: 32005) { events(season: 2025) { eventCode event { type } } } team24041: teamByNumber(number: 24041) { events(season: 2025) { eventCode event { type } } } team32007: teamByNumber(number: 32007) { events(season: 2025) { eventCode event { type } } } team32627: teamByNumber(number: 32627) { events(season: 2025) { eventCode event { type } } } team6565: teamByNumber(number: 6565) { events(season: 2025) { eventCode event { type } } } team32689: teamByNumber(number: 32689) { events(season: 2025) { eventCode event { type } } } team31742: teamByNumber(number: 31742) { events(season: 2025) { eventCode event { type } } } }",
+      "query TeamEventDiscovery { team20422: teamByNumber(number: 20422) { events(season: 2025) { eventCode event { type } } } team30622: teamByNumber(number: 30622) { events(season: 2025) { eventCode event { type } } } team26637: teamByNumber(number: 26637) { events(season: 2025) { eventCode event { type } } } team33418: teamByNumber(number: 33418) { events(season: 2025) { eventCode event { type } } } team26852: teamByNumber(number: 26852) { events(season: 2025) { eventCode event { type } } } team27521: teamByNumber(number: 27521) { events(season: 2025) { eventCode event { type } } } team31996: teamByNumber(number: 31996) { events(season: 2025) { eventCode event { type } } } team16192: teamByNumber(number: 16192) { events(season: 2025) { eventCode event { type } } } }",
+      "query TeamEventDiscovery { team34263: teamByNumber(number: 34263) { events(season: 2025) { eventCode event { type } } } team35711: teamByNumber(number: 35711) { events(season: 2025) { eventCode event { type } } } team36009: teamByNumber(number: 36009) { events(season: 2025) { eventCode event { type } } } team36074: teamByNumber(number: 36074) { events(season: 2025) { eventCode event { type } } } team36384: teamByNumber(number: 36384) { events(season: 2025) { eventCode event { type } } } team36776: teamByNumber(number: 36776) { events(season: 2025) { eventCode event { type } } } team37161: teamByNumber(number: 37161) { events(season: 2025) { eventCode event { type } } } team37416: teamByNumber(number: 37416) { events(season: 2025) { eventCode event { type } } } }",
+      "query TeamEventDiscovery { team37418: teamByNumber(number: 37418) { events(season: 2025) { eventCode event { type } } } team37488: teamByNumber(number: 37488) { events(season: 2025) { eventCode event { type } } } team37662: teamByNumber(number: 37662) { events(season: 2025) { eventCode event { type } } } team38217: teamByNumber(number: 38217) { events(season: 2025) { eventCode event { type } } } team38390: teamByNumber(number: 38390) { events(season: 2025) { eventCode event { type } } } team38710: teamByNumber(number: 38710) { events(season: 2025) { eventCode event { type } } } }",
+      "query DecodeEventHistory { event0: eventByCode(season: 2025, code: \"FPECCN\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } event1: eventByCode(season: 2025, code: \"FPECCNTECH\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } event2: eventByCode(season: 2025, code: \"FPECOW\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } event3: eventByCode(season: 2025, code: \"FPEMI\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } }",
+      "query DecodeEventHistory { event0: eventByCode(season: 2025, code: \"FPEMICRFT\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } event1: eventByCode(season: 2025, code: \"FPERR\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } event2: eventByCode(season: 2025, code: \"FPERRSEC\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } event3: eventByCode(season: 2025, code: \"FPEWE\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } }",
+      "query DecodeEventHistory { event0: eventByCode(season: 2025, code: \"FPEWESEA\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } event1: eventByCode(season: 2025, code: \"FPEWESND\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } event2: eventByCode(season: 2025, code: \"FTCCMP1\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } event3: eventByCode(season: 2025, code: \"FTCCMP1EDIS\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } }",
+      "query DecodeEventHistory { event0: eventByCode(season: 2025, code: \"FTCCMP1GOOD\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } event1: eventByCode(season: 2025, code: \"FTCCMP1LOVE\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } event2: eventByCode(season: 2025, code: \"FTCCMP1ROSS\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } event3: eventByCode(season: 2025, code: \"USCASDCMP\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } }",
+      "query DecodeEventHistory { event0: eventByCode(season: 2025, code: \"USCASDSDDLLT1\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } event1: eventByCode(season: 2025, code: \"USCASDSDELLT1\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } event2: eventByCode(season: 2025, code: \"USCASDSDGLLT1\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } event3: eventByCode(season: 2025, code: \"USCASDSDMLM1\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } }",
+      "query DecodeEventHistory { event0: eventByCode(season: 2025, code: \"USCASDSDMLM2\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } event1: eventByCode(season: 2025, code: \"USCASDSDMLM3\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } event2: eventByCode(season: 2025, code: \"USCASDSDMLM4\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } event3: eventByCode(season: 2025, code: \"USCASDSDMLM5\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } }",
+      "query DecodeEventHistory { event0: eventByCode(season: 2025, code: \"USCASDSDMLM6\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } event1: eventByCode(season: 2025, code: \"USCASDSDTLLT\") { \n    season code name start end type regionCode published finished ongoing\n    matches { id tournamentLevel hasBeenPlayed scores { __typename } }\n    teams {\n      teamNumber\n      stats {\n        ... on TeamEventStats2025 {\n          qualMatchesPlayed\n          opr { totalPointsNp autoPoints dcPoints }\n        }\n      }\n    }\n } }"
+    ],
+    "responseSha256": "288f962ad59147087a705407ffd1b1216522bf46fc0a388a42aca23fb56d7b95"
+  },
+  "selectedTeamNumbers": [
+    1622,
+    3650,
+    3848,
+    4216,
+    4262,
+    5015,
+    5131,
+    6016,
+    6226,
+    6565,
+    7159,
+    7609,
+    8097,
+    8380,
+    8606,
+    9049,
+    9164,
+    9266,
+    9892,
+    10793,
+    10809,
+    11212,
+    11285,
+    12499,
+    12778,
+    13084,
+    13089,
+    14338,
+    14535,
+    14968,
+    15097,
+    16192,
+    18142,
+    18263,
+    18365,
+    19743,
+    20355,
+    20422,
+    22105,
+    22321,
+    22529,
+    22567,
+    23280,
+    23673,
+    23676,
+    23696,
+    23997,
+    24029,
+    24041,
+    24111,
+    24142,
+    24218,
+    24312,
+    24664,
+    24730,
+    26013,
+    26235,
+    26471,
+    26637,
+    26852,
+    26982,
+    27521,
+    27600,
+    27602,
+    28644,
+    30556,
+    30622,
+    31139,
+    31222,
+    31420,
+    31622,
+    31742,
+    31800,
+    31862,
+    31973,
+    31996,
+    32005,
+    32007,
+    32122,
+    32158,
+    32159,
+    32210,
+    32420,
+    32482,
+    32627,
+    32689,
+    32811,
+    33418,
+    34263,
+    35711,
+    36009,
+    36074,
+    36384,
+    36776,
+    37161,
+    37416,
+    37418,
+    37488,
+    37662,
+    38217,
+    38390,
+    38710
+  ],
+  "excludedEvents": [
+    {
+      "code": "FPECCN",
+      "reason": "Event not finished/published or qualification results incomplete"
+    },
+    {
+      "code": "FPECOW",
+      "reason": "No measured teams from the selected catalog"
+    },
+    {
+      "code": "FPEMI",
+      "reason": "Event not finished/published or qualification results incomplete"
+    },
+    {
+      "code": "FPERR",
+      "reason": "Event not finished/published or qualification results incomplete"
+    },
+    {
+      "code": "FPEWE",
+      "reason": "Event not finished/published or qualification results incomplete"
+    },
+    {
+      "code": "FTCCMP1",
+      "reason": "Event not finished/published or qualification results incomplete"
+    }
+  ],
+  "events": [
+    {
+      "code": "USCASDSDMLM1",
+      "name": "SDML Meet #1 - Saturday",
+      "startDate": "2025-11-22",
+      "endDate": "2025-11-22",
+      "type": "LeagueMeet",
+      "region": "USCASD",
+      "status": "complete",
+      "qualificationMatches": 60,
+      "teams": [
+        {
+          "teamNumber": 1622,
+          "opr": 16.271518964380725,
+          "autoOpr": 4.258193121881379,
+          "driverControlledOpr": 12.013325842499325,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 4262,
+          "opr": 34.204526039228,
+          "autoOpr": 2.910531701926762,
+          "driverControlledOpr": 31.293994337301246,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 6016,
+          "opr": 17.041622736869872,
+          "autoOpr": 1.3804113861417127,
+          "driverControlledOpr": 15.661211350728156,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 6565,
+          "opr": 10.386535947577999,
+          "autoOpr": 0.8859828483210367,
+          "driverControlledOpr": 9.500553099256962,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 8380,
+          "opr": 14.81404107474439,
+          "autoOpr": 0.9408082367837685,
+          "driverControlledOpr": 13.873232837960625,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 9266,
+          "opr": 33.02374806932895,
+          "autoOpr": 9.464037960647145,
+          "driverControlledOpr": 23.559710108681795,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 9892,
+          "opr": 6.514566508773388,
+          "autoOpr": -0.0006752063146096485,
+          "driverControlledOpr": 6.515241715087994,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 10793,
+          "opr": 14.675255642404796,
+          "autoOpr": 0.5127829178999689,
+          "driverControlledOpr": 14.162472724504829,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 12778,
+          "opr": 25.786690791264913,
+          "autoOpr": 5.5096067188946,
+          "driverControlledOpr": 20.277084072370315,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 13084,
+          "opr": 19.50198801726654,
+          "autoOpr": 5.465749141694413,
+          "driverControlledOpr": 14.036238875572122,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 13089,
+          "opr": 3.5259507866379605,
+          "autoOpr": 1.0789705760111372,
+          "driverControlledOpr": 2.4469802106268195,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 14968,
+          "opr": 19.049944955259516,
+          "autoOpr": 0.6292599057322033,
+          "driverControlledOpr": 18.420685049527307,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 18263,
+          "opr": 13.999523292439523,
+          "autoOpr": 2.1917464279184644,
+          "driverControlledOpr": 11.807776864521058,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 19743,
+          "opr": 78.73229004239417,
+          "autoOpr": 26.494484906363123,
+          "driverControlledOpr": 52.23780513603104,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 20422,
+          "opr": 12.631879804702681,
+          "autoOpr": 2.5501350943889216,
+          "driverControlledOpr": 10.08174471031376,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 22529,
+          "opr": 11.097429894746726,
+          "autoOpr": 0.6230704219933852,
+          "driverControlledOpr": 10.47435947275336,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 22567,
+          "opr": 27.842106316505554,
+          "autoOpr": 0.3144326493832156,
+          "driverControlledOpr": 27.527673667122365,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23676,
+          "opr": 16.87515793933196,
+          "autoOpr": 3.9969635388409124,
+          "driverControlledOpr": 12.878194400491045,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23696,
+          "opr": 30.842156564715943,
+          "autoOpr": -0.07225818000796984,
+          "driverControlledOpr": 30.914414744723885,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24029,
+          "opr": 8.722163616533754,
+          "autoOpr": 3.426209808638384,
+          "driverControlledOpr": 5.295953807895368,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24041,
+          "opr": 1.7323080117657568,
+          "autoOpr": -1.63483193564593,
+          "driverControlledOpr": 3.3671399474116868,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24111,
+          "opr": 16.966473019887577,
+          "autoOpr": 0.3893424621740334,
+          "driverControlledOpr": 16.577130557713552,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24142,
+          "opr": 33.70829468147847,
+          "autoOpr": 2.0412661975675097,
+          "driverControlledOpr": 31.667028483910986,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24664,
+          "opr": 63.00236910230865,
+          "autoOpr": 26.387111719474134,
+          "driverControlledOpr": 36.61525738283453,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24730,
+          "opr": 110.18288835312217,
+          "autoOpr": 41.7581041961353,
+          "driverControlledOpr": 68.42478415698682,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 26235,
+          "opr": 40.011931366894515,
+          "autoOpr": 8.552266160468138,
+          "driverControlledOpr": 31.45966520642637,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 26471,
+          "opr": 12.385981958906168,
+          "autoOpr": 1.2071377384976503,
+          "driverControlledOpr": 11.178844220408518,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 26637,
+          "opr": 5.1030905271762865,
+          "autoOpr": 1.4537514447058533,
+          "driverControlledOpr": 3.6493390824704304,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 26982,
+          "opr": 3.88773840036757,
+          "autoOpr": 0.9863058854683537,
+          "driverControlledOpr": 2.901432514899213,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 28644,
+          "opr": 11.382250563682737,
+          "autoOpr": -0.1374326779352739,
+          "driverControlledOpr": 11.519683241618013,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 30622,
+          "opr": 2.503869270314148,
+          "autoOpr": 0.7779960478978721,
+          "driverControlledOpr": 1.7258732224162763,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31139,
+          "opr": 16.809357053376814,
+          "autoOpr": 1.6985537752740572,
+          "driverControlledOpr": 15.110803278102757,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31622,
+          "opr": 15.866188190052497,
+          "autoOpr": 1.777877755336272,
+          "driverControlledOpr": 14.088310434716231,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32005,
+          "opr": 13.762421589684593,
+          "autoOpr": 3.0513220048570977,
+          "driverControlledOpr": 10.711099584827494,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32007,
+          "opr": 12.085344431321348,
+          "autoOpr": -2.6038277438757222,
+          "driverControlledOpr": 14.68917217519708,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32210,
+          "opr": 25.50686448328218,
+          "autoOpr": 10.295006237430782,
+          "driverControlledOpr": 15.211858245851394,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32420,
+          "opr": 31.883731924834077,
+          "autoOpr": 2.140690420575067,
+          "driverControlledOpr": 29.743041504258994,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32627,
+          "opr": 5.135857421861341,
+          "autoOpr": 0.04689992390791185,
+          "driverControlledOpr": 5.088957497953428,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32811,
+          "opr": 41.4906916881039,
+          "autoOpr": 6.572741542117705,
+          "driverControlledOpr": 34.91795014598616,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 33418,
+          "opr": 11.38658428980787,
+          "autoOpr": 2.0126082017650604,
+          "driverControlledOpr": 9.373976088042804,
+          "qualMatchesPlayed": 6
+        }
+      ]
+    },
+    {
+      "code": "USCASDSDMLM2",
+      "name": "SDML Meet #1 - Sunday",
+      "startDate": "2025-11-23",
+      "endDate": "2025-11-23",
+      "type": "LeagueMeet",
+      "region": "USCASD",
+      "status": "complete",
+      "qualificationMatches": 60,
+      "teams": [
+        {
+          "teamNumber": 3650,
+          "opr": 49.9412885078361,
+          "autoOpr": 24.785904970270106,
+          "driverControlledOpr": 25.15538353756599,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 3848,
+          "opr": 31.026691494441064,
+          "autoOpr": 9.08029347444345,
+          "driverControlledOpr": 21.946398019997634,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 4216,
+          "opr": 26.824033142797482,
+          "autoOpr": 3.155022663946509,
+          "driverControlledOpr": 23.669010478850957,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 5015,
+          "opr": 19.42022413597558,
+          "autoOpr": 0.6096936538168137,
+          "driverControlledOpr": 18.810530482158775,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 5131,
+          "opr": 53.20503261375575,
+          "autoOpr": 15.679002646111996,
+          "driverControlledOpr": 37.52602996764374,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 6226,
+          "opr": 20.24041323593637,
+          "autoOpr": 5.479454871019819,
+          "driverControlledOpr": 14.760958364916545,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 7159,
+          "opr": 12.832051572614267,
+          "autoOpr": 5.253539888625491,
+          "driverControlledOpr": 7.578511683988775,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 7609,
+          "opr": 32.28250562958225,
+          "autoOpr": 13.360166728260518,
+          "driverControlledOpr": 18.922338901321744,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 8097,
+          "opr": 13.93375963107625,
+          "autoOpr": 0.3718453675961779,
+          "driverControlledOpr": 13.561914263480064,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 9049,
+          "opr": 17.569541890220076,
+          "autoOpr": 8.419437812451156,
+          "driverControlledOpr": 9.150104077768917,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 10809,
+          "opr": 75.11596497925416,
+          "autoOpr": 30.68603879611215,
+          "driverControlledOpr": 44.42992618314201,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 11212,
+          "opr": 34.09980844124356,
+          "autoOpr": 3.6558857624932783,
+          "driverControlledOpr": 30.44392267875028,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 12499,
+          "opr": 50.37057740622591,
+          "autoOpr": 19.591041643943583,
+          "driverControlledOpr": 30.779535762282325,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 14338,
+          "opr": 20.290259748105818,
+          "autoOpr": -0.8443773918970714,
+          "driverControlledOpr": 21.134637140002894,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 14535,
+          "opr": 46.92704555546007,
+          "autoOpr": 13.621606380703701,
+          "driverControlledOpr": 33.30543917475635,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 15097,
+          "opr": 36.93983990642748,
+          "autoOpr": -0.09426604447916728,
+          "driverControlledOpr": 37.03410595090665,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 18142,
+          "opr": 77.63027312459292,
+          "autoOpr": 25.804398026420397,
+          "driverControlledOpr": 51.82587509817249,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 18365,
+          "opr": 27.592383751238,
+          "autoOpr": -1.4861579137808865,
+          "driverControlledOpr": 29.07854166501888,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 20355,
+          "opr": 17.788238900168473,
+          "autoOpr": 0.9128506710589183,
+          "driverControlledOpr": 16.875388229109554,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 22105,
+          "opr": 23.8078845752456,
+          "autoOpr": 3.1439201643397654,
+          "driverControlledOpr": 20.66396441090585,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 22321,
+          "opr": 11.375697753601425,
+          "autoOpr": 0.439989787293998,
+          "driverControlledOpr": 10.935707966307431,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23280,
+          "opr": 36.605345097567806,
+          "autoOpr": 9.107923276205225,
+          "driverControlledOpr": 27.497421821362583,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23673,
+          "opr": 49.92736428468871,
+          "autoOpr": 7.0499125003720255,
+          "driverControlledOpr": 42.87745178431666,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23997,
+          "opr": 34.27759209409946,
+          "autoOpr": 10.399921843434408,
+          "driverControlledOpr": 23.87767025066507,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24218,
+          "opr": 1.8166698496035671,
+          "autoOpr": -3.256462347173901,
+          "driverControlledOpr": 5.073132196777465,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24312,
+          "opr": 10.537360122428257,
+          "autoOpr": 2.1844042515201796,
+          "driverControlledOpr": 8.352955870908076,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 26013,
+          "opr": 56.237571706639265,
+          "autoOpr": 20.14480558453252,
+          "driverControlledOpr": 36.092766122106774,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 27600,
+          "opr": 10.133871842178074,
+          "autoOpr": 1.2170493873457915,
+          "driverControlledOpr": 8.916822454832285,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 27602,
+          "opr": 19.035437228324774,
+          "autoOpr": 5.241704128747601,
+          "driverControlledOpr": 13.793733099577162,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 30556,
+          "opr": 10.525663870077626,
+          "autoOpr": -4.4708604433743195,
+          "driverControlledOpr": 14.996524313451948,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31222,
+          "opr": 29.996234353387656,
+          "autoOpr": 6.029524259360631,
+          "driverControlledOpr": 23.966710094027032,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31420,
+          "opr": 25.601620101402137,
+          "autoOpr": 6.467495682351025,
+          "driverControlledOpr": 19.134124419051087,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31800,
+          "opr": 20.662727024784708,
+          "autoOpr": 7.4196785111953805,
+          "driverControlledOpr": 13.243048513589333,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31862,
+          "opr": 56.430007522210296,
+          "autoOpr": 18.548598807807892,
+          "driverControlledOpr": 37.88140871440241,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31973,
+          "opr": 34.60760330551558,
+          "autoOpr": 4.255378304207129,
+          "driverControlledOpr": 30.352225001308458,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32122,
+          "opr": 27.256505463260844,
+          "autoOpr": 5.878151947446506,
+          "driverControlledOpr": 21.378353515814354,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32158,
+          "opr": 17.675228291465903,
+          "autoOpr": 8.894804553830664,
+          "driverControlledOpr": 8.780423737635235,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32159,
+          "opr": 41.969779643344005,
+          "autoOpr": 10.69194125100768,
+          "driverControlledOpr": 31.277838392336363,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32482,
+          "opr": 17.712640109472375,
+          "autoOpr": 3.805127330459727,
+          "driverControlledOpr": 13.907512779012656,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32689,
+          "opr": 14.943928760419416,
+          "autoOpr": 8.43227587864044,
+          "driverControlledOpr": 6.511652881778975,
+          "qualMatchesPlayed": 6
+        }
+      ]
+    },
+    {
+      "code": "USCASDSDMLM3",
+      "name": "SDML Meet #2 - Saturday",
+      "startDate": "2025-12-20",
+      "endDate": "2025-12-20",
+      "type": "LeagueMeet",
+      "region": "USCASD",
+      "status": "complete",
+      "qualificationMatches": 63,
+      "teams": [
+        {
+          "teamNumber": 1622,
+          "opr": 19.391916414328442,
+          "autoOpr": 4.1899560075407525,
+          "driverControlledOpr": 15.201960406787693,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 3848,
+          "opr": 16.712559139607222,
+          "autoOpr": 6.274581574429204,
+          "driverControlledOpr": 10.437977565178016,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 4216,
+          "opr": 44.70075910589543,
+          "autoOpr": 9.155110924194668,
+          "driverControlledOpr": 35.54564818170077,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 4262,
+          "opr": 31.464350749131704,
+          "autoOpr": 5.9601647774695214,
+          "driverControlledOpr": 25.504185971662174,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 6016,
+          "opr": 20.210578366652435,
+          "autoOpr": -0.8137391270756389,
+          "driverControlledOpr": 21.024317493728088,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 6565,
+          "opr": 9.307596745036687,
+          "autoOpr": 1.5116868231266438,
+          "driverControlledOpr": 7.795909921910041,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 8606,
+          "opr": 16.710411223998648,
+          "autoOpr": 6.7497870933008715,
+          "driverControlledOpr": 9.960624130697772,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 9164,
+          "opr": 12.038272877634233,
+          "autoOpr": 2.515968241076186,
+          "driverControlledOpr": 9.522304636558044,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 9266,
+          "opr": 31.987728051413743,
+          "autoOpr": 10.696328450106414,
+          "driverControlledOpr": 21.291399601307326,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 9892,
+          "opr": 28.832322830368508,
+          "autoOpr": 5.455225224070714,
+          "driverControlledOpr": 23.377097606297795,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 10793,
+          "opr": 12.345208974507639,
+          "autoOpr": 0.8905885381776265,
+          "driverControlledOpr": 11.454620436330009,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 12499,
+          "opr": 65.85022929367611,
+          "autoOpr": 28.63909758036299,
+          "driverControlledOpr": 37.21113171331312,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 12778,
+          "opr": 29.15180830497099,
+          "autoOpr": 4.041357119769309,
+          "driverControlledOpr": 25.11045118520168,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 13084,
+          "opr": 25.852869091204408,
+          "autoOpr": 10.922161258991558,
+          "driverControlledOpr": 14.930707832212832,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 13089,
+          "opr": 21.5757516113033,
+          "autoOpr": 1.2157760792723868,
+          "driverControlledOpr": 20.35997553203091,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 14968,
+          "opr": 43.51967400822167,
+          "autoOpr": 10.591149290276803,
+          "driverControlledOpr": 32.92852471794488,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 19743,
+          "opr": 90.02099065327403,
+          "autoOpr": 33.6807195266986,
+          "driverControlledOpr": 56.34027112657545,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 20422,
+          "opr": 14.028302732864702,
+          "autoOpr": 4.9225221328893145,
+          "driverControlledOpr": 9.105780599975384,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 22529,
+          "opr": 23.92340341451845,
+          "autoOpr": 2.500548092957145,
+          "driverControlledOpr": 21.422855321561304,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 22567,
+          "opr": 31.387137640450774,
+          "autoOpr": 4.5068428394594795,
+          "driverControlledOpr": 26.880294800991308,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23676,
+          "opr": 32.70150563236533,
+          "autoOpr": 10.354000426596151,
+          "driverControlledOpr": 22.347505205769163,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23696,
+          "opr": 19.31688246597594,
+          "autoOpr": 3.957261176004032,
+          "driverControlledOpr": 15.359621289971894,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24029,
+          "opr": 14.408575101132438,
+          "autoOpr": 1.5803451672090059,
+          "driverControlledOpr": 12.82822993392344,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24041,
+          "opr": 14.842382680648786,
+          "autoOpr": 4.123546500417419,
+          "driverControlledOpr": 10.718836180231369,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24111,
+          "opr": 27.887547635923056,
+          "autoOpr": 5.811733647309359,
+          "driverControlledOpr": 22.075813988613678,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24142,
+          "opr": 46.910949548775285,
+          "autoOpr": 11.75489812418594,
+          "driverControlledOpr": 35.15605142458933,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24730,
+          "opr": 96.35865420842751,
+          "autoOpr": 35.31911428067612,
+          "driverControlledOpr": 61.03953992775136,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 26013,
+          "opr": 57.84751263195345,
+          "autoOpr": 14.86946758283316,
+          "driverControlledOpr": 42.97804504912028,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 26471,
+          "opr": 6.220508258271086,
+          "autoOpr": 0.6205297956029229,
+          "driverControlledOpr": 5.5999784626681635,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 26637,
+          "opr": 1.7077817933861001,
+          "autoOpr": -0.2802932815173145,
+          "driverControlledOpr": 1.9880750749034135,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 26982,
+          "opr": 14.007920269113242,
+          "autoOpr": 2.4477225446045248,
+          "driverControlledOpr": 11.560197724508722,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 28644,
+          "opr": 24.587124166840688,
+          "autoOpr": 0.3264437533022402,
+          "driverControlledOpr": 24.260680413538427,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 30556,
+          "opr": 23.589786416813325,
+          "autoOpr": 8.194344555544127,
+          "driverControlledOpr": 15.395441861269198,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31139,
+          "opr": 14.483227568901025,
+          "autoOpr": 1.315634823610965,
+          "driverControlledOpr": 13.167592745290058,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32005,
+          "opr": 21.385590398920588,
+          "autoOpr": 3.1238235273790127,
+          "driverControlledOpr": 18.261766871541578,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32007,
+          "opr": 16.58684300601756,
+          "autoOpr": 6.264406335526687,
+          "driverControlledOpr": 10.322436670490882,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32210,
+          "opr": 17.43965841033217,
+          "autoOpr": 8.995896702488102,
+          "driverControlledOpr": 8.443761707844072,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32420,
+          "opr": 17.14003977902716,
+          "autoOpr": 4.8146549422562,
+          "driverControlledOpr": 12.325384836770962,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32627,
+          "opr": 14.488036626132816,
+          "autoOpr": -1.0293807038430882,
+          "driverControlledOpr": 15.517417329975911,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32689,
+          "opr": 1.7382718790277973,
+          "autoOpr": -0.47025931363159806,
+          "driverControlledOpr": 2.208531192659388,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32811,
+          "opr": 58.857143480894734,
+          "autoOpr": 13.143416017301627,
+          "driverControlledOpr": 45.71372746359311,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 33418,
+          "opr": 3.3155201453951912,
+          "autoOpr": -0.8431390509498221,
+          "driverControlledOpr": 4.158659196345018,
+          "qualMatchesPlayed": 6
+        }
+      ]
+    },
+    {
+      "code": "USCASDSDMLM4",
+      "name": "SDML Meet #2 - Sunday",
+      "startDate": "2025-12-21",
+      "endDate": "2025-12-21",
+      "type": "LeagueMeet",
+      "region": "USCASD",
+      "status": "complete",
+      "qualificationMatches": 63,
+      "teams": [
+        {
+          "teamNumber": 3650,
+          "opr": 72.44385638749092,
+          "autoOpr": 24.849155925652123,
+          "driverControlledOpr": 47.59470046183881,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 5015,
+          "opr": 21.09545624265838,
+          "autoOpr": 5.260089898646844,
+          "driverControlledOpr": 15.835366344011534,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 5131,
+          "opr": 39.28173990922048,
+          "autoOpr": 10.435919989060762,
+          "driverControlledOpr": 28.84581992015971,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 6226,
+          "opr": 21.000267439927104,
+          "autoOpr": 4.830718223205464,
+          "driverControlledOpr": 16.169549216721634,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 7159,
+          "opr": 29.29425931174252,
+          "autoOpr": 6.908847946422894,
+          "driverControlledOpr": 22.38541136531964,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 7609,
+          "opr": 51.633007373492205,
+          "autoOpr": 15.866913911545163,
+          "driverControlledOpr": 35.76609346194705,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 8097,
+          "opr": 41.79787359095255,
+          "autoOpr": 6.8819027343390085,
+          "driverControlledOpr": 34.915970856613555,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 8380,
+          "opr": 47.89366703752171,
+          "autoOpr": 4.089941495225831,
+          "driverControlledOpr": 43.80372554229582,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 9049,
+          "opr": 22.653936668605596,
+          "autoOpr": 3.068571175775356,
+          "driverControlledOpr": 19.585365492830242,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 10809,
+          "opr": 83.1967997278365,
+          "autoOpr": 27.465855606182213,
+          "driverControlledOpr": 55.730944121654275,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 11212,
+          "opr": 51.93654264216944,
+          "autoOpr": 2.7964682966900187,
+          "driverControlledOpr": 49.1400743454794,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 11285,
+          "opr": 20.449272320099737,
+          "autoOpr": 0.9444951159484474,
+          "driverControlledOpr": 19.5047772041513,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 14338,
+          "opr": 5.930285309866524,
+          "autoOpr": -2.110729627582247,
+          "driverControlledOpr": 8.04101493744877,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 14535,
+          "opr": 68.54049919154674,
+          "autoOpr": 22.258730827915088,
+          "driverControlledOpr": 46.28176836363163,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 15097,
+          "opr": 45.7761675590411,
+          "autoOpr": 17.641994432148753,
+          "driverControlledOpr": 28.13417312689237,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 18142,
+          "opr": 61.749333677032844,
+          "autoOpr": 19.597430707019562,
+          "driverControlledOpr": 42.15190297001326,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 18263,
+          "opr": 50.94330233824751,
+          "autoOpr": 14.299197227319608,
+          "driverControlledOpr": 36.644105110927924,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 18365,
+          "opr": 32.337379718850144,
+          "autoOpr": 8.133371704311704,
+          "driverControlledOpr": 24.204008014538445,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 20355,
+          "opr": 32.278711956116,
+          "autoOpr": 8.65525205902157,
+          "driverControlledOpr": 23.62345989709446,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 22105,
+          "opr": 33.95603746919857,
+          "autoOpr": 17.88095285264192,
+          "driverControlledOpr": 16.075084616556648,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 22321,
+          "opr": 17.461983501608955,
+          "autoOpr": 6.132119698423807,
+          "driverControlledOpr": 11.329863803185152,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23280,
+          "opr": 31.17135572925284,
+          "autoOpr": 9.350901225605789,
+          "driverControlledOpr": 21.82045450364704,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23673,
+          "opr": 72.46115083577601,
+          "autoOpr": 23.186366200985656,
+          "driverControlledOpr": 49.274784634790386,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23997,
+          "opr": 42.91025070376148,
+          "autoOpr": 5.687767577724406,
+          "driverControlledOpr": 37.22248312603706,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24218,
+          "opr": 30.130855344211746,
+          "autoOpr": 3.0953595600665915,
+          "driverControlledOpr": 27.035495784145134,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24312,
+          "opr": 15.126614681807338,
+          "autoOpr": 4.613177509409871,
+          "driverControlledOpr": 10.513437172397461,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24664,
+          "opr": 75.9209967044751,
+          "autoOpr": 30.6742549054627,
+          "driverControlledOpr": 45.24674179901237,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 26235,
+          "opr": 55.44461254280565,
+          "autoOpr": 12.778329492704627,
+          "driverControlledOpr": 42.66628305010105,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 27600,
+          "opr": 21.512577297986326,
+          "autoOpr": 8.033481147453386,
+          "driverControlledOpr": 13.479096150532936,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 27602,
+          "opr": 16.124473080077784,
+          "autoOpr": 4.763106254353058,
+          "driverControlledOpr": 11.361366825724723,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 30622,
+          "opr": 0.6323834707962287,
+          "autoOpr": -2.387240158149834,
+          "driverControlledOpr": 3.019623628946064,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31222,
+          "opr": 38.538577207125314,
+          "autoOpr": 9.70777595655448,
+          "driverControlledOpr": 28.830801250570843,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31420,
+          "opr": 44.510904986882586,
+          "autoOpr": 5.244126417620985,
+          "driverControlledOpr": 39.26677856926162,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31622,
+          "opr": 20.25902875579102,
+          "autoOpr": -0.9999231180310401,
+          "driverControlledOpr": 21.25895187382206,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31742,
+          "opr": 6.492056326276128,
+          "autoOpr": 0.2385754071495212,
+          "driverControlledOpr": 6.253480919126593,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31800,
+          "opr": 37.04878371853881,
+          "autoOpr": 7.191445462539058,
+          "driverControlledOpr": 29.857338255999736,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31862,
+          "opr": 80.24810958048467,
+          "autoOpr": 27.750589299341872,
+          "driverControlledOpr": 52.49752028114281,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31973,
+          "opr": 31.24225386806717,
+          "autoOpr": 2.155287989071471,
+          "driverControlledOpr": 29.086965878995724,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32122,
+          "opr": 37.27186530325743,
+          "autoOpr": 4.230353870662246,
+          "driverControlledOpr": 33.04151143259519,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32158,
+          "opr": 28.3360192638998,
+          "autoOpr": 1.0501722247022387,
+          "driverControlledOpr": 27.28584703919756,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32159,
+          "opr": 50.75870350412609,
+          "autoOpr": 12.76259029851075,
+          "driverControlledOpr": 37.99611320561534,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32482,
+          "opr": 8.374714388044328,
+          "autoOpr": 9.152968943015612,
+          "driverControlledOpr": -0.7782545549712914,
+          "qualMatchesPlayed": 6
+        }
+      ]
+    },
+    {
+      "code": "USCASDSDMLM5",
+      "name": "SDML Meet #3 - Saturday",
+      "startDate": "2026-01-10",
+      "endDate": "2026-01-10",
+      "type": "LeagueMeet",
+      "region": "USCASD",
+      "status": "complete",
+      "qualificationMatches": 63,
+      "teams": [
+        {
+          "teamNumber": 1622,
+          "opr": 1.4351957075624453,
+          "autoOpr": 0.02955457449267483,
+          "driverControlledOpr": 1.4056411330697633,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 3848,
+          "opr": 17.59319194006236,
+          "autoOpr": -2.2601758073228675,
+          "driverControlledOpr": 19.853367747385214,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 4262,
+          "opr": 61.39908928645653,
+          "autoOpr": 18.898444902569132,
+          "driverControlledOpr": 42.50064438388739,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 6016,
+          "opr": 18.770211481641578,
+          "autoOpr": 2.4923643146342442,
+          "driverControlledOpr": 16.27784716700733,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 6565,
+          "opr": 15.992443071182741,
+          "autoOpr": 2.949681627046475,
+          "driverControlledOpr": 13.042761444136277,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 8606,
+          "opr": 18.07017840078327,
+          "autoOpr": 7.855221109740005,
+          "driverControlledOpr": 10.214957291043275,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 9164,
+          "opr": 23.29611858358713,
+          "autoOpr": 8.904601913846875,
+          "driverControlledOpr": 14.39151666974024,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 9266,
+          "opr": 63.849466136555826,
+          "autoOpr": 20.046302118461345,
+          "driverControlledOpr": 43.80316401809454,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 9892,
+          "opr": 16.620956017194157,
+          "autoOpr": 0.6215051119226072,
+          "driverControlledOpr": 15.999450905271546,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 10793,
+          "opr": 21.932084764642703,
+          "autoOpr": -1.7347624178684975,
+          "driverControlledOpr": 23.6668471825112,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 11212,
+          "opr": 89.83961640750302,
+          "autoOpr": 16.09556349091275,
+          "driverControlledOpr": 73.74405291659029,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 12778,
+          "opr": 35.54776783921228,
+          "autoOpr": 7.182465537660711,
+          "driverControlledOpr": 28.365302301551566,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 13084,
+          "opr": 30.20361957028973,
+          "autoOpr": 10.925801296437506,
+          "driverControlledOpr": 19.277818273852255,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 13089,
+          "opr": 16.878015969651646,
+          "autoOpr": 4.025526565115094,
+          "driverControlledOpr": 12.852489404536534,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 14968,
+          "opr": 49.06604531607669,
+          "autoOpr": 5.524862724435261,
+          "driverControlledOpr": 43.5411825916414,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 19743,
+          "opr": 89.18044309164262,
+          "autoOpr": 24.819895546302142,
+          "driverControlledOpr": 64.36054754534051,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 20422,
+          "opr": 9.586508485368748,
+          "autoOpr": 3.142263087568821,
+          "driverControlledOpr": 6.444245397799925,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 22529,
+          "opr": 24.863170832449832,
+          "autoOpr": 7.201632905247305,
+          "driverControlledOpr": 17.661537927202538,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 22567,
+          "opr": 37.595731069170235,
+          "autoOpr": 7.7361588474978475,
+          "driverControlledOpr": 29.85957222167239,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23676,
+          "opr": 42.29024171543237,
+          "autoOpr": 15.156651741146597,
+          "driverControlledOpr": 27.13358997428576,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23696,
+          "opr": 27.03774624905777,
+          "autoOpr": 14.897081801538954,
+          "driverControlledOpr": 12.140664447518814,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24029,
+          "opr": 32.284561625836936,
+          "autoOpr": 5.1352533575736,
+          "driverControlledOpr": 27.149308268263354,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24041,
+          "opr": 17.005849616760173,
+          "autoOpr": 3.1925608549246904,
+          "driverControlledOpr": 13.813288761835478,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24111,
+          "opr": 22.42522637002334,
+          "autoOpr": 2.1037405658699875,
+          "driverControlledOpr": 20.321485804153337,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24142,
+          "opr": 38.7974043356304,
+          "autoOpr": 10.49046653449073,
+          "driverControlledOpr": 28.306937801139654,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24664,
+          "opr": 83.73109788506444,
+          "autoOpr": 29.374212341106,
+          "driverControlledOpr": 54.356885543958406,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24730,
+          "opr": 124.66990349461291,
+          "autoOpr": 42.86523833515905,
+          "driverControlledOpr": 81.8046651594539,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 26013,
+          "opr": 76.27159486847683,
+          "autoOpr": 19.518849891103205,
+          "driverControlledOpr": 56.7527449773736,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 26471,
+          "opr": 20.453894710784233,
+          "autoOpr": 2.1789549827976,
+          "driverControlledOpr": 18.274939727986638,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 26637,
+          "opr": 13.410232132879237,
+          "autoOpr": 2.340951066335307,
+          "driverControlledOpr": 11.069281066543933,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 26982,
+          "opr": 21.376613891082062,
+          "autoOpr": 7.493069520916832,
+          "driverControlledOpr": 13.883544370165236,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 28644,
+          "opr": 19.811998130445435,
+          "autoOpr": 0.00458747889504512,
+          "driverControlledOpr": 19.80741065155037,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 30556,
+          "opr": 26.393574040074206,
+          "autoOpr": 8.127210235993632,
+          "driverControlledOpr": 18.26636380408057,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31139,
+          "opr": 18.572278911032512,
+          "autoOpr": 3.523330554425614,
+          "driverControlledOpr": 15.048948356606914,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31622,
+          "opr": 44.170316130630894,
+          "autoOpr": 11.726894580166348,
+          "driverControlledOpr": 32.44342155046456,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32005,
+          "opr": 8.99913848785619,
+          "autoOpr": 6.85177469028475,
+          "driverControlledOpr": 2.147363797571437,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32007,
+          "opr": 13.656675826133641,
+          "autoOpr": 7.428773985435905,
+          "driverControlledOpr": 6.227901840697731,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32210,
+          "opr": 25.453974836925358,
+          "autoOpr": 8.905011050640804,
+          "driverControlledOpr": 16.548963786284546,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32420,
+          "opr": 8.655999474443313,
+          "autoOpr": -1.9094322646972106,
+          "driverControlledOpr": 10.565431739140529,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32627,
+          "opr": 11.06123269221385,
+          "autoOpr": 3.72595758760684,
+          "driverControlledOpr": 7.335275104607011,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32811,
+          "opr": 82.51284201841464,
+          "autoOpr": 25.503403305964117,
+          "driverControlledOpr": 57.009438712450525,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 33418,
+          "opr": -1.9289180815049767,
+          "autoOpr": -5.424782979709534,
+          "driverControlledOpr": 3.4958648982045535,
+          "qualMatchesPlayed": 6
+        }
+      ]
+    },
+    {
+      "code": "USCASDSDMLM6",
+      "name": "SDML Meet #3 - Sunday",
+      "startDate": "2026-01-11",
+      "endDate": "2026-01-11",
+      "type": "LeagueMeet",
+      "region": "USCASD",
+      "status": "complete",
+      "qualificationMatches": 63,
+      "teams": [
+        {
+          "teamNumber": 3650,
+          "opr": 61.24455112532132,
+          "autoOpr": 24.08465965284366,
+          "driverControlledOpr": 37.15989147247769,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 4216,
+          "opr": 29.79736788676871,
+          "autoOpr": -0.06648339102376527,
+          "driverControlledOpr": 29.863851277792488,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 5015,
+          "opr": 57.81905940531244,
+          "autoOpr": 22.571442798951235,
+          "driverControlledOpr": 35.24761660636123,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 5131,
+          "opr": 37.78252773998078,
+          "autoOpr": 6.848156989716474,
+          "driverControlledOpr": 30.934370750264353,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 6226,
+          "opr": 19.789234537059095,
+          "autoOpr": -2.043816734034369,
+          "driverControlledOpr": 21.83305127109346,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 7159,
+          "opr": 48.926007677936774,
+          "autoOpr": 12.459075358027212,
+          "driverControlledOpr": 36.46693231990953,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 7609,
+          "opr": 45.47665825046041,
+          "autoOpr": 12.34190911031683,
+          "driverControlledOpr": 33.13474914014359,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 8097,
+          "opr": 66.10319598279668,
+          "autoOpr": 19.09247941391558,
+          "driverControlledOpr": 47.010716568881065,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 8380,
+          "opr": 72.51284830141218,
+          "autoOpr": 28.427528844076864,
+          "driverControlledOpr": 44.08531945733528,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 9049,
+          "opr": 24.758704269136356,
+          "autoOpr": 10.04184475336735,
+          "driverControlledOpr": 14.71685951576901,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 10809,
+          "opr": 77.19125308947356,
+          "autoOpr": 13.308434941393541,
+          "driverControlledOpr": 63.882818148080005,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 11285,
+          "opr": 17.83845097527872,
+          "autoOpr": 5.741914026740999,
+          "driverControlledOpr": 12.096536948537729,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 12499,
+          "opr": 70.65424014567127,
+          "autoOpr": 18.252308984899628,
+          "driverControlledOpr": 52.40193116077162,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 14338,
+          "opr": 34.94995342516261,
+          "autoOpr": 8.551719799101456,
+          "driverControlledOpr": 26.398233626061177,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 14535,
+          "opr": 57.38175933805803,
+          "autoOpr": 17.800409431543294,
+          "driverControlledOpr": 39.58134990651477,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 15097,
+          "opr": 63.10445887363247,
+          "autoOpr": 13.405022648479177,
+          "driverControlledOpr": 49.699436225153285,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 18142,
+          "opr": 34.32251752878156,
+          "autoOpr": 12.013901261372272,
+          "driverControlledOpr": 22.308616267409285,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 18263,
+          "opr": 55.2379721300476,
+          "autoOpr": 19.931080532677367,
+          "driverControlledOpr": 35.30689159737026,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 18365,
+          "opr": 37.21461151232701,
+          "autoOpr": 8.20740012910415,
+          "driverControlledOpr": 29.00721138322287,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 20355,
+          "opr": 19.610302044373952,
+          "autoOpr": 1.8773165073497267,
+          "driverControlledOpr": 17.732985537024234,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 22105,
+          "opr": 18.09240424064192,
+          "autoOpr": 7.846391765149243,
+          "driverControlledOpr": 10.246012475492654,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 22321,
+          "opr": 25.229104336248415,
+          "autoOpr": -1.8338020785384783,
+          "driverControlledOpr": 27.0629064147869,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23280,
+          "opr": 29.677322934255983,
+          "autoOpr": 7.609388855381139,
+          "driverControlledOpr": 22.06793407887485,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23673,
+          "opr": 90.07825557994532,
+          "autoOpr": 22.261148869624837,
+          "driverControlledOpr": 67.81710671032053,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23997,
+          "opr": 39.134800627873304,
+          "autoOpr": 13.671622351811722,
+          "driverControlledOpr": 25.46317827606158,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24218,
+          "opr": 47.82658976867814,
+          "autoOpr": 6.963457219912645,
+          "driverControlledOpr": 40.86313254876549,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24312,
+          "opr": 24.548905307716286,
+          "autoOpr": 5.261551373020174,
+          "driverControlledOpr": 19.287353934696114,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 26235,
+          "opr": 40.0388348799114,
+          "autoOpr": 11.350643063354957,
+          "driverControlledOpr": 28.688191816556436,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 27600,
+          "opr": 30.940247428384918,
+          "autoOpr": 13.855104481882304,
+          "driverControlledOpr": 17.08514294650261,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 27602,
+          "opr": 34.93433350772283,
+          "autoOpr": 11.735597310695043,
+          "driverControlledOpr": 23.19873619702776,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 30622,
+          "opr": 24.03931467018863,
+          "autoOpr": 9.366373360026662,
+          "driverControlledOpr": 14.672941310161958,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31222,
+          "opr": 32.09906943725048,
+          "autoOpr": 7.319646377671234,
+          "driverControlledOpr": 24.77942305957924,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31420,
+          "opr": 42.06832317477608,
+          "autoOpr": 7.450054876998383,
+          "driverControlledOpr": 34.61826829777771,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31742,
+          "opr": 5.625504571667552,
+          "autoOpr": -1.455550089701987,
+          "driverControlledOpr": 7.081054661369537,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31800,
+          "opr": 32.88822833149694,
+          "autoOpr": 8.735798381603407,
+          "driverControlledOpr": 24.15242994989354,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31862,
+          "opr": 123.48556286414026,
+          "autoOpr": 43.93284986291881,
+          "driverControlledOpr": 79.55271300122146,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31973,
+          "opr": 29.970742917878564,
+          "autoOpr": 8.30190866943867,
+          "driverControlledOpr": 21.668834248439868,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32122,
+          "opr": 23.783322191939533,
+          "autoOpr": 1.1759208760971822,
+          "driverControlledOpr": 22.607401315842342,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32158,
+          "opr": 40.54124799284918,
+          "autoOpr": 9.997266840461274,
+          "driverControlledOpr": 30.543981152387875,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32159,
+          "opr": 67.92767690757299,
+          "autoOpr": 12.135155125549337,
+          "driverControlledOpr": 55.7925217820237,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32482,
+          "opr": 15.017404447354904,
+          "autoOpr": -3.442963790867245,
+          "driverControlledOpr": 18.46036823822215,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32689,
+          "opr": 14.170462975852795,
+          "autoOpr": -0.583868761306801,
+          "driverControlledOpr": 14.754331737159585,
+          "qualMatchesPlayed": 6
+        }
+      ]
+    },
+    {
+      "code": "USCASDSDELLT1",
+      "name": "Euclid League Tournament",
+      "startDate": "2026-02-07",
+      "endDate": "2026-02-07",
+      "type": "LeagueTournament",
+      "region": "USCASD",
+      "status": "complete",
+      "qualificationMatches": 32,
+      "teams": [
+        {
+          "teamNumber": 4262,
+          "opr": 64.45140650070418,
+          "autoOpr": 16.637346243799882,
+          "driverControlledOpr": 47.814060256904284,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 6016,
+          "opr": 38.10311715890798,
+          "autoOpr": 4.549763816988217,
+          "driverControlledOpr": 33.55335334191976,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 6565,
+          "opr": 11.160211697323614,
+          "autoOpr": 4.704715443190184,
+          "driverControlledOpr": 6.45549625413344,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 9164,
+          "opr": 28.176162453915776,
+          "autoOpr": 10.309081236623555,
+          "driverControlledOpr": 17.86708121729221,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 9266,
+          "opr": 66.05534802740371,
+          "autoOpr": 21.891261977783454,
+          "driverControlledOpr": 44.164086049620266,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 9892,
+          "opr": 18.35986401029349,
+          "autoOpr": -4.921709890514822,
+          "driverControlledOpr": 23.281573900808315,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 13084,
+          "opr": 29.131375274227622,
+          "autoOpr": 4.729248195781976,
+          "driverControlledOpr": 24.402127078445638,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 13089,
+          "opr": 47.70353852662767,
+          "autoOpr": 16.48562245440804,
+          "driverControlledOpr": 31.217916072219634,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 19743,
+          "opr": 111.84396958311333,
+          "autoOpr": 48.16524875802597,
+          "driverControlledOpr": 63.67872082508741,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 22567,
+          "opr": 45.74706087966065,
+          "autoOpr": 15.299841240613071,
+          "driverControlledOpr": 30.44721963904758,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23676,
+          "opr": 43.76683921053989,
+          "autoOpr": 16.436584242211023,
+          "driverControlledOpr": 27.330254968328877,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23696,
+          "opr": 22.058955801814673,
+          "autoOpr": 9.299706622402057,
+          "driverControlledOpr": 12.759249179412611,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24041,
+          "opr": 20.815093777904146,
+          "autoOpr": 1.7484761632061154,
+          "driverControlledOpr": 19.066617614698025,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24111,
+          "opr": 30.332269119521566,
+          "autoOpr": 5.901656000556717,
+          "driverControlledOpr": 24.430613118964867,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 26013,
+          "opr": 74.6263765435209,
+          "autoOpr": 33.017870323270195,
+          "driverControlledOpr": 41.60850622025073,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 26471,
+          "opr": 21.764203878840277,
+          "autoOpr": 3.1043575260927803,
+          "driverControlledOpr": 18.6598463527475,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31139,
+          "opr": 14.491690033105817,
+          "autoOpr": 3.5710277024093733,
+          "driverControlledOpr": 10.920662330696437,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31622,
+          "opr": 34.78886809187354,
+          "autoOpr": 6.948714474449629,
+          "driverControlledOpr": 27.840153617423894,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32005,
+          "opr": 11.117761075062068,
+          "autoOpr": 1.6190879253634411,
+          "driverControlledOpr": 9.49867314969863,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32007,
+          "opr": 11.840752723688718,
+          "autoOpr": 2.150223309238399,
+          "driverControlledOpr": 9.690529414450321,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 33418,
+          "opr": 9.566001099948963,
+          "autoOpr": 0.4984109808681053,
+          "driverControlledOpr": 9.067590119080851,
+          "qualMatchesPlayed": 6
+        }
+      ]
+    },
+    {
+      "code": "USCASDSDGLLT1",
+      "name": "Gauss League Tournament",
+      "startDate": "2026-02-07",
+      "endDate": "2026-02-07",
+      "type": "LeagueTournament",
+      "region": "USCASD",
+      "status": "complete",
+      "qualificationMatches": 32,
+      "teams": [
+        {
+          "teamNumber": 3650,
+          "opr": 69.63673399814752,
+          "autoOpr": 23.42492219890133,
+          "driverControlledOpr": 46.21181179924617,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 3848,
+          "opr": 34.507986606991025,
+          "autoOpr": 8.947696587371393,
+          "driverControlledOpr": 25.56029001961962,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 7159,
+          "opr": 51.853191265192876,
+          "autoOpr": 13.518006864347132,
+          "driverControlledOpr": 38.335184400845726,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 8606,
+          "opr": 18.827539324216463,
+          "autoOpr": 4.9638106672224644,
+          "driverControlledOpr": 13.863728656993999,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 10793,
+          "opr": 16.075387514797704,
+          "autoOpr": 2.4145897636191043,
+          "driverControlledOpr": 13.6607977511786,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 11285,
+          "opr": 23.686148589809797,
+          "autoOpr": 3.846709364777216,
+          "driverControlledOpr": 19.839439225032585,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 14338,
+          "opr": 36.0226141062989,
+          "autoOpr": 9.661833670718684,
+          "driverControlledOpr": 26.36078043558023,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 14968,
+          "opr": 39.96485811777904,
+          "autoOpr": 11.830302737701667,
+          "driverControlledOpr": 28.13455538007738,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 20355,
+          "opr": 3.6138313853581074,
+          "autoOpr": 2.192633591592413,
+          "driverControlledOpr": 1.421197793765696,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 22105,
+          "opr": 100.33016687772964,
+          "autoOpr": 25.183749882919955,
+          "driverControlledOpr": 75.1464169948097,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23673,
+          "opr": 74.87471241306523,
+          "autoOpr": 20.679964628181096,
+          "driverControlledOpr": 54.19474778488416,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24142,
+          "opr": 40.04646394636816,
+          "autoOpr": 10.426673371008116,
+          "driverControlledOpr": 29.61979057536004,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24664,
+          "opr": 63.90037649734983,
+          "autoOpr": 21.2977274554648,
+          "driverControlledOpr": 42.602649041885044,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24730,
+          "opr": 65.84039517162232,
+          "autoOpr": 19.234446097259447,
+          "driverControlledOpr": 46.605949074362904,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 26235,
+          "opr": 55.83727049077836,
+          "autoOpr": 19.5015783573513,
+          "driverControlledOpr": 36.33569213342708,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 28644,
+          "opr": 16.307802326267183,
+          "autoOpr": 5.539578875929995,
+          "driverControlledOpr": 10.768223450337187,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 30622,
+          "opr": 7.975933765079771,
+          "autoOpr": 3.2039057432489813,
+          "driverControlledOpr": 4.772028021830782,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31222,
+          "opr": 35.961363682187795,
+          "autoOpr": 11.085699269740003,
+          "driverControlledOpr": 24.875664412447787,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31742,
+          "opr": 18.74784274621223,
+          "autoOpr": 8.787051448127896,
+          "driverControlledOpr": 9.960791298084319,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31800,
+          "opr": 29.160353533601906,
+          "autoOpr": 1.1190354541737941,
+          "driverControlledOpr": 28.041318079428102,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32689,
+          "opr": 10.653086795734808,
+          "autoOpr": -3.9143544169992435,
+          "driverControlledOpr": 14.567441212734057,
+          "qualMatchesPlayed": 6
+        }
+      ]
+    },
+    {
+      "code": "USCASDSDDLLT1",
+      "name": "Descartes League Tournament",
+      "startDate": "2026-02-08",
+      "endDate": "2026-02-08",
+      "type": "LeagueTournament",
+      "region": "USCASD",
+      "status": "complete",
+      "qualificationMatches": 32,
+      "teams": [
+        {
+          "teamNumber": 4216,
+          "opr": 46.8959383815905,
+          "autoOpr": 9.356757982295324,
+          "driverControlledOpr": 37.53918039929518,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 5015,
+          "opr": 43.45305886676219,
+          "autoOpr": 12.363831337136977,
+          "driverControlledOpr": 31.089227529625184,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 6226,
+          "opr": 43.63084551066271,
+          "autoOpr": 10.285530260828706,
+          "driverControlledOpr": 33.34531524983399,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 8380,
+          "opr": 65.57436197791876,
+          "autoOpr": 20.788994865124067,
+          "driverControlledOpr": 44.785367112794695,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 9049,
+          "opr": 17.816394028725316,
+          "autoOpr": 7.4535938236583,
+          "driverControlledOpr": 10.362800205067007,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 10809,
+          "opr": 148.91824495149575,
+          "autoOpr": 32.615511290878814,
+          "driverControlledOpr": 116.30273366061698,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 12778,
+          "opr": 32.37581251694317,
+          "autoOpr": 9.15567809390037,
+          "driverControlledOpr": 23.22013442304281,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 14535,
+          "opr": 66.7961263621582,
+          "autoOpr": 22.033266889345132,
+          "driverControlledOpr": 44.762859472813055,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 18142,
+          "opr": 101.24848446979979,
+          "autoOpr": 24.04820212553002,
+          "driverControlledOpr": 77.20028234426975,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 18263,
+          "opr": 49.80570061147346,
+          "autoOpr": 12.111267021800971,
+          "driverControlledOpr": 37.6944335896725,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 18365,
+          "opr": 57.795249412740695,
+          "autoOpr": 15.686114830843373,
+          "driverControlledOpr": 42.10913458189731,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 22321,
+          "opr": 22.178289795046673,
+          "autoOpr": 8.032639137756439,
+          "driverControlledOpr": 14.145650657290235,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24029,
+          "opr": 44.69823642810799,
+          "autoOpr": 9.065903054269176,
+          "driverControlledOpr": 35.63233337383882,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24312,
+          "opr": 26.525530679751455,
+          "autoOpr": 6.307493995545347,
+          "driverControlledOpr": 20.21803668420611,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 27600,
+          "opr": 25.520315471658606,
+          "autoOpr": 9.24685469439423,
+          "driverControlledOpr": 16.27346077726436,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 27602,
+          "opr": 31.545986471674386,
+          "autoOpr": 7.680975274135053,
+          "driverControlledOpr": 23.86501119753934,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31420,
+          "opr": 60.968711499378145,
+          "autoOpr": 33.51633332768758,
+          "driverControlledOpr": 27.45237817169055,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31862,
+          "opr": 103.09464325777472,
+          "autoOpr": 32.91672875703502,
+          "driverControlledOpr": 70.17791450073972,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31973,
+          "opr": 44.43822571605836,
+          "autoOpr": 18.313419610000906,
+          "driverControlledOpr": 26.124806106057452,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32159,
+          "opr": 68.29525644486827,
+          "autoOpr": 16.071331811405265,
+          "driverControlledOpr": 52.22392463346304,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32482,
+          "opr": 27.550599424154264,
+          "autoOpr": 7.2121240444616035,
+          "driverControlledOpr": 20.338475379692667,
+          "qualMatchesPlayed": 6
+        }
+      ]
+    },
+    {
+      "code": "USCASDSDTLLT",
+      "name": "San Diego FTC Turing League Tournament",
+      "startDate": "2026-02-08",
+      "endDate": "2026-02-08",
+      "type": "LeagueTournament",
+      "region": "USCASD",
+      "status": "complete",
+      "qualificationMatches": 32,
+      "teams": [
+        {
+          "teamNumber": 1622,
+          "opr": 28.100900607633964,
+          "autoOpr": 6.882024895275541,
+          "driverControlledOpr": 21.218875712358418,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 5131,
+          "opr": 58.61732253624035,
+          "autoOpr": 13.796335521490922,
+          "driverControlledOpr": 44.82098701474942,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 7609,
+          "opr": 54.32354336809035,
+          "autoOpr": 14.692439504473615,
+          "driverControlledOpr": 39.631103863616744,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 8097,
+          "opr": 37.95380355787922,
+          "autoOpr": 11.148971562536294,
+          "driverControlledOpr": 26.804831995342937,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 11212,
+          "opr": 65.15127784859519,
+          "autoOpr": 13.266239975555173,
+          "driverControlledOpr": 51.885037873040005,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 12499,
+          "opr": 94.72052341017923,
+          "autoOpr": 28.930246341159272,
+          "driverControlledOpr": 65.79027706901996,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 15097,
+          "opr": 81.34218476434309,
+          "autoOpr": 26.59342876312142,
+          "driverControlledOpr": 54.74875600122168,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 20422,
+          "opr": 1.232063153863293,
+          "autoOpr": -2.1983797433701593,
+          "driverControlledOpr": 3.430442897233449,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 22529,
+          "opr": 7.197375676584234,
+          "autoOpr": 4.271248034674308,
+          "driverControlledOpr": 2.9261276419099276,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23280,
+          "opr": 55.463856735181416,
+          "autoOpr": 18.003173809682426,
+          "driverControlledOpr": 37.460682925499,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23997,
+          "opr": 106.57862882070657,
+          "autoOpr": 38.84153108374232,
+          "driverControlledOpr": 67.7370977369643,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24218,
+          "opr": 53.689045959741804,
+          "autoOpr": 9.097573634889631,
+          "driverControlledOpr": 44.59147232485216,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 26637,
+          "opr": 12.587035746283412,
+          "autoOpr": 2.9316267718263784,
+          "driverControlledOpr": 9.655408974457028,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 26982,
+          "opr": 19.063421932669627,
+          "autoOpr": 4.852840469686277,
+          "driverControlledOpr": 14.210581462983338,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 30556,
+          "opr": 4.123887116067296,
+          "autoOpr": -0.03136595264655348,
+          "driverControlledOpr": 4.155253068713841,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32122,
+          "opr": 27.17819612820501,
+          "autoOpr": 5.71566567557599,
+          "driverControlledOpr": 21.462530452629025,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32158,
+          "opr": 21.340647309657207,
+          "autoOpr": 5.021691607919747,
+          "driverControlledOpr": 16.318955701737465,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32210,
+          "opr": 29.025179062427654,
+          "autoOpr": 11.002148283748616,
+          "driverControlledOpr": 18.02303077867905,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32420,
+          "opr": 23.153781084691452,
+          "autoOpr": 5.076794415928686,
+          "driverControlledOpr": 18.076986668762775,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32627,
+          "opr": 19.288210827582315,
+          "autoOpr": 2.8742257488858396,
+          "driverControlledOpr": 16.41398507869647,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32811,
+          "opr": 53.82624065066261,
+          "autoOpr": 20.76424483911465,
+          "driverControlledOpr": 33.061995811547966,
+          "qualMatchesPlayed": 6
+        }
+      ]
+    },
+    {
+      "code": "USCASDCMP",
+      "name": "California - San Diego Championship",
+      "startDate": "2026-03-07",
+      "endDate": "2026-03-07",
+      "type": "Championship",
+      "region": "USCASD",
+      "status": "complete",
+      "qualificationMatches": 60,
+      "teams": [
+        {
+          "teamNumber": 3650,
+          "opr": 81.88610048813345,
+          "autoOpr": 13.410342981934058,
+          "driverControlledOpr": 68.4757575061994,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 3848,
+          "opr": 23.539203529533157,
+          "autoOpr": 9.738958534726445,
+          "driverControlledOpr": 13.800244994806704,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 4262,
+          "opr": 39.44239266156481,
+          "autoOpr": 11.791093203730306,
+          "driverControlledOpr": 27.651299457834494,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 5131,
+          "opr": 86.38746023942497,
+          "autoOpr": 24.039619569940182,
+          "driverControlledOpr": 62.3478406694848,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 6016,
+          "opr": 35.91829843141741,
+          "autoOpr": 6.815066313932564,
+          "driverControlledOpr": 29.103232117484854,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 7159,
+          "opr": 34.571951732170206,
+          "autoOpr": 16.822563639436495,
+          "driverControlledOpr": 17.749388092733735,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 8097,
+          "opr": 42.731717594376576,
+          "autoOpr": 17.31134721533138,
+          "driverControlledOpr": 25.4203703790452,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 9266,
+          "opr": 19.266598239357887,
+          "autoOpr": 10.044161270431486,
+          "driverControlledOpr": 9.222436968926424,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 9892,
+          "opr": 42.88031963028226,
+          "autoOpr": 14.895155844928501,
+          "driverControlledOpr": 27.98516378535377,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 10809,
+          "opr": 128.73896693107523,
+          "autoOpr": 33.00303717112297,
+          "driverControlledOpr": 95.73592975995224,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 11212,
+          "opr": 62.42990733466628,
+          "autoOpr": 19.880340162348443,
+          "driverControlledOpr": 42.54956717231784,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 12499,
+          "opr": 92.20304822041201,
+          "autoOpr": 27.988492525406784,
+          "driverControlledOpr": 64.21455569500523,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 12778,
+          "opr": 37.840918997656814,
+          "autoOpr": 16.086055690034723,
+          "driverControlledOpr": 21.754863307622088,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 13084,
+          "opr": 49.75754506958866,
+          "autoOpr": 13.859394930253501,
+          "driverControlledOpr": 35.898150139335165,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 13089,
+          "opr": 24.45292413757571,
+          "autoOpr": 10.58660981046551,
+          "driverControlledOpr": 13.86631432711021,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 14338,
+          "opr": 49.35783264701554,
+          "autoOpr": 7.100823646283935,
+          "driverControlledOpr": 42.25700900073164,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 14535,
+          "opr": 63.91137296902345,
+          "autoOpr": 22.37913238899573,
+          "driverControlledOpr": 41.53224058002772,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 15097,
+          "opr": 69.30071324830146,
+          "autoOpr": 25.411428361453883,
+          "driverControlledOpr": 43.88928488684756,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 18142,
+          "opr": 113.25207520554738,
+          "autoOpr": 23.183676488425792,
+          "driverControlledOpr": 90.06839871712161,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 18263,
+          "opr": 42.76799442339696,
+          "autoOpr": 18.36389627258757,
+          "driverControlledOpr": 24.404098150809382,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 18365,
+          "opr": 36.89983470259125,
+          "autoOpr": 13.233944674472111,
+          "driverControlledOpr": 23.66589002811915,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 19743,
+          "opr": 102.77922688601844,
+          "autoOpr": 34.030436239861984,
+          "driverControlledOpr": 68.74879064615648,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 22105,
+          "opr": 99.85441064622137,
+          "autoOpr": 29.491320427934955,
+          "driverControlledOpr": 70.3630902182864,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23280,
+          "opr": 53.719391330121866,
+          "autoOpr": 19.597532756503654,
+          "driverControlledOpr": 34.1218585736182,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23673,
+          "opr": 52.20962711794585,
+          "autoOpr": 3.7140729321725225,
+          "driverControlledOpr": 48.495554185773294,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23676,
+          "opr": 52.90961492992394,
+          "autoOpr": 14.48468823617616,
+          "driverControlledOpr": 38.424926693747786,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 23997,
+          "opr": 90.51809614966245,
+          "autoOpr": 23.03249985503944,
+          "driverControlledOpr": 67.48559629462301,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24029,
+          "opr": 35.679330821269275,
+          "autoOpr": 3.997347762811088,
+          "driverControlledOpr": 31.68198305845819,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24111,
+          "opr": 39.19039029937993,
+          "autoOpr": 6.728794660671413,
+          "driverControlledOpr": 32.46159563870854,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24218,
+          "opr": 48.047439942731806,
+          "autoOpr": 12.748905537078448,
+          "driverControlledOpr": 35.298534405653356,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24664,
+          "opr": 69.47117627599656,
+          "autoOpr": 26.105958202793175,
+          "driverControlledOpr": 43.36521807320341,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 24730,
+          "opr": 47.97071812265588,
+          "autoOpr": 13.534972424274393,
+          "driverControlledOpr": 34.43574569838152,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 26013,
+          "opr": 110.06179660392071,
+          "autoOpr": 40.51566802062072,
+          "driverControlledOpr": 69.54612858329999,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 26235,
+          "opr": 87.68690609787912,
+          "autoOpr": 22.31731663100358,
+          "driverControlledOpr": 65.36958946687554,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 26982,
+          "opr": 44.047054495656575,
+          "autoOpr": 17.904705087750738,
+          "driverControlledOpr": 26.14234940790583,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31420,
+          "opr": 49.26114732566837,
+          "autoOpr": 16.29517770786664,
+          "driverControlledOpr": 32.965969617801726,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31800,
+          "opr": 36.41674707164464,
+          "autoOpr": 9.526469046640138,
+          "driverControlledOpr": 26.8902780250045,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 31862,
+          "opr": 73.23776958072222,
+          "autoOpr": 28.609483396233426,
+          "driverControlledOpr": 44.62828618448881,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32159,
+          "opr": 67.78423119635836,
+          "autoOpr": 13.664611390592453,
+          "driverControlledOpr": 54.119619805765936,
+          "qualMatchesPlayed": 6
+        },
+        {
+          "teamNumber": 32811,
+          "opr": 26.617748673114274,
+          "autoOpr": 13.421565654400336,
+          "driverControlledOpr": 13.196183018713942,
+          "qualMatchesPlayed": 6
+        }
+      ]
+    },
+    {
+      "code": "FTCCMP1EDIS",
+      "name": "FIRST World Championship - Edison Division",
+      "startDate": "2026-04-29",
+      "endDate": "2026-05-02",
+      "type": "FIRSTChampionship",
+      "region": "CMPZ2",
+      "status": "complete",
+      "qualificationMatches": 143,
+      "teams": [
+        {
+          "teamNumber": 22105,
+          "opr": 119.06660485748637,
+          "autoOpr": 37.31343089640531,
+          "driverControlledOpr": 81.75317396108115,
+          "qualMatchesPlayed": 10
+        }
+      ]
+    },
+    {
+      "code": "FTCCMP1GOOD",
+      "name": "FIRST World Championship - Goodall Division",
+      "startDate": "2026-04-29",
+      "endDate": "2026-05-02",
+      "type": "FIRSTChampionship",
+      "region": "CMPZ2",
+      "status": "complete",
+      "qualificationMatches": 140,
+      "teams": [
+        {
+          "teamNumber": 10809,
+          "opr": 178.03942894747024,
+          "autoOpr": 51.27964098763755,
+          "driverControlledOpr": 126.7597879598328,
+          "qualMatchesPlayed": 10
+        }
+      ]
+    },
+    {
+      "code": "FTCCMP1LOVE",
+      "name": "FIRST World Championship - Lovelace Division",
+      "startDate": "2026-04-29",
+      "endDate": "2026-05-02",
+      "type": "FIRSTChampionship",
+      "region": "CMPZ2",
+      "status": "complete",
+      "qualificationMatches": 143,
+      "teams": [
+        {
+          "teamNumber": 18142,
+          "opr": 140.14872047792133,
+          "autoOpr": 44.55773566474697,
+          "driverControlledOpr": 95.59098481317436,
+          "qualMatchesPlayed": 10
+        },
+        {
+          "teamNumber": 31862,
+          "opr": 99.26622659444814,
+          "autoOpr": 33.39734924882627,
+          "driverControlledOpr": 65.8688773456219,
+          "qualMatchesPlayed": 10
+        }
+      ]
+    },
+    {
+      "code": "FTCCMP1ROSS",
+      "name": "FIRST World Championship - Ross Division",
+      "startDate": "2026-04-29",
+      "endDate": "2026-05-02",
+      "type": "FIRSTChampionship",
+      "region": "CMPZ2",
+      "status": "complete",
+      "qualificationMatches": 140,
+      "teams": [
+        {
+          "teamNumber": 11212,
+          "opr": 91.40778819624849,
+          "autoOpr": 15.649354885620557,
+          "driverControlledOpr": 75.75843331062794,
+          "qualMatchesPlayed": 10
+        }
+      ]
+    },
+    {
+      "code": "FPERRSEC",
+      "name": "Run for the Robots Premier Event - Secretariat Division",
+      "startDate": "2026-05-28",
+      "endDate": "2026-05-30",
+      "type": "Premier",
+      "region": "FPE",
+      "status": "complete",
+      "qualificationMatches": 81,
+      "teams": [
+        {
+          "teamNumber": 8097,
+          "opr": 60.747940992715755,
+          "autoOpr": 9.133297020185402,
+          "driverControlledOpr": 51.614643972530345,
+          "qualMatchesPlayed": 9
+        }
+      ]
+    },
+    {
+      "code": "FPEWESEA",
+      "name": "Western Edge Premier Event - Sea Division",
+      "startDate": "2026-05-28",
+      "endDate": "2026-05-31",
+      "type": "Premier",
+      "region": "FPE",
+      "status": "complete",
+      "qualificationMatches": 110,
+      "teams": [
+        {
+          "teamNumber": 15097,
+          "opr": 58.61370556145422,
+          "autoOpr": 11.347859169334335,
+          "driverControlledOpr": 47.265846392119876,
+          "qualMatchesPlayed": 10
+        },
+        {
+          "teamNumber": 23280,
+          "opr": 50.786023282949856,
+          "autoOpr": 19.15476283532919,
+          "driverControlledOpr": 31.63126044762069,
+          "qualMatchesPlayed": 10
+        },
+        {
+          "teamNumber": 24218,
+          "opr": 68.13781446096483,
+          "autoOpr": 19.29578406997581,
+          "driverControlledOpr": 48.84203039098904,
+          "qualMatchesPlayed": 10
+        },
+        {
+          "teamNumber": 26235,
+          "opr": 109.43954419771916,
+          "autoOpr": 23.57102372632225,
+          "driverControlledOpr": 85.86852047139695,
+          "qualMatchesPlayed": 10
+        }
+      ]
+    },
+    {
+      "code": "FPEWESND",
+      "name": "Western Edge Premier Event - Sand Division",
+      "startDate": "2026-05-28",
+      "endDate": "2026-05-31",
+      "type": "Premier",
+      "region": "FPE",
+      "status": "complete",
+      "qualificationMatches": 110,
+      "teams": [
+        {
+          "teamNumber": 3650,
+          "opr": 52.14158058681885,
+          "autoOpr": 14.7712393935356,
+          "driverControlledOpr": 37.37034119328325,
+          "qualMatchesPlayed": 10
+        },
+        {
+          "teamNumber": 12499,
+          "opr": 105.02194019011742,
+          "autoOpr": 28.190597331036887,
+          "driverControlledOpr": 76.83134285908051,
+          "qualMatchesPlayed": 10
+        },
+        {
+          "teamNumber": 18365,
+          "opr": 73.0795105416713,
+          "autoOpr": 16.64709939043104,
+          "driverControlledOpr": 56.432411151240274,
+          "qualMatchesPlayed": 10
+        },
+        {
+          "teamNumber": 26982,
+          "opr": 28.281819480951867,
+          "autoOpr": 9.427995294534384,
+          "driverControlledOpr": 18.853824186417498,
+          "qualMatchesPlayed": 10
+        }
+      ]
+    },
+    {
+      "code": "FPECCNTECH",
+      "name": "Canada Cup - Niagara Premier Event - Technology Division",
+      "startDate": "2026-06-13",
+      "endDate": "2026-06-16",
+      "type": "Premier",
+      "region": "FPE",
+      "status": "complete",
+      "qualificationMatches": 78,
+      "teams": [
+        {
+          "teamNumber": 23997,
+          "opr": 128.3676729766883,
+          "autoOpr": 29.289872669405316,
+          "driverControlledOpr": 99.07780030728304,
+          "qualMatchesPlayed": 8
+        }
+      ]
+    },
+    {
+      "code": "FPEMICRFT",
+      "name": "Michiana Premier Event Presented by GEARS - Croft Division",
+      "startDate": "2026-06-18",
+      "endDate": "2026-06-21",
+      "type": "Premier",
+      "region": "FPE",
+      "status": "complete",
+      "qualificationMatches": 120,
+      "teams": [
+        {
+          "teamNumber": 26013,
+          "opr": 100.76086926210162,
+          "autoOpr": 29.156393875565147,
+          "driverControlledOpr": 71.60447538653636,
+          "qualMatchesPlayed": 10
+        }
+      ]
+    }
+  ]
+}

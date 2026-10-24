@@ -7,9 +7,11 @@
     if (cls) element.className = cls;
     return element;
   };
-  const number = value => value === null || value === undefined ? '—' : value.toFixed(2);
+  const number = value => Number.isFinite(value) ? value.toFixed(2) : '—';
+  const signed = value => Number.isFinite(value) ? (value > 0 ? '+' : '') + number(value) : '—';
   let data = null, loading = false;
   const selected = new Set();
+  const plannedEvents = new Map();
   const pickedTeams = () => data ? [...selected].map(id => data.draftTeams.find(team => team.id === id)).filter(Boolean) : [];
   const pollenUsed = () => pickedTeams().reduce((sum, team) => sum + team.price, 0);
 
@@ -27,12 +29,22 @@
       row.append(node('span', String(index + 1).padStart(2, '0'), 'slot-num'));
       if (team) {
         const info = node('div', undefined, 'pick-info');
-        info.append(node('strong', team.name), node('small', `#${team.number} · ${team.price} pollen · ${team.predictionPoints === null ? 'Unscored' : number(team.predictionPoints) + ' PP'}`));
+        info.append(node('strong', team.name), node('small', `#${team.number} · ${team.price} pollen · ${team.predictionPoints === null ? 'Unscored' : number(team.predictionPoints) + ' PP / event'}`));
         const remove = node('button', '×', 'remove');
         remove.type = 'button';
         remove.setAttribute('aria-label', `Remove ${team.name}`);
         remove.onclick = () => selectTeam(team);
-        row.append(info, remove);
+        const plan = node('label', undefined, 'event-plan');
+        plan.append(node('span', 'Planned events'));
+        const input = node('input');
+        input.type = 'number'; input.min = '0'; input.max = '12'; input.step = '1';
+        input.inputMode = 'numeric'; input.placeholder = '—';
+        input.value = plannedEvents.get(team.id) ?? '';
+        input.dataset.plannedTeamId = team.id;
+        input.setAttribute('aria-label', `Planned events for ${team.number} ${team.name}`);
+        input.addEventListener('input', () => { plannedEvents.set(team.id, input.value); renderScenario(); });
+        plan.append(input);
+        row.append(info, remove, plan);
       } else row.append(node('span', 'Choose a team', 'subtle'));
       list.append(row);
     }
@@ -40,9 +52,48 @@
     const missing = teams.filter(team => team.predictionPoints === null).length;
     const points = teams.reduce((sum, team) => sum + (team.predictionPoints ?? 0), 0);
     el('rosterPoints').textContent = !teams.length || missing ? '—' : number(points);
-    el('projectionLabel').textContent = missing ? 'Prediction incomplete' : 'Roster PP';
-    el('projectionNote').textContent = !teams.length ? 'Select a team to start.' : missing ? `${missing} team${missing === 1 ? ' has' : 's have'} no DECODE data. Known subtotal: ${number(points)} PP.` : 'Sum of the selected teams’ PP. No entry has been saved.';
+    el('projectionLabel').textContent = missing ? 'Prediction incomplete' : 'Roster PP per event';
+    el('projectionNote').textContent = !teams.length ? 'Select a team to start.' : missing ? `${missing} team${missing === 1 ? ' has' : 's have'} no DECODE data. Known subtotal: ${number(points)} PP.` : 'One event per selected team, on the DECODE scale. No entry has been saved.';
     el('clearRoster').disabled = !selected.size;
+    renderScenario();
+  }
+  function renderScenario() {
+    const teams = pickedTeams();
+    let total = 0, missingCounts = 0, invalidCounts = 0, missingScores = 0, eventTotal = 0;
+    for (const team of teams) {
+      const input = plannedEvents.get(team.id);
+      if (input === undefined || input.trim() === '') { missingCounts++; continue; }
+      const count = Number(input);
+      if (!Number.isInteger(count) || count < 0 || count > 12) { invalidCounts++; continue; }
+      eventTotal += count;
+      if (count === 0) continue;
+      if (!Number.isFinite(team.predictionPoints)) { missingScores++; continue; }
+      total += team.predictionPoints * count;
+    }
+    const complete = teams.length && !missingCounts && !invalidCounts && !missingScores;
+    el('scenarioPoints').textContent = complete ? number(total) : '—';
+    el('scenarioNote').textContent = !teams.length ? 'Select teams, then enter their planned events.'
+      : invalidCounts ? 'Use a whole number from 0 to 12 for each team’s events.'
+      : missingCounts ? 'Enter planned events for every selected team; use 0 for no events.'
+      : missingScores ? `${missingScores} selected team${missingScores === 1 ? ' needs' : 's need'} an OPR estimate for the planned events.`
+      : `${eventTotal} planned team-event${eventTotal === 1 ? '' : 's'} × the corresponding per-event PP. No actual results are included.`;
+  }
+  function evidenceDetails(team) {
+    const evidence = team.evidence ?? {};
+    const details = node('details', undefined, 'team-evidence');
+    const label = evidence.source === 'event_history'
+      ? `${evidence.eventCount} recorded event${evidence.eventCount === 1 ? '' : 's'}`
+      : evidence.source === 'summary_only' ? 'Summary only' : 'No historical evidence';
+    details.append(node('summary', label));
+    const content = node('div', undefined, 'evidence-details');
+    content.append(node('p', `PP per pollen: ${number(team.pointsPerPollen)} per event.`));
+    content.append(node('p', `Average OPR: ${number(team.averageOpr)} · Best OPR: ${number(team.highestOpr)}`));
+    if (evidence.source === 'event_history') {
+      content.append(node('p', `Latest OPR: ${number(evidence.lastOpr)} · Recent average: ${number(evidence.recentAverageOpr)} · Trend: ${signed(evidence.trendOprPerEvent)} OPR per event.`));
+      content.append(node('p', `Recorded qualification matches: ${evidence.matchCount ?? 'unknown'}. Historical OPR spread: ${number(evidence.spreadOpr)}. Spread describes past variation; it is not a prediction interval.`));
+    } else content.append(node('p', evidence.source === 'summary_only' ? 'The historical average provides a fallback estimate. Event counts, recent form, and trend are unavailable.' : 'No measured OPR is available. This team is unscored, rather than assigned zero PP.'));
+    details.append(content);
+    return details;
   }
   function renderTeams() {
     if (!data) return;
@@ -50,18 +101,20 @@
     const currentDraft = el('teamScope').value === 'draft';
     const pool = currentDraft ? data.draftTeams : data.teams;
     const teams = pool.filter(team => team.draftEligible && (!query || `${team.number} ${team.name}`.toLowerCase().includes(query)) && (price === 'all' || String(team.price) === price) && (!el('scoredOnly').checked || team.predictionPoints !== null));
-    if (el('sortOrder').value === 'value') teams.sort((a, b) => (b.draftEligible ? b.pointsPerPollen ?? -Infinity : -Infinity) - (a.draftEligible ? a.pointsPerPollen ?? -Infinity : -Infinity) || a.number - b.number);
+    if (el('sortOrder').value === 'value') teams.sort((a, b) => (b.pointsPerPollen ?? -Infinity) - (a.pointsPerPollen ?? -Infinity) || a.number - b.number);
+    if (el('sortOrder').value === 'trend') teams.sort((a, b) => (b.evidence?.trendOprPerEvent ?? -Infinity) - (a.evidence?.trendOprPerEvent ?? -Infinity) || a.number - b.number);
     const rows = el('teamRows');
     rows.replaceChildren();
     for (const team of teams) {
       const row = node('tr');
       row.dataset.teamId = team.id;
       const name = node('td', undefined, 'team-cell');
-      name.append(node('strong', team.name), node('small', `#${team.number} · ${team.price} pollen`));
+      name.append(node('strong', team.name), node('small', `#${team.number} · ${team.price} pollen`), evidenceDetails(team));
       const points = node('td', undefined, 'num points');
       points.append(node('span', team.predictionPoints === null ? 'Unscored' : number(team.predictionPoints), team.predictionPoints === null ? 'score-note' : ''));
-      const peak = node('td', number(team.highestOpr), 'num');
-      if (team.peakCapped) peak.title = `Peak contribution capped at ${number(team.peakUsed)} OPR.`;
+      const evidence = team.evidence ?? {};
+      const trend = node('td', signed(evidence.trendOprPerEvent), 'num');
+      if (Number.isFinite(evidence.trendOprPerEvent)) trend.classList.add(evidence.trendOprPerEvent > 0 ? 'trend-up' : evidence.trendOprPerEvent < 0 ? 'trend-down' : 'trend-flat');
       const pickCell = node('td'), pick = node('button', selected.has(team.id) ? '−' : '+', 'pick');
       pick.type = 'button';
       pick.setAttribute('aria-label', `${selected.has(team.id) ? 'Remove' : 'Add'} ${team.number} ${team.name}`);
@@ -70,11 +123,11 @@
       if (!team.draftEligible) pick.title = 'This DECODE team is not eligible for the current draft.';
       pick.onclick = () => selectTeam(team);
       pickCell.append(pick);
-      row.append(node('td', team.rank === null ? '—' : String(team.rank), 'rank'), name, node('td', number(team.averageOpr), 'num'), peak, points, node('td', team.draftEligible ? number(team.pointsPerPollen) : '—', 'num'), pickCell);
+      row.append(node('td', team.rank === null ? '—' : String(team.rank), 'rank'), name, points, node('td', number(evidence.lastOpr), 'num'), trend, node('td', number(team.pointsPerPollen), 'num'), pickCell);
       rows.append(row);
     }
     el('noTeams').hidden = teams.length !== 0;
-    el('teamCaption').textContent = `${teams.length} of ${pool.length} ${currentDraft ? 'draftable teams' : 'draftable teams with DECODE OPR'} · Ranked by PP`;
+    el('teamCaption').textContent = `${teams.length} of ${pool.length} ${currentDraft ? 'draftable teams' : 'teams with PP'} · PP per event on the DECODE scale`;
   }
   function renderRosters() {
     const rows = el('rosterRows');
@@ -105,14 +158,34 @@
       const result = await response.json();
       if (!Array.isArray(result.teams) || !Array.isArray(result.draftTeams) || !Array.isArray(result.rosters) || !result.model || !result.counts || !result.coverage) throw new Error('Prediction data was incomplete. Use Refresh data to retry.');
       data = result;
-      for (const id of selected) if (!data.draftTeams.some(team => team.id === id)) selected.delete(id);
+      for (const id of selected) if (!data.draftTeams.some(team => team.id === id && team.draftEligible)) { selected.delete(id); plannedEvents.delete(id); }
       el('scoredCount').textContent = String(data.counts.scored);
-      el('poolCount').textContent = 'Currently available to choose';
+      el('poolCount').textContent = 'Expected OPR per event · DECODE scale';
+      el('historyCount').textContent = String(data.coverage.historyTeams ?? 0);
       el('unscoredCount').textContent = String(data.coverage.unscoredDraftTeams);
-      el('coverageNote').textContent = `Only teams available in the current draft are listed. ${data.counts.scored} teams have DECODE OPR and are ranked by PP. The other ${data.coverage.unscoredDraftTeams} draftable teams have no DECODE OPR; select “All draftable teams” to see them marked unscored.`;
-      const baseline = data.teams.find(team => team.id === data.baseline.teamId);
-      el('baselineTeam').textContent = baseline && data.baseline.strength > 0 ? `#${baseline.number} ${baseline.name}` : 'No positive baseline';
-      el('updatedAt').textContent = 'Updated ' + new Date(data.generatedAt).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+      el('coverageNote').textContent = `Only current draft teams are listed. ${data.coverage.historyTeams ?? 0} have event histories, ${data.coverage.summaryOnlyTeams ?? 0} use a historical-average fallback, and ${data.coverage.unscoredDraftTeams} remain unscored. Open a team’s evidence to inspect its history. PP is a per-event estimate; event counts belong in your season scenario.`;
+      el('methodNote').textContent = 'Model: ' + (data.model.label || data.model.method || 'Historical estimate');
+      const methods = {
+        historicalMean: 'PP is the arithmetic mean of earlier event OPRs.',
+        lastEvent: 'PP uses the latest recorded event OPR.',
+        priorPeak: 'PP uses the highest recorded event OPR.',
+        currentV2: 'The historical comparison method combines average OPR with a capped peak contribution.',
+        recentWeightedMean: 'Recent event OPRs receive weights 1, ½, ¼, and so on, starting with the latest event. PP is their weighted mean.',
+        dampedTrend: 'PP = recent weighted mean + ½ × trend. The latest event gets weight 1, the previous event ½, then ¼, and so on. Trend is a fitted straight-line change in OPR per event. There is no peak bonus or 100 PP normalization.'
+      };
+      el('methodFormula').textContent = methods[data.model.method] || 'Event OPR estimates use the model identified above.';
+      el('modelLimitation').textContent = data.model.limitation || 'Preseason estimates use DECODE’s scoring scale. They are not earned points or a validated numerical forecast for BioBuzz.';
+      const validation = data.validation ?? {};
+      const tested = ['validated', 'baseline_retained'].includes(validation.status) && validation.holdoutCount > 0;
+      const error = validation.status === 'baseline_retained' ? validation.baselineMae : validation.candidateMae;
+      el('validationError').textContent = tested && Number.isFinite(error) ? number(error) + ' OPR' : 'Not yet measured';
+      el('validationSample').textContent = tested ? `${validation.holdoutCount} later-event predictions` : 'More historical evidence is needed';
+      const comparison = tested && Number.isFinite(validation.baselineMae) && Number.isFinite(validation.candidateMae)
+        ? `On ${validation.holdoutCount} later DECODE results, the candidate’s mean error was ${number(validation.candidateMae)} OPR versus ${number(validation.baselineMae)} for the historical average. ` : '';
+      el('validationDetail').textContent = comparison + (validation.status === 'baseline_retained' ? 'The historical average is retained. ' : '') + (tested ? 'This small, championship-heavy test does not establish new-season accuracy.' : 'More historical evidence is needed to compare methods.');
+      el('validationMethodNote').textContent = `The earlier ${validation.selectionCount ?? 0} predictions choose a candidate; later results check that choice. ` + (validation.limitation || 'No cross-season accuracy has been established.');
+      el('sourceNote').textContent = data.source ? ` · ${data.source.eventCount} official DECODE events, including championships. Snapshot retrieved ${new Date(data.source.fetchedAt).toLocaleDateString()}. Qualification OPR excludes opponent penalties.` : ' · Historical DECODE records.';
+      el('updatedAt').textContent = 'Loaded ' + new Date(data.generatedAt).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
       el('modelVersion').textContent = 'Model ' + data.model.version;
       renderTeams(); renderCalculator(); renderRosters();
       el('loadStatus').hidden = true;
@@ -129,7 +202,7 @@
       }
     };
   }
-  el('clearRoster').onclick = () => { selected.clear(); renderTeams(); renderCalculator(); };
+  el('clearRoster').onclick = () => { selected.clear(); plannedEvents.clear(); renderTeams(); renderCalculator(); };
   el('refresh').onclick = load;
   renderCalculator();
   load();

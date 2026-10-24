@@ -9,6 +9,88 @@ export const PREDICTION_MODEL = Object.freeze({
 
 const round = number => Math.round((number + Number.EPSILON) * 100) / 100;
 
+const eventMethods = Object.freeze({
+  historicalMean: {label: 'Historical event average', formula: 'PP = round(mean(event OPR), 2)'},
+  lastEvent: {label: 'Latest event OPR', formula: 'PP = round(latest event OPR, 2)'},
+  priorPeak: {label: 'Historical peak OPR', formula: 'PP = round(max(event OPR), 2)'},
+  currentV2: {label: 'Previous average-and-peak model', formula: 'PP = round(0.85A + 0.15 min(max(H, A), 1.5A), 2)'},
+  recentWeightedMean: {label: 'Recent event form', formula: 'PP = round(R, 2); R uses weights 1, 1/2, 1/4, … from newest to oldest'},
+  dampedTrend: {label: 'Recent form and historical trend', formula: 'PP = round(R + 0.5T, 2); R uses weights 1, 1/2, 1/4, …; T is the historical OPR trend per event'}
+});
+
+/** Confirm the candidate selected on earlier dates, without searching the later block. */
+export function selectEventPredictionModel(report) {
+  const selection = report?.split?.selection, holdout = report?.split?.holdout;
+  const candidate = Object.hasOwn(eventMethods, selection?.candidate ?? '') ? selection.candidate : null;
+  const baselineMae = holdout?.metrics?.historicalMean?.mae ?? null;
+  const candidateMae = candidate ? holdout?.metrics?.[candidate]?.mae ?? null : null;
+  const sufficient = report?.split?.sufficientExamples === true && candidate !== null && Number.isFinite(baselineMae) && Number.isFinite(candidateMae);
+  const improved = sufficient && candidate !== 'historicalMean' && candidateMae < baselineMae;
+  const selectedMethod = improved ? candidate : 'historicalMean';
+  return {
+    status: sufficient ? improved ? 'validated' : 'baseline_retained' : 'insufficient_data',
+    selectedMethod, candidateMethod: candidate,
+    selectionCount: selection?.exampleCount ?? 0, holdoutCount: holdout?.exampleCount ?? 0,
+    holdoutStartDate: holdout?.startDate ?? null,
+    baselineMae, candidateMae,
+    selectedMae: holdout?.metrics?.[selectedMethod]?.mae ?? null,
+    currentV2Mae: holdout?.metrics?.currentV2?.mae ?? null,
+    improvementPercent: sufficient && baselineMae > 0 ? 100 * (baselineMae - candidateMae) / baselineMae : null,
+    limitation: 'This is a small, championship-heavy, within-DECODE historical test. Team/event errors are correlated. It does not establish BioBuzz accuracy, a confidence interval, or statistical significance. The earlier-date winner was checked once against the average baseline; no method was chosen using the later results.'
+  };
+}
+
+/** One PP is one projected DECODE-scale OPR unit for one event, with no pool normalization. */
+export function buildEventPredictions(catalog, {histories = [], method = 'historicalMean'} = {}) {
+  if (!Object.hasOwn(eventMethods, method)) throw new Error('Unknown event prediction method.');
+  const byId = new Map();
+  for (const history of histories) {
+    const id = String(history.teamNumber);
+    if (!/^[1-9][0-9]*$/.test(id) || byId.has(id)) throw new Error('Event history needs unique team IDs.');
+    byId.set(id, history);
+  }
+  const seen = new Set();
+  const teams = catalog.filter(team => team.draftEligible !== false).map(team => {
+    const id = String(team.id);
+    if (!/^[1-9][0-9]*$/.test(id) || seen.has(id)) throw new Error('Prediction catalog needs unique team IDs.');
+    seen.add(id);
+    const history = byId.get(id);
+    const hasHistory = history?.eventCount > 0 && Number.isFinite(history?.candidates?.[method]);
+    const summaryAverage = Number.isFinite(team.averageOpr) ? team.averageOpr : null;
+    const estimate = hasHistory ? history.candidates[method] : summaryAverage;
+    const predictionPoints = estimate === null ? null : round(estimate);
+    return {
+      id, number: Number(id), name: team.name, price: team.price, draftEligible: true,
+      averageOpr: hasHistory ? history.averageOpr : summaryAverage,
+      highestOpr: hasHistory ? history.observedPeakOpr : Number.isFinite(team.highestOpr) ? team.highestOpr : null,
+      predictionPoints, status: predictionPoints === null ? 'no_data' : 'scored',
+      pointsPerPollen: predictionPoints !== null && Number.isFinite(team.price) && team.price > 0 ? round(predictionPoints / team.price) : null,
+      evidence: {
+        source: hasHistory ? 'event_history' : summaryAverage === null ? 'none' : 'summary_only',
+        method: hasHistory ? method : summaryAverage === null ? null : 'historicalMean',
+        eventCount: hasHistory ? history.eventCount : null,
+        matchCount: hasHistory ? history.matchCount : null,
+        matchCountKnownEvents: hasHistory ? history.matchCountKnownEvents : null,
+        lastOpr: hasHistory ? history.lastOpr : null,
+        recentAverageOpr: hasHistory ? history.recentAverageOpr : null,
+        trendOprPerEvent: hasHistory ? history.trendOprPerEvent : null,
+        spreadOpr: hasHistory ? history.spreadOpr : null
+      }
+    };
+  });
+  return {
+    model: {
+      version: 'event-opr-v3', season: 'DECODE 2025–26', target: 'next-event-opr', method,
+      ...eventMethods[method], scale: 'DECODE OPR per event',
+      rosterFormula: 'Per-event roster PP = sum of its teams’ per-event PP. Season scenario PP = sum(team PP × planned events).',
+      scoringRule: 'Each completed event contributes that event’s robot-game OPR; contributions add across teams and events.',
+      limitation: 'DECODE-scale preseason estimates, not earned league points or calibrated BioBuzz forecasts. No awards or pollen prices enter PP; planned event counts are scenarios, not an assumed schedule.'
+    },
+    teams: ranked(teams, (a, b) => a.number - b.number),
+    counts: {total: teams.length, scored: teams.filter(team => team.predictionPoints !== null).length, unscored: teams.filter(team => team.predictionPoints === null).length}
+  };
+}
+
 export function decodeStrength(team) {
   if (!Number.isFinite(team.averageOpr)) return null;
   const average = Math.max(0, team.averageOpr);

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
-import { buildTeamPredictions, decodeStrength, predictRoster, buildRosterPredictions } from './prediction-model.mjs';
+import { buildTeamPredictions, decodeStrength, predictRoster, buildRosterPredictions, buildEventPredictions, selectEventPredictionModel } from './prediction-model.mjs';
 import { predictionSnapshot } from './staging-predictions.mjs';
 import { createStagingWorker, STAGING_HOST, STAGING_SHEET } from './staging-worker.mjs';
 import { getDecodePredictionCatalog, getDraftPredictionCatalog, LEAGUE_OWNER_UID } from './dist/staging-app.mjs';
@@ -10,6 +10,65 @@ import production from './dist/worker.mjs';
 
 const team = (id, averageOpr, highestOpr = averageOpr, price = 3) => ({id: String(id), number: id, name: `Team ${id}`, averageOpr, highestOpr, price});
 const catalog = () => [team(1, 100, 200, 6), team(2, 50, 60, 3), team(3, null, null, 3), team(4, 0, 20, 3)];
+
+test('event PP uses raw expected OPR and preserves signed scores, zeros, and missing evidence', () => {
+  const result = buildEventPredictions([...catalog(), team(5, -12)]);
+  assert.deepEqual(result.counts, {total: 5, scored: 4, unscored: 1});
+  assert.equal(result.teams.find(t => t.id === '1').predictionPoints, 100);
+  assert.equal(result.teams.find(t => t.id === '5').predictionPoints, -12);
+  assert.equal(result.teams.find(t => t.id === '4').predictionPoints, 0);
+  assert.equal(result.teams.find(t => t.id === '3').predictionPoints, null);
+  assert.equal(result.teams.find(t => t.id === '3').rank, null);
+  assert.equal(result.teams.find(t => t.id === '1').evidence.source, 'summary_only');
+  assert.equal(result.teams.find(t => t.id === '1').evidence.eventCount, null);
+  assert.equal(result.teams.find(t => t.id === '3').evidence.source, 'none');
+  assert.throws(() => buildEventPredictions(catalog(), {method: 'imaginary'}), /Unknown/);
+});
+
+test('event histories drive PP; prices, peaks, awards, pool membership and unrelated fields do not', () => {
+  const history = {teamNumber: 1, eventCount: 3, matchCount: 15, matchCountKnownEvents: 3,
+    averageOpr: 110, observedPeakOpr: 130, lastOpr: 130, recentAverageOpr: 120,
+    trendOprPerEvent: 20, spreadOpr: 10, candidates: {historicalMean: 110, dampedTrend: 130}};
+  const first = buildEventPredictions(catalog(), {histories: [history], method: 'dampedTrend'});
+  const altered = buildEventPredictions(catalog().map(t => ({...t, price: 11, highestOpr: 9999, awards: 100, rank: 999, bioBuzzOpr: 888})), {histories: [history], method: 'dampedTrend'});
+  assert.equal(first.teams[0].predictionPoints, 130);
+  assert.equal(first.teams[0].evidence.source, 'event_history');
+  assert.equal(first.teams[0].evidence.eventCount, 3);
+  assert.equal(first.teams.find(t => t.id === '2').predictionPoints, 50);
+  assert.equal(first.teams.find(t => t.id === '2').evidence.method, 'historicalMean');
+  assert.deepEqual(first.teams.map(t => [t.id, t.predictionPoints]), altered.teams.map(t => [t.id, t.predictionPoints]));
+  const subset = buildEventPredictions([catalog()[1]]);
+  assert.equal(subset.teams[0].predictionPoints, 50);
+  assert.equal(buildEventPredictions([{...team(9, 999), draftEligible: false}]).teams.length, 0);
+});
+
+test('event-model confirmation never picks a different candidate using held-out results', () => {
+  const report = {split: {
+    sufficientExamples: true,
+    selection: {candidate: 'dampedTrend', exampleCount: 100},
+    holdout: {exampleCount: 20, startDate: '2026-02-01', metrics: {
+      historicalMean: {mae: 30}, dampedTrend: {mae: 20}, priorPeak: {mae: 5}, currentV2: {mae: 29}
+    }}
+  }};
+  const selected = selectEventPredictionModel(report);
+  assert.equal(selected.selectedMethod, 'dampedTrend');
+  assert.equal(selected.status, 'validated');
+  assert.equal(selected.currentV2Mae, 29);
+  assert.equal(selected.holdoutStartDate, '2026-02-01');
+  report.split.holdout.metrics.dampedTrend.mae = 31;
+  assert.equal(selectEventPredictionModel(report).selectedMethod, 'historicalMean');
+  assert.equal(selectEventPredictionModel(report).status, 'baseline_retained');
+  report.split.sufficientExamples = false;
+  assert.equal(selectEventPredictionModel(report).status, 'insufficient_data');
+  assert.equal(selectEventPredictionModel(null).selectedMethod, 'historicalMean');
+});
+
+test('event roster PP adds per-event estimates without normalization or peak bonuses', () => {
+  const teams = buildEventPredictions([team(1, 110.125, 500), team(2, 40.224, 999), team(3, -5)]).teams;
+  assert.equal(predictRoster(['1', '2'], teams).predictionPoints, 150.35);
+  assert.equal(predictRoster(['2', '1'], teams).predictionPoints, 150.35);
+  assert.equal(predictRoster(['2', '3'], teams).predictionPoints, 35.22);
+});
 
 test('average performance dominates and an extreme peak adds at most 7.5%', () => {
   assert.equal(decodeStrength(team(1, 100, 100)).strength, 100);
@@ -62,12 +121,16 @@ test('the leaderboard includes only the 70 draftable teams with recorded DECODE 
   const result = await predictionSnapshot({});
   assert.deepEqual(result.counts, {total: 70, scored: 70, unscored: 0});
   assert.equal(result.teams[0].id, '10809');
-  assert.equal(result.teams[0].predictionPoints, 100);
-  assert.equal(result.teams[1].id, '24730');
-  assert.equal(result.teams[1].predictionPoints, 86.11);
+  assert.equal(result.model.target, 'next-event-opr');
+  assert.equal(result.model.scale, 'DECODE OPR per event');
+  assert.equal(result.model.method, 'dampedTrend');
+  assert.equal(result.teams[0].predictionPoints, 161.1);
+  assert.equal(result.teams[1].id, '18142');
+  assert.equal(result.teams[1].predictionPoints, 125.81);
   for (const row of result.teams) {
     assert.equal(row.draftEligible, true);
-    assert.ok(row.predictionPoints >= 0 && row.predictionPoints <= 100);
+    assert.ok(Number.isFinite(row.predictionPoints));
+    assert.equal(row.evidence.source, 'event_history');
   }
 });
 
@@ -75,10 +138,11 @@ test('API lists exclude every ineligible historical team while retaining source 
   const result = await predictionSnapshot({});
   const archived = getDecodePredictionCatalog(), current = getDraftPredictionCatalog();
   assert.deepEqual(result.coverage, {
-    region: 'San Diego', season: 'DECODE 2025–26', source: 'Frozen DECODE catalog',
+    region: 'San Diego', season: 'DECODE 2025–26', source: 'FTCScout completed official DECODE events',
     catalogTeams: 87, recordedTeams: 84, missingOprTeams: 3,
     eligibleRecordedTeams: 70, excludedRecordedTeams: 14,
-    draftTeams: 87, scoredDraftTeams: 70, unscoredDraftTeams: 17
+    draftTeams: 87, scoredDraftTeams: 70, unscoredDraftTeams: 17,
+    historyTeams: 70, summaryOnlyTeams: 0, historyEvents: 20, historyRecords: 388
   });
   const currentIds = new Set(current.map(t => t.id));
   const recorded = archived.filter(t => Number.isFinite(t.averageOpr));
@@ -112,14 +176,13 @@ test('draft views reuse the historical baseline even when its reference team is 
   assert.throws(() => buildTeamPredictions([team(1, 100)], {baseline: {strength: 50, teamId: '2'}}), /baseline/);
 });
 
-test('current-draft rows retain historical PP and baseline with ranks recomputed among eligible teams', async () => {
+test('draft views share unnormalized event PP and ranks among eligible teams', async () => {
   const result = await predictionSnapshot({});
-  const historical = buildTeamPredictions(getDecodePredictionCatalog().filter(t => Number.isFinite(t.averageOpr)));
-  const historicalById = new Map(historical.teams.map(team => [team.id, team]));
   const eligibleById = new Map(result.teams.map(team => [team.id, team]));
-  assert.deepEqual(result.baseline, historical.baseline);
+  assert.equal(result.baseline, undefined);
   for (const row of result.draftTeams.filter(team => team.predictionPoints !== null)) {
-    assert.equal(row.predictionPoints, historicalById.get(row.id).predictionPoints);
+    const expected = row.evidence.recentAverageOpr + 0.5 * (row.evidence.trendOprPerEvent ?? 0);
+    assert.equal(row.predictionPoints, Math.round((expected + Number.EPSILON) * 100) / 100);
     assert.equal(row.predictionPoints, eligibleById.get(row.id).predictionPoints);
     assert.equal(row.rank, eligibleById.get(row.id).rank);
     assert.equal(row.draftEligible, true);
@@ -128,7 +191,7 @@ test('current-draft rows retain historical PP and baseline with ranks recomputed
     const previous = result.teams[index - 1];
     assert.equal(row.rank, previous?.predictionPoints === row.predictionPoints ? previous.rank : index + 1);
   }
-  assert.equal(result.draftTeams.find(t => t.id === '24730').rank, 2);
+  assert.equal(result.draftTeams.find(t => t.id === '18142').rank, 2);
   assert.ok(result.draftTeams.filter(t => t.predictionPoints === null).every(t => t.rank === null));
 });
 
@@ -230,7 +293,7 @@ test('verified owner receives private data and escaped-by-client labels with onl
   assert.match(response.headers.get('cache-control'), /no-store, private/);
   assert.match(response.headers.get('x-robots-tag'), /noindex/);
   const result = await response.json();
-  assert.equal(result.rosters[0].predictionPoints, 100);
+  assert.equal(result.rosters[0].predictionPoints, result.teams.find(t => t.id === '10809').predictionPoints);
   assert.equal(result.rosters[0].label, '<img src=x onerror=alert(1)>');
   const page = await worker.fetch(request('/admin/predictions'), {...env, DB});
   assert.match(await page.text(), /Private staging[\s\S]*Prediction leaderboard/);

@@ -11,7 +11,7 @@ Sign in with the league owner's existing Google account. The server checks the v
 3. Review changes on the private site. Its green banner identifies the test environment.
 4. When ready to publish, open a pull request from `staging` to `main`, review it, then merge. The existing production action deploys `main` to the public site.
 
-Changes to `staging` do not update the public site. Direct pushes to `main` still publish immediately. Do not merge unfinished work. The owner-only [Prediction section](https://sd-ftc-fantasy-staging.sdftcfantasyleague.workers.dev/prediction) appears beside Draft board, My dashboard, and Admin. It ranks the 70 currently draftable San Diego teams with recorded DECODE OPR. Teams outside the current draft are excluded; the “All draftable teams” view also lists 17 eligible teams without DECODE OPR as unscored. The prior `/admin/predictions` address still works. Its formula and validation are documented in [PREDICTIONS.md](PREDICTIONS.md). It does not change draft prices or official scoring.
+Changes to `staging` do not update the public site. Direct pushes to `main` still publish immediately. Do not merge unfinished work. The owner-only [Prediction section](https://sd-ftc-fantasy-staging.sdftcfantasyleague.workers.dev/prediction) appears beside Draft board, My dashboard, and Admin. It ranks 70 currently draftable San Diego teams by expected OPR per event (PP), using completed DECODE event histories. Evidence details, a chronological model comparison, and planned-event roster scenarios explain the estimates. Teams outside the current draft are excluded; the “All draftable teams” view also lists 17 eligible teams without DECODE OPR as unscored. The prior `/admin/predictions` address still works. Its formula, data source, and validation limitations are documented in [PREDICTIONS.md](PREDICTIONS.md). Estimates use the DECODE scoring scale; draft prices and official earned standings are unaffected.
 
 ## Isolated resources
 
@@ -26,7 +26,7 @@ The staging database was initialized once on 2026-10-22 using the existing appli
 
 ## Build and safeguards
 
-Run `npm run check`, `node build-staging.mjs`, `node --check staging-predictions-client.js`, and `node --test staging.test.mjs prediction.test.mjs staging-navigation.test.mjs`. Deploy with `npx wrangler deploy --config wrangler.staging.jsonc` only after those pass.
+Run `npm run check`, `node build-staging.mjs`, `node --check staging-predictions-client.js`, and `node --test staging.test.mjs prediction.test.mjs staging-navigation.test.mjs prediction-history.test.mjs scripts/import-prediction-history.test.mjs`. Deploy with `npx wrangler deploy --config wrangler.staging.jsonc` only after those pass.
 
 The production source is not forked into a second application. The staging build uses the same `worker.mjs` and names, with a separate authentication wrapper. Production builds do not include that wrapper. Version preview URLs are disabled, alternate hostnames fail closed, all staging responses are private/no-store and noindex, and the server rejects an unexpected workbook ID.
 
