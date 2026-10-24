@@ -1,48 +1,91 @@
 # Developer workflow
 
-## Edit a team name in GitHub
+The repository is public and the project code is [MIT licensed](LICENSE). Contributions use branches and pull requests. Repository access and league admin access are separate; code deployed to a Worker runs with that environment's bindings and secrets.
 
-1. Open `team-names.json` and click the pencil (Edit).
-2. Change only the name to the right of a team number. Keep the number, quotation marks, and commas. For example, change `"10809": "Crow Force"` to `"10809": "Updated Team Name"`.
-3. Create a branch and pull request so another developer can review the change. Merge to `main` when ready to publish.
-4. After GitHub Actions → Check and deploy succeeds, refresh the website and search for that team number.
+## Local setup and checks
 
-`team-names.json` holds 102 entries: the 87 frozen source teams, including the ones excluded this season, plus the 15 teams added for BioBuzz 2026-27. Renaming an excluded team does not make it eligible. The draft has 87 eligible teams. Do not change team numbers, prices, statistics, or the private Sheet Catalog to rename a team.
+Use Node.js 22.13 or later. Install the exact dependency versions recorded in `package-lock.json`:
 
-## Change which teams are eligible
+```sh
+npm ci
+npm run format:check
+npm run check
+npm test
+```
 
-Eligibility lives in two lists in `worker.mjs`, just above `eligibleCatalog`. Both are keyed by team number, and `npm run check` fails if `team-names.json` does not name every team in them.
+`check` validates the catalog and names, builds the production Worker, and checks its JavaScript syntax. `npm test` first builds both environments, then discovers the repository's Node tests. Tests cover catalog validation, account and staging access, predictions, routing, and roster submissions. The submission fixtures use local SQLite and a memory-only Sheets adapter; they do not write remote entries.
 
-- `notReturning`: catalog teams that are not competing in San Diego this season, each with a short reason. Adding a number removes that team from the board, from roster validation, and from archive restores.
-- `rookieTeams`: registered teams absent from the frozen DECODE catalog, as `[number, "Name"]`. They are served with no OPR or rank at `rookiePrice`, the cheapest tier. Catalog rows the Sheet marks unavailable are priced the same way, so a registered team that played no scored DECODE event is draftable rather than hidden.
+Use `npm run format` to apply the shared Prettier configuration before committing. Dependencies, local runtime state, generated bundles, and canonical prediction-data exports are excluded from formatting. Browser code, HTML, CSS, application modules, maintained catalog data, and documentation remain readable source files.
 
-After editing either list, add or remove the matching `team-names.json` key and run `npm run check`. Both lists change the catalog version, so open draft tabs are asked to refresh before submitting. Compare against the region registration sheet linked from [sdftc.org](https://www.sdftc.org/2026-27registration.html) rather than event results, which are empty until the first league meet.
+`npm run dev` builds and starts Wrangler locally. Features that call Firebase or Sheets require the corresponding external configuration; local unit tests do not require those credentials. Store local secrets in an ignored `.dev.vars` file. Do not copy production participant data into a development environment.
 
-Names are applied after the Sheet catalog's integrity check. The board, participant dashboard, and admin entries display the current names. New submissions save the current name. Existing receipts and stored Sheet/D1 snapshots retain the name at submission time; team number remains the identity. A name change updates the catalog version, so someone with an old draft tab may be asked to refresh before submitting.
+## Source layout
 
-## Build and deploy
+| Location                                                                     | Purpose                                                        |
+| ---------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `worker.mjs`                                                                 | HTTP handlers, authentication, submissions, and administration |
+| `web/`                                                                       | Browser JavaScript, CSS, page templates, and logo              |
+| `src/pages.mjs`                                                              | Page assembly from maintained browser assets                   |
+| `data/decode-catalog.json`                                                   | Frozen 87-team DECODE source catalog                           |
+| `data/not-returning.json`                                                    | Historical teams excluded from this season, with reasons       |
+| `data/rookie-teams.json`                                                     | Registered teams missing from the frozen catalog               |
+| `team-names.json`                                                            | Current names keyed by team number                             |
+| `prediction-*.mjs` and `prediction-data/`                                    | PP model, evaluation, and source evidence                      |
+| `staging-*.mjs`, `staging-predictions.html`, `staging-predictions-client.js` | Private access wrapper and prediction roster page              |
+| `build.mjs` and `build-staging.mjs`                                          | Shared esbuild pipeline and staging asset generation           |
+| `migrations/`                                                                | D1 schema history                                              |
+| `*.test.mjs`, `scripts/*.test.mjs`                                           | Automated checks                                               |
+| `dist/`                                                                      | Generated deployment artifacts, excluded from Git              |
 
-- `worker.mjs`: application source, with a marked team-name configuration slot.
-- `team-names.json`: editable names keyed by team number.
-- `build.mjs`: validates the names and creates `dist/worker.mjs`.
-- `wrangler.jsonc`: deploys the generated file to the existing Worker and binds the existing D1 database.
-- `npm install` then `npm run check`: validates names and JavaScript syntax.
-- `npm run deploy`: validates, builds, and deploys with an authenticated Cloudflare account.
+Both environments build from the same application source. Production exports only the Worker entry point; the staging bundle also exposes the helpers used by its authentication wrapper and tests. Do not edit generated bundles or make regular changes in Cloudflare's quick editor: the next Git deployment replaces them.
 
-Do not edit `dist/worker.mjs`; it is regenerated. Do not use the Cloudflare quick editor for regular changes after Git deployment is connected, because the next deployment replaces those edits. Keep source changes in GitHub.
+## Names and eligibility
 
-GitHub Actions runs `.github/workflows/deploy.yml`: pull requests run checks only; pushes to `main` build and deploy. Other branches do not deploy. The repository secret `CLOUDFLARE_API_TOKEN` authorizes deployment, and the account ID is in the workflow. No production migration command runs during a build. Secrets already stored on the Worker remain on Cloudflare. A failed build leaves the previous deployment active. You can rerun a failed workflow from the Actions tab after correcting its cause.
+To rename a team, edit only its value in `team-names.json`, retaining the team-number key. The file holds 102 names: 87 historical teams and 15 additions for BioBuzz 2026–27. The build rejects missing or unknown numbers and invalid names. Names do not control eligibility, prices, or statistics.
 
-## Invite developers
+Eligibility is maintained in two data files:
 
-The repository stays private in iangshan's personal account. The owner opens Settings → Collaborators → Add people, searches each person's GitHub username, and sends an invitation. The developer must accept it. GitHub may ask the owner to confirm their password first.
+- `data/not-returning.json` removes historical teams from the draft, prediction board, roster validation, and archive restoration.
+- `data/rookie-teams.json` adds registered teams absent from the frozen catalog as `[number, "Name"]`. These teams have no invented OPR or rank and use the cheapest price tier. An eligible historical team with no scored DECODE result is also draftable at that tier.
 
-Collaborators can modify repository code. Once production Git deployment is enabled, code merged or pushed to `main` changes the live Worker, so invite trusted developers. Repository access does not automatically grant a league admin role or direct access to Firebase, Cloudflare, or the private workbook. However, deployed server code runs with the Worker's data access; treat production code access as trusted access.
+Keep `team-names.json` consistent with additions, and run the checks after editing either file. Compare eligibility against the region registration sheet linked from [sdftc.org](https://www.sdftc.org/2026-27registration.html). Event participation alone does not define registration for a new season.
 
-Use pull requests and review before merging. No branch protection or paid GitHub features are required by this setup. Anyone with write access can still push directly unless the owner enables enforceable branch protection for this repository.
+Name and eligibility changes update the catalog version, so an open draft tab may need to refresh before submission. Current pages show current names; existing receipts and saved snapshots retain the names and prices recorded when submitted. Team number remains the stable identity. The frozen catalog is checked against the private Sheet before current names and eligibility are applied.
 
-## Checks after a change
+## Branches and deployment
 
-Check the deployment result, the public draft board (87 available teams), the Google/Apple/GitHub sign-in buttons, and the participant dashboard. For changes to submission or recovery behavior, use the documented TEST roster workflow in README.md; never reset a real player's roster as a test. Existing account/security tests remain in the development workspace.
+Pull requests run checks. The two deployment targets are explicit:
 
-No credentials, Google service-account JSON, participant exports, or private response rows belong in Git. Do not rerun production database migrations; see README.md for the existing manual migration history.
+| Branch    | Workflow                   | Configuration            | Result                               |
+| --------- | -------------------------- | ------------------------ | ------------------------------------ |
+| `staging` | **Deploy private staging** | `wrangler.staging.jsonc` | Private prediction and admin testing |
+| `main`    | **Check and deploy**       | `wrangler.jsonc`         | Public league website                |
+
+Start staging work from `staging`, review it there, and open a pull request to the intended branch. Updating staging does not publish it. Merging `staging` into `main` is a separate public release. Direct pushes to either deployment branch also trigger its workflow, so use review and repository branch rules appropriate to the release process.
+
+CI installs the lockfile with `npm ci` and uses the repository checks. The existing `CLOUDFLARE_API_TOKEN` GitHub secret authorizes deployment; Worker secrets remain in Cloudflare. A failed build does not replace the active deployment. No workflow automatically runs production database migrations.
+
+For an explicitly authorized manual deployment, build and test first. `npm run deploy` targets production by default. A staging deployment instead uses:
+
+```sh
+npm run build:staging
+npx wrangler deploy --config wrangler.staging.jsonc
+```
+
+See [STAGING.md](STAGING.md) for access synchronization, resource isolation, and the original-board rollback switch.
+
+## Database setup
+
+To initialize a fresh local development database without touching Cloudflare's remote database:
+
+```sh
+npx wrangler d1 migrations apply DB --local --config wrangler.jsonc
+```
+
+The empty historical `0002_account_rosters.sql` is retained for migration history; `0004_account_rosters_schema.sql` supplies the missing account table for fresh installations. Production and staging were initialized manually before this repair. Inspect their schema and migration history before any remote migration; do not replay the original unguarded migrations against an existing database. Builds and deployments do not migrate remote D1 automatically.
+
+## Review a change
+
+Explain the changed behavior and relevant validation in the pull request. For browser changes, check the affected pages at desktop and mobile widths. For account or submission changes, exercise the local fixtures and use clearly labeled staging test entries if a live integration check is needed. Never reset another player's roster to test code.
+
+Keep credentials, service-account JSON, private response rows, participant exports, and personal admin identifiers out of commits and public workflow logs. Report sensitive account or access issues privately to the repository owner rather than posting private data in a public issue.

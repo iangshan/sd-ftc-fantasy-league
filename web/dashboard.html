@@ -1,0 +1,107 @@
+<nav class="account-nav" aria-label="League navigation">
+  <a href="/">Draft board</a><a href="/dashboard" aria-current="page">My dashboard</a
+  ><a href="/dashboard" class="account-link" id="accountNavLink">Sign in</a>
+</nav>
+<div class="dashboard-intro">
+  <div>
+    <p class="eyebrow">BioBuzz 2026–2027</p>
+    <h1>Your season, in one place.</h1>
+    <p>Sign in to see your saved roster and follow your teams.</p>
+  </div>
+</div>
+<p id="authLoading" class="account-status" role="status">Checking your account…</p>
+<p id="accountMessage" class="account-message" role="status" hidden></p>
+<section id="authPanel" class="auth-card" aria-labelledby="authTitle" hidden>
+  <h2 id="authTitle">Your league account.</h2>
+  <p id="authDescription">
+    Sign in to save your picks and follow your teams. New here? Your league account is created
+    automatically.
+  </p>
+  <div class="provider-buttons">
+    <button type="button" class="account-button" id="googleLogin">
+      <span class="provider-mark google-mark" aria-hidden="true">G</span>Continue with Google
+    </button>
+    <button type="button" class="account-button" id="appleLogin">
+      <span class="provider-mark" aria-hidden="true"
+        ><svg viewBox="0 0 384 512" aria-hidden="true">
+          <path
+            d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-36.8-2.8-77 21.3-91.7 21.3-15.5 0-51.1-20.3-79.1-20.3C56.9 141.2 0 184.6 0 273.7c0 26.4 4.8 53.7 14.5 81.8 12.9 36.9 47.4 127.6 97.4 126.1 26.1-.6 44.6-18.5 78.6-18.5 33 0 50.1 18.5 79.2 18.5 50.4-.7 81.6-82.3 94.5-119.3-67.1-31.6-66.5-93-45.5-93.6zM256.4 70.2c22.3-26.5 20.3-50.6 19.6-59.2-19.7 1.1-42.5 13.4-55.5 28.5-14.3 16.2-22.7 36.2-20.9 58.7 21.3 1.6 40.8-9.3 56.8-28z"
+          ></path></svg></span
+      >Continue with Apple
+    </button>
+    <button type="button" class="account-button" id="githubLogin">
+      <span class="provider-mark" aria-hidden="true"
+        ><svg viewBox="0 0 16 16" aria-hidden="true">
+          <path
+            d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-2.65-.89-2.65-2.68 0-.51.18-.93.48-1.26-.03-.08-.21-.57.05-1.19 0 0 .62-.2 2.03.76.59-.16 1.22-.25 1.85-.25s1.26.09 1.85.25c1.41-.96 2.03-.76 2.03-.76.26.62.08 1.11.05 1.19.3.33.48.75.48 1.26 0 1.8-.88 2.48-2.66 2.68.28.24.52.71.52 1.43 0 1.03-.01 1.86-.01 2.12 0 .21.15.46.55.38A7.99 7.99 0 0 0 16 8c0-4.42-3.58-8-8-8z"
+          ></path></svg></span
+      >Continue with GitHub
+    </button>
+  </div>
+  <p>
+    Google, Apple, and GitHub handle sign-in securely. Your league account and roster are private to
+    you and the league organizer.
+  </p>
+</section>
+<section id="dashboardPanel" hidden aria-label="Your account dashboard">
+  <div id="verificationPanel" class="account-message" hidden>
+    <strong>Verify your email</strong>
+    <p>You can view your dashboard now. Verify your email before submitting a roster.</p>
+    <div class="account-actions">
+      <button class="account-button" id="sendVerification" type="button">
+        Send verification email</button
+      ><button class="account-button" id="checkVerification" type="button">
+        I’ve verified my email
+      </button>
+    </div>
+  </div>
+  <div class="dashboard-grid">
+    <div>
+      <section class="dashboard-panel" aria-labelledby="savedRosterTitle">
+        <h2 id="savedRosterTitle">Your roster</h2>
+        <div id="savedRosterContent"></div>
+      </section>
+      <section class="dashboard-panel">
+        <h2>Season progress</h2>
+        <p>
+          Scoring will appear here once the league’s scoring rules are finalized. No points or
+          standings have been assigned yet.
+        </p>
+        <p class="season-note">
+          Your saved picks will stay attached to your account throughout the season.
+        </p>
+      </section>
+    </div>
+    <aside>
+      <section class="dashboard-panel">
+        <h2>Your account</h2>
+        <dl class="account-details">
+          <div>
+            <dt>Email</dt>
+            <dd id="dashboardEmail"></dd>
+          </div>
+          <div>
+            <dt>Email status</dt>
+            <dd id="dashboardEmailStatus"></dd>
+          </div>
+          <div>
+            <dt>Season</dt>
+            <dd>BioBuzz 2026–2027</dd>
+          </div>
+        </dl>
+        <button type="button" class="account-button" id="signOut">Sign out</button>
+      </section>
+      <section class="dashboard-panel">
+        <h2>Already entered?</h2>
+        <p>
+          If you submitted before accounts were introduced, ask the league organizer to link your
+          entry. Entering a matching name or Discord ID does not grant access to an older roster.
+        </p>
+      </section>
+    </aside>
+  </div>
+</section>
+<footer class="footer">
+  <p>San Diego FTC Fantasy League · Independent community competition</p>
+  <p><a href="/">Back to the draft board</a></p>
+</footer>

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Organizer · San Diego FTC Fantasy League</title>
+    <style>
+      /* LEAGUE_STYLES */
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <div>
+          <span class="label">San Diego FTC Fantasy League</span>
+          <h1>League organizer</h1>
+        </div>
+        <a href="/">Back to the draft</a>
+      </div>
+    </header>
+    <main>
+      <p>
+        Manage entries and draft availability. Participant details are visible only to the
+        organizer.
+      </p>
+      <div id="message" role="status" class="notice" hidden></div>
+      <div class="grid">
+        <section class="panel">
+          <h2>Draft status</h2>
+          <div class="number" id="status">Checking…</div>
+          <p id="statusDetail">Loading your league.</p>
+          <div class="actions">
+            <button id="toggle" disabled>Open draft</button
+            ><button class="secondary" id="refresh">Refresh</button>
+          </div>
+        </section>
+        <section class="panel">
+          <h2>Entries</h2>
+          <div class="number" id="count">—</div>
+          <p>Responses save to your existing private Google Sheet.</p>
+          <a id="sheet" hidden target="_blank" rel="noopener noreferrer"
+            >Open response spreadsheet ↗</a
+          >
+        </section>
+      </div>
+      <section class="panel" id="connection" hidden>
+        <h2>Connect your existing Google Sheet</h2>
+        <p>
+          The website is ready for your response workbook. Entries stay disabled until the
+          connection has been verified.
+        </p>
+        <p>
+          Use the workbook containing the <strong>Catalog</strong>, <strong>Responses</strong>, and
+          <strong>Settings</strong> tabs. Keep it private. The draft will use its frozen prices and
+          existing responses.
+        </p>
+      </section>
+      <section class="notice" id="recovery" hidden>
+        <strong>An entry needs a save check.</strong>
+        <p>
+          Recovering checks the reserved spreadsheet row and safely completes the same entry if
+          needed.
+        </p>
+        <button id="recover" disabled>Check interrupted save</button>
+      </section>
+      <section class="panel">
+        <h2>Submitted rosters</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>FTC team</th>
+                <th>Discord contact</th>
+                <th>Picks</th>
+                <th>Total</th>
+                <th>Submitted</th>
+              </tr>
+            </thead>
+            <tbody id="entries"></tbody>
+          </table>
+        </div>
+        <p class="empty" id="empty">Loading entries…</p>
+      </section>
+      <footer>
+        Google Sheets remains your league’s record. Changes made in the spreadsheet appear when you
+        refresh.
+      </footer>
+    </main>
+    <script>
+      /* LEGACY_ORGANIZER */
+    </script>
+  </body>
+</html>

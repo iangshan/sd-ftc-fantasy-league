@@ -1,0 +1,143 @@
+<nav class="account-nav" aria-label="League navigation">
+  <a href="/">Draft board</a><a href="/dashboard">My dashboard</a
+  ><a href="/admin" id="adminNavLink" aria-current="page">Admin</a
+  ><a href="/dashboard" class="account-link" id="accountNavLink">Sign in</a>
+</nav>
+<div class="admin-heading">
+  <div>
+    <p class="eyebrow">League management · BioBuzz 2026–2027</p>
+    <h1>Behind the board.</h1>
+    <p>Players, picks, and the details that keep the season running.</p>
+  </div>
+  <div id="adminIdentity" class="admin-identity"></div>
+</div>
+<p id="adminGate" class="account-message" role="status">Checking admin access…</p>
+<p id="adminMessage" class="account-message" role="status" hidden></p>
+<section id="adminWorkspace" hidden aria-label="League admin dashboard">
+  <div class="admin-summary" id="adminSummary"></div>
+  <div class="admin-toolbar">
+    <div class="admin-tabs" aria-label="Admin sections">
+      <button type="button" data-admin-tab="players" aria-pressed="true">Players & picks</button
+      ><button type="button" data-admin-tab="access" aria-pressed="false">Admin access</button
+      ><button type="button" data-admin-tab="activity" aria-pressed="false">
+        Activity & troubleshooting
+      </button>
+    </div>
+    <button type="button" class="account-button" id="adminRefresh">Refresh</button>
+  </div>
+  <div id="adminSection-players">
+    <div class="admin-section-head">
+      <div>
+        <h2>Submitted rosters</h2>
+        <p>
+          Reset an entry to let a player correct their picks. Older entries can be linked to a
+          verified account.
+        </p>
+      </div>
+      <label class="admin-search"
+        >Search players or teams<input
+          type="search"
+          id="adminRosterSearch"
+          placeholder="Name, Discord, email, team number…"
+      /></label>
+    </div>
+    <div id="adminEntries" class="admin-list"></div>
+    <details class="admin-archive">
+      <summary id="adminArchiveTitle">Archived rosters</summary>
+      <p>
+        Resets keep an archive. Restore only after checking with the player; an existing replacement
+        roster must be reset first.
+      </p>
+      <div id="adminArchives"></div>
+    </details>
+  </div>
+  <div id="adminSection-access" hidden>
+    <div class="admin-section-head">
+      <div>
+        <h2>People & access</h2>
+        <p id="adminAccessDescription"></p>
+        <p>
+          Accounts appear here after their next signed-in visit. Ask a new admin to create an
+          account and verify their email first, then refresh.
+        </p>
+      </div>
+      <label class="admin-search"
+        >Search accounts<input type="search" id="adminMemberSearch" placeholder="Name or email…"
+      /></label>
+    </div>
+    <div id="adminMembers" class="admin-list"></div>
+  </div>
+  <div id="adminSection-activity" hidden>
+    <div class="admin-diagnostics">
+      <section class="dashboard-panel">
+        <h2>League status</h2>
+        <div id="adminDiagnostics"></div>
+        <div id="adminControls" class="account-actions"></div>
+      </section>
+      <section class="dashboard-panel">
+        <h2>Help a player</h2>
+        <ul class="admin-help">
+          <li>Ask them to sign in with the same option and account they used when drafting.</li>
+          <li>If their email is unverified, use “Send verification email” in their dashboard.</li>
+          <li>
+            Google, Apple, and GitHub handle sign-in. If a player cannot access the account they
+            signed in with, use that provider’s account recovery.
+          </li>
+          <li>
+            For a duplicate entry, find the existing Discord contact in Players & picks and reset it
+            with a reason.
+          </li>
+          <li>
+            For an interrupted save, wait two minutes and use the recovery action below. Avoid
+            editing response rows directly while saves are running.
+          </li>
+        </ul>
+      </section>
+    </div>
+    <section class="dashboard-panel">
+      <h2>Items to review</h2>
+      <div id="adminIssues"></div>
+    </section>
+    <section>
+      <div class="admin-section-head">
+        <div>
+          <h2>Activity log</h2>
+          <p>The 100 most recent changes, including who made them and why.</p>
+        </div>
+      </div>
+      <div id="adminAudit" class="admin-list"></div>
+    </section>
+  </div>
+</section>
+<dialog id="adminConfirm" class="admin-dialog" aria-labelledby="adminConfirmTitle">
+  <form id="adminConfirmForm">
+    <h2 id="adminConfirmTitle"></h2>
+    <p id="adminConfirmDetails"></p>
+    <div id="adminTargetWrap" hidden>
+      <label for="adminTarget">Verified account</label
+      ><select id="adminTarget"></select>
+      <p>
+        Confirm the player’s identity directly. A matching name alone is not proof of ownership.
+      </p>
+    </div>
+    <label for="adminReason">Reason for this change</label
+    ><textarea
+      id="adminReason"
+      maxlength="500"
+      required
+      rows="3"
+      placeholder="Briefly explain why this change is needed."
+    ></textarea>
+    <p id="adminConfirmError" role="alert" hidden></p>
+    <div class="account-actions">
+      <button type="button" class="account-button" id="adminCancel">Cancel</button
+      ><button type="submit" class="account-button primary" id="adminConfirmSubmit">
+        Confirm change
+      </button>
+    </div>
+  </form>
+</dialog>
+<footer class="footer">
+  <p>San Diego FTC Fantasy League · Administration</p>
+  <p><a href="/dashboard">Back to my dashboard</a></p>
+</footer>

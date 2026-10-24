@@ -5,13 +5,15 @@
   "compatibility_date": "2026-10-20",
   "workers_dev": true,
   "preview_urls": false,
-  "d1_databases": [{
-    "binding": "DB",
-    "database_name": "ftc-draft-staging",
-    "database_id": "0ab567de-9d00-41be-86f9-a42901986063"
-  }],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ftc-draft-staging",
+      "database_id": "0ab567de-9d00-41be-86f9-a42901986063"
+    }
+  ],
   "vars": {
-    "STAGING_MODE": "owner-only",
+    "STAGING_MODE": "admin-only",
     "SUBMISSIONS_ENABLED": "true",
     "STAGING_DRAFT_VIEW": "prediction",
     "RESPONSES_SHEET_ID": "1Md_Ys5uf9x4kka_ltkTPM5SkHnJZAv9VUGkhnheBRJE"

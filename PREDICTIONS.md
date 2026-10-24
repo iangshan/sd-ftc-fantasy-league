@@ -1,10 +1,10 @@
 # Robot-game PP — private staging experiment
 
-The owner-only **Prediction** leaderboard is the staging home page at `/`, replacing the draft board as the roster-entry page. `/prediction` and `/admin/predictions` remain aliases. Its forecast data is served by `/api/admin/predictions`; draft settings and submissions use the existing `/api/draft` and `/api/submit` services. Production does not include the replacement page, forecast routes, or navigation. [STAGING.md](STAGING.md) documents the preserved original board and rollback switch.
+The **Prediction** leaderboard, available to the owner and approved admins, is the staging home page at `/`, replacing the draft board as the roster-entry page. `/prediction` and `/admin/predictions` remain aliases. Its forecast data is served by `/api/admin/predictions`; draft settings and submissions use the existing `/api/draft` and `/api/submit` services. Production does not include the replacement page, forecast routes, or navigation. [STAGING.md](STAGING.md) documents the preserved original board and rollback switch.
 
 ## Scoring target
 
-The league owner confirmed that each drafted team's OPR is added after **each event**. A participant's season total is the sum of those event contributions across their drafted teams. Awards, wins, advancement bonuses, and pollen prices do not add points. This experiment predicts the OPR contribution per event; it does not implement or write official earned standings.
+The league owner confirmed that each drafted team's OPR is added after **each event**. A participant's season total is the sum of those event contributions across their drafted teams. Awards, wins, advancement bonuses, and Pollen prices do not add points. This experiment predicts the OPR contribution per event; it does not implement or write official earned standings.
 
 PP now uses **projected OPR per event**, rounded to two decimals, rather than the previous index normalized to a 100-PP leader. The current evidence is DECODE, so these are DECODE-scale preseason estimates. Raw scoring scales differ between games; this is not a calibrated numerical forecast for BioBuzz. Future results must be evaluated within their own season rather than blended directly with old raw OPR.
 
@@ -18,18 +18,18 @@ Only the current draft pool is returned in either API team list. All 70 eligible
 
 ## Forecast formula
 
-The selected experimental method is `dampedTrend`. For a team's chronologically ordered completed event OPR values \(y_j\), let \(x_j\) be the index of the event completion date (equal dates share an index). The recent mean is
+The selected experimental method is `dampedTrend`. For a team's chronologically ordered completed event OPR values $y_j$, let $x_j$ be the index of the event completion date (equal dates share an index). The recent mean is
 
-\[
+$$
 R = \frac{\sum_j 2^{-(x_{\max}-x_j)} y_j}{\sum_j 2^{-(x_{\max}-x_j)}}.
-\]
+$$
 
 The linear trend per event is
 
-\[
+$$
 b = \frac{\sum_j (x_j-\bar{x})(y_j-\bar{y})}{\sum_j (x_j-\bar{x})^2},\qquad
 \mathrm{PP} = \operatorname{round}_{0.01}(R + 0.5b).
-\]
+$$
 
 When there is only one distinct completion date, the trend contribution is zero. No extra peak bonus, normalization, or arbitrary zero floor is applied. Decay 0.5 and trend damping 0.5 are fixed illustrative constants; they were not fitted on the later test block. Event counts, match counts, and historical spread explain the supporting evidence. Spread is not a confidence interval and does not automatically add or subtract PP.
 
@@ -41,11 +41,11 @@ Each replay forecast uses only events that ended strictly before its target even
 
 The imported snapshot yields 304 usable next-event forecasts. There are 288 selection examples and 16 later examples starting April 29, 2026. Selection narrowly chooses `dampedTrend`; the comparison below is from the later block:
 
-| Method | MAE, OPR | RMSE, OPR |
-| --- | ---: | ---: |
-| Historical mean | 33.713 | 40.719 |
-| Old v2 average/peak formula | 30.588 | 37.209 |
-| Selected recent mean + half trend | 21.166 | 24.894 |
+| Method                            | MAE, OPR | RMSE, OPR |
+| --------------------------------- | -------: | --------: |
+| Historical mean                   |   33.713 |    40.719 |
+| Old v2 average/peak formula       |   30.588 |    37.209 |
+| Selected recent mean + half trend |   21.166 |    24.894 |
 
 The selected method has about 37.2% lower MAE than the historical mean on these 16 examples. This is **not an accuracy percentage**. Prior peak performs better on that later block (MAE 16.981), but switching to it after seeing those outcomes would reuse the test set for selection. The small, championship-heavy sample is not representative of every regional team. Team/event errors are correlated, and this experiment establishes neither statistical significance nor cross-season calibration. Final corrected source records are not contemporaneous historical snapshots.
 
@@ -60,15 +60,15 @@ The report command refuses to overwrite an existing output. Refreshing the sourc
 
 ## Roster and season scenarios
 
-A valid roster has one to three distinct eligible teams within 15 pollen. Its per-event PP is the sum of displayed team PP, consistent with the table. Ties use competition ranks (1, 1, 3). Pollen determines affordability and PP per pollen, never the strength estimate.
+A valid roster has one to three distinct eligible teams within 15 Pollen. Its per-event PP is the sum of displayed team PP, consistent with the table. Ties use competition ranks (1, 1, 3). Pollen determines affordability and PP per Pollen, never the strength estimate.
 
-Prices retain the Draft board's whole-number tiers of 3, 4, 5, 6, and 11 pollen. The prediction table displays a separate **Pollen cost** column on desktop and mobile; PP per pollen is labeled as a value ratio inside the evidence details, not shown as a price. Crow Force costs 11 pollen and Runtime Terror costs 6. Valid roster structures include 11 + 4, 6 + 6 + 3, and 5 + 5 + 5; these are affordable alternatives, not a claim of equal projected performance. The planner shows both spent and remaining pollen, and the forecast/roster validators reject fractional prices.
+Prices retain the Draft board's whole-number tiers of 3, 4, 5, 6, and 11 Pollen. The prediction table displays a separate **Pollen cost** column on desktop and mobile; PP per Pollen is labeled as a value ratio inside the evidence details, not shown as a price. Crow Force costs 11 Pollen and Runtime Terror costs 6. Valid roster structures include 11 + 4, 6 + 6 + 3, and 5 + 5 + 5; these are affordable alternatives, not a claim of equal projected performance. The planner shows both spent and remaining Pollen, and the forecast/roster validators reject fractional prices.
 
 The temporary calculator also accepts a planned event count for each selected team:
 
-\[
+$$
 \mathrm{ScenarioPP} = \sum_{i\in\mathrm{roster}} n_i\,\mathrm{PP}_i.
-\]
+$$
 
 Counts are explicit assumptions, initially blank, not inferred attendance or known schedules. The calculator supports zero through twelve events per team. It holds that team's current per-event estimate constant across those opportunities; it does not compound the trend or forecast named future events. A missing count or an unscored team with a positive count leaves the scenario incomplete. An explicit zero contributes zero. A scenario is not earned points, a saved entry, or a guarantee of participation.
 
@@ -81,13 +81,12 @@ The submitted-roster leaderboard reads the isolated staging D1 database for seas
 ## Validation and deployment
 
 ```sh
+npm ci
+npm run format:check
 npm run check
-node build-staging.mjs
-node --check staging-worker.mjs
-node --check staging-predictions-client.js
-node --test staging.test.mjs prediction.test.mjs staging-navigation.test.mjs prediction-history.test.mjs scripts/import-prediction-history.test.mjs staging-submit.test.mjs
+npm test
 ```
 
-Checks cover chronological leakage, invalid evidence, selection/holdout separation, signed and missing data, roster behavior, current eligibility, owner authentication, workbook isolation, homepage/alias/rollback routing, and absence of prediction routes in production. The original submission service is exercised with real local SQLite and a memory-only Sheets boundary, including duplicate prevention and interrupted-write recovery. Browser integration checks cover the actual client-to-submission-service payload and receipt flow, reloads, unscored picks, stale prices, draft closure, preview mode, forecast outages, event-scenario arithmetic, and mobile entry. External Firebase/Sheets authentication is not simulated as a claim of live verification; no existing remote roster is reset or overwritten during these checks.
+Checks cover chronological leakage, invalid evidence, selection/holdout separation, signed and missing data, roster behavior, current eligibility, owner/admin Google authentication, role revocation, workbook isolation, homepage/alias/rollback routing, and absence of prediction routes in production. The original submission service is exercised with real local SQLite and a memory-only Sheets boundary, including duplicate prevention and interrupted-write recovery. Browser integration checks cover the actual client-to-submission-service payload and receipt flow, reloads, unscored picks, stale prices, draft closure, preview mode, forecast outages, event-scenario arithmetic, and mobile entry. External Firebase/Sheets authentication is not simulated as a claim of live verification; no existing remote roster is reset or overwritten during these checks.
 
 Push to `staging` to run **Deploy private staging**, which deploys only `wrangler.staging.jsonc`. Do not push or merge this experiment to `main` without a separate request to publish.

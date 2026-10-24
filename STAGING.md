@@ -1,37 +1,71 @@
 # Private staging
 
-Private site: https://sd-ftc-fantasy-staging.sdftcfantasyleague.workers.dev/
+[Open the private staging site](https://sd-ftc-fantasy-staging.sdftcfantasyleague.workers.dev/).
 
-Sign in with the league owner's existing Google account. The server checks the verified Firebase UID against the league owner before serving any league page, asset or API. Other admins and repository collaborators cannot view the site with their own accounts. People who can modify deployment code remain trusted: they can change these controls.
+The league owner and approved admins sign in with their existing Google accounts. The server verifies the Google session, verified email, and owner UID or staging admin role before serving league pages, assets, or APIs. Public source access does not grant access to the site.
 
 ## Make and review changes
 
-1. Select the `staging` branch in GitHub before editing `worker.mjs` or `team-names.json`.
-2. Commit changes to `staging`. The **Deploy private staging** action checks and deploys only the staging Worker.
-3. Review changes on the private site. Its green banner identifies the test environment.
-4. When ready to publish, open a pull request from `staging` to `main`, review it, then merge. The existing production action deploys `main` to the public site.
+1. Start from the `staging` branch and edit the maintained source files listed in [DEVELOPERS.md](DEVELOPERS.md).
+2. Run the checks, review the diff, and push to `staging`. **Deploy private staging** deploys only the staging Worker.
+3. Review the private site. Its green banner identifies the test environment.
+4. When a public release is authorized, open and review a pull request from `staging` to `main`. Merging deploys the public Worker.
 
-Changes to `staging` do not update the public site. Direct pushes to `main` still publish immediately. Do not merge unfinished work. The owner-only [Prediction home page](https://sd-ftc-fantasy-staging.sdftcfantasyleague.workers.dev/) replaces the draft board as the primary roster-entry flow. Navigation contains Prediction, My dashboard, and Admin; `/prediction` and `/admin/predictions` remain aliases. The page lists all 87 eligible teams by default, including 70 with PP and 17 unscored teams that can still be drafted. It reads current prices, eligibility, opening status, and the price version from `/api/draft`, then saves through the existing authenticated `/api/submit` service. Successful entries receive the actual server receipt and appear in My dashboard. PP outages do not prevent eligible teams from being drafted; unavailable draft/account data blocks submission. The formula, source, and validation limitations are documented in [PREDICTIONS.md](PREDICTIONS.md). This remains private staging, with isolated test entries and no production changes.
+Changes to `staging` leave the public site unchanged. Direct pushes to `main` publish immediately, so unfinished experiments belong on staging.
+
+The **Prediction** leaderboard at `/` is the primary roster-entry page. Navigation contains Prediction, My dashboard, and Admin; `/prediction` and `/admin/predictions` remain aliases. All 87 eligible teams appear, including 70 with PP and 17 unscored teams that remain draftable.
+
+The page reads current prices, eligibility, draft status, and catalog version from `/api/draft`, then saves through the authenticated `/api/submit` service. Successful entries receive the real server receipt and appear in My dashboard. Missing PP does not block an eligible team; unavailable draft or account state pauses submission. See [PREDICTIONS.md](PREDICTIONS.md) for the formula and its validation limits. Staging entries use isolated test storage.
+
+## Admin access
+
+With `STAGING_MODE="admin-only"`, every protected request requires all of the following:
+
+- A valid Firebase token verified through Google, with a verified email.
+- A session authenticated through `google.com`.
+- The pinned owner UID or a current role in staging's `league_admins` table.
+
+A Google-linked account signed in through another provider does not qualify. Staging rechecks roles on each request, so removing a staging role revokes that admin's access immediately. A database failure blocks non-owner access rather than granting it.
+
+`scripts/sync-staging-admins.mjs` copies the currently approved production admins into staging. It reads only production admin roles and their minimal verified member records, then inserts any missing identities and roles in staging. Matching existing records are preserved; conflicting account records stop the operation. It does not copy rosters, participant responses, or production secrets, and the staging Worker has no production D1 binding.
+
+Synchronization is explicit, not part of every deployment. The staging workflow runs it only when the deployed commit message contains `[sync-staging-admins]`, using `--apply --expected-count=2`. The expected count must match the two approved non-owner admins. An unexpected existing staging admin causes the operation to stop before writes so the owner can review the roles. Without `--apply`, the script checks the inputs without changing staging.
+
+The copy is a snapshot, not ongoing synchronization. The script only adds missing approved records; it never silently revokes admins. A later production role change does not change staging access. Remove a staging role through **Admin access** when revocation is needed, and review both environments before requesting another synchronization. An admin who remains authorized in production would be granted staging access again by a later synchronization.
+
+Stored verification records establish which accounts to grant; they do not substitute for a live sign-in. Google validates each admin's actual token when that person signs in. Local tests do not claim that either person's live browser session has been exercised.
 
 ## Restore the original draft board
 
-The original draft page is preserved in the unchanged `worker.mjs`; the staging wrapper selects which page to serve. To restore it, set `vars.STAGING_DRAFT_VIEW` to `"legacy"` in `wrangler.staging.jsonc`, run the checks below, then commit and push that configuration to `staging`. The original home page and Draft board navigation return; the prediction aliases remain available for testing. Set the value back to `"prediction"` to re-enable the new home page. This switch requires no database or workbook changes and preserves all saved rosters. Commit `722edef16bbd7d02c76ca71514c55fcfdccf2230` also records the complete version before the home-page replacement.
+The original draft page is preserved in `web/legacy-draft.html`, with its CSS and browser behavior in `web/league.css` and `web/draft.js`. The staging wrapper chooses which home page to serve.
+
+To restore the board, set `vars.STAGING_DRAFT_VIEW` to `"legacy"` in `wrangler.staging.jsonc`, run the checks, then commit and push to `staging`. The original home page and Draft board navigation return; prediction aliases remain available. Set the value back to `"prediction"` to restore the new home page. This switch does not change database records, the workbook, or saved rosters. Commit `722edef16bbd7d02c76ca71514c55fcfdccf2230` also preserves the version before the home-page replacement.
 
 ## Isolated resources
 
-- Worker: `sd-ftc-fantasy-staging`.
-- Configuration: `wrangler.staging.jsonc`. Production continues using `wrangler.jsonc`.
-- D1: `ftc-draft-staging`, ID `0ab567de-9d00-41be-86f9-a42901986063`.
-- Workbook: https://docs.google.com/spreadsheets/d/1Md_Ys5uf9x4kka_ltkTPM5SkHnJZAv9VUGkhnheBRJE/edit
-- Google service account: `ftc-fantasy-staging-sheets@smooth-elysium-442100-j6.iam.gserviceaccount.com`. It has no project roles and Editor access only to the test workbook. Its key belongs only in this Worker's `GOOGLE_SERVICE_ACCOUNT_JSON` secret, never in Git.
-- Firebase sign-in identity is shared so the existing owner account works. Rosters, admin records, write locks and audit events use the separate staging D1 and Sheet. No production participant data was copied.
+| Resource               | Staging value                                                                                                |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Worker                 | `sd-ftc-fantasy-staging`                                                                                     |
+| Configuration          | `wrangler.staging.jsonc`                                                                                     |
+| D1 database            | `ftc-draft-staging` (`0ab567de-9d00-41be-86f9-a42901986063`)                                                 |
+| Workbook               | [Staging workbook](https://docs.google.com/spreadsheets/d/1Md_Ys5uf9x4kka_ltkTPM5SkHnJZAv9VUGkhnheBRJE/edit) |
+| Sheets service account | `ftc-fantasy-staging-sheets@smooth-elysium-442100-j6.iam.gserviceaccount.com`                                |
 
-The staging database was initialized once on 2026-10-22 using the existing application schema, including `account_rosters`. The downloaded `0002_account_rosters.sql` was empty; staging initialization used the original schema from the development workspace. Never replay migrations on production.
+The Sheets service account has no project roles and Editor access only to the test workbook. Its key belongs in the staging Worker's `GOOGLE_SERVICE_ACCOUNT_JSON` secret. Firebase identity is shared, while rosters, admin records, write locks, and audit events use staging's separate D1 and Sheet. The explicit admin synchronization copies only the account metadata needed for access and the admin directory.
+
+Staging was initialized on 2026-10-22 using the existing application schema, including `account_rosters`. The empty historical migration `0002` remains in the repository; migration `0004` supplies that table for fresh installations. Deployments do not automatically migrate either remote database. Inspect existing schema and migration history before applying migrations.
 
 ## Build and safeguards
 
-Run `npm run check`, `node build-staging.mjs`, `node --check staging-predictions-client.js`, and `node --test staging.test.mjs prediction.test.mjs staging-navigation.test.mjs prediction-history.test.mjs scripts/import-prediction-history.test.mjs staging-submit.test.mjs`. Deploy with `npx wrangler deploy --config wrangler.staging.jsonc` only after those pass. The submission regression tests use Node 22's in-memory SQLite and a memory-only Sheets adapter; they never write live entries.
+```sh
+npm ci
+npm run format:check
+npm run check
+npm test
+```
 
-The production source is not forked into a second application. The staging build uses the same `worker.mjs` and names, with a separate authentication wrapper. Production builds do not include that wrapper. Version preview URLs are disabled, alternate hostnames fail closed, all staging responses are private/no-store and noindex, and the server rejects an unexpected workbook ID.
+The test command builds both environments. Local submission tests use SQLite and a memory-only Sheets adapter, with no live entries. For an authorized manual deployment after checks pass, use `npx wrangler deploy --config wrangler.staging.jsonc`.
 
-Staging uses a host-only, Secure, HttpOnly session cookie. Google validates the token and owner identity on each protected request. Sessions expire after roughly an hour and renew while signed in. Use **Leave staging** to sign out. Cloudflare Access was not activated because its onboarding required billing details and overage authorization.
+Both builds share the same application source; production excludes the staging authentication wrapper and prediction routes. Version preview URLs are disabled, alternate hostnames fail closed, staging responses are private/no-store and noindex, and the server rejects an unexpected workbook ID.
+
+The staging session uses a host-only, Secure, HttpOnly cookie. Google token validation and the current role are checked on each protected request. Sessions expire after roughly an hour and renew while signed in. Use **Leave staging** to sign out.

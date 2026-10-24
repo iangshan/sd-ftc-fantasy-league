@@ -1,32 +1,41 @@
 # League administration
 
-The admin dashboard is at `/admin`. Sign in through `/dashboard`; approved users also see an Admin navigation link.
+The admin dashboard is at `/admin`. Sign in through `/dashboard`; the server determines the available actions from the verified account's role.
 
-## Roles
+## Roles and access
 
-- The owner is the verified Firebase account with UID `UuhcrWq7CHS4F7ay01I7JKbohEz2` (the organizer's existing Google account). The server pins this UID; matching an email, changing browser state, or sending a role in a request does not grant access.
-- Only the owner can add or remove admins. The owner's role cannot be removed through the dashboard.
-- Admins can view participant details, reset or restore rosters, link legacy entries to verified accounts, open/close the draft, and recover interrupted saves. They cannot appoint admins.
-- Ordinary players cannot read admin APIs or act on another player's roster. Every request verifies the Firebase token and current role on the server. Removing an admin takes effect on their next request.
+The owner UID is pinned in `worker.mjs`. Only the owner can grant or revoke admin roles, and the owner's role cannot be removed through the dashboard. Matching an email address or sending a client-side role does not grant access.
 
-## Adding an admin
+Admins may inspect participant entries, reset or restore rosters, link verified accounts to legacy entries, open or close the draft, and recover interrupted saves. They cannot appoint other admins. Each protected request rechecks the current role, so removing an admin takes effect on the next request.
 
-Ask the person to sign in to the league website and verify their email. Open **Admin access**, refresh, find their account, choose **Add Admin**, and confirm with a reason. The directory records signed-in site visits; it is not a full Firebase account export. **Remove Admin** leaves their player account and roster intact.
+Roles are separate in production and staging. Private staging requires a verified Google session for everyone, plus either the owner UID or a staging admin role. The explicit [staging access synchronization](STAGING.md#admin-access) copies the approved current admins into staging; it does not connect staging to the production database at runtime. A later production role change is not automatically mirrored into staging.
 
-## Entries and support
+Repository contributors do not automatically become league admins. People who can deploy code remain trusted because deployed code runs with the environment's bindings and secrets.
 
-**Players & picks** shows active response-sheet entries, including older entries without account links. Search by name, Discord contact, account email, or team. Resetting clears exactly that response's A:T cells without shifting other rows and removes its account mapping. The original row and mapping are archived in D1. A player may then submit again.
+## Grant or remove an admin
 
-Archived entries can be restored if no replacement entry conflicts and the selected teams remain eligible. Restores keep the original picks, prices, and receipt. For older entries, verify the person's identity directly before using **Link account**; a matching name alone is not proof.
+For the public league, have the person sign in and verify their email. The owner can then open **Admin access**, refresh the account directory, choose the account, and select **Add Admin** with a reason. The directory contains accounts that have visited the site, not a complete Firebase export.
 
-**Activity & troubleshooting** shows Sheet connectivity, submission switches, pending writes, mismatched entries, and the latest 100 audit events. Audit history remains stored in D1. Every mutation requires a reason. This dashboard does not expose credentials or reset Firebase passwords. Sign-in is Google, Apple, or GitHub. Players recover access through that provider's own account recovery; existing league account and roster records are retained. A player who signs in with a different provider than they drafted with arrives as a separate account with no roster, so confirm which option they used before resetting or linking anything.
+**Remove Admin** leaves the person's player account and roster intact. To revoke staging access, remove the role in staging as well; removing only the production role does not revoke a previously synchronized staging grant. Staging's directory includes the minimal records of synchronized admins so the owner can identify and revoke them before their first staging visit.
 
-## Persistence and recovery
+## Rosters and support
 
-Apply `migrations/0003_admin_dashboard.sql` once before deploying this Worker. It adds `league_members`, `league_admins`, `admin_audit`, and `roster_archives`, without changing existing response rows or account rosters. The script is idempotent. Existing migrations were applied manually; do not replay the initial unguarded table creation.
+**Players & picks** shows active response-sheet entries, including legacy entries without an account link. Search by player name, Discord contact, account email, or team.
 
-Submissions, resets, restores, links, and draft settings use the same D1 write lock. Each admin operation saves a checkpoint before touching Sheets. A failed or uncertain write keeps the checkpoint. Recovery claims an exclusive two-minute lease, verifies the exact response row, and finishes the original operation. Archive/mapping changes, the operation audit, and lock release are one D1 transaction. Do not manually edit or reorder response rows while a checkpoint is pending.
+Resetting an entry clears only that response's A:T cells and removes its account mapping. The original row and mapping are archived in D1, and the player may submit again. Restoring an archive requires that no replacement entry conflict and all selected teams remain eligible; the original picks, prices, and receipt are retained.
 
-The previous Basic-auth organizer interface redirects to `/admin`; its API is disabled so it cannot bypass the role checks or audit log. The Cloudflare `SUBMISSIONS_ENABLED` flag remains an independent deployment-level switch. Admin draft controls change `Settings!B2` in the private response workbook.
+For **Link account**, verify the person's identity directly. For sign-in problems, ask which Google, Apple, or GitHub identity they originally used before resetting or linking anything. Provider account recovery is separate from league administration; the dashboard does not expose credentials or reset Firebase passwords.
 
-This release does not configure scoring or email notifications. The underlying website and account data remain on Cloudflare; Google Sheets remains the active roster record and Firebase handles sign-in.
+## Recovery and audit
+
+**Activity & troubleshooting** shows Sheet connectivity, submission switches, pending operations, mismatched entries, and recent audit activity. Each admin mutation requires a reason, and audit records remain stored in D1.
+
+Submissions and admin mutations share a D1 write lock. An operation saves a checkpoint before changing Sheets. If its outcome is uncertain, recovery waits for the lease, checks the exact response row, and finishes the original operation. Archive or ownership changes, the audit record, and lock release are committed together. Do not manually edit or reorder response rows during a pending operation.
+
+The former Basic-auth organizer interface redirects to `/admin`; its API is disabled. `SUBMISSIONS_ENABLED` remains a deployment-level switch independent of the draft's `Settings!B2` value.
+
+## Database operations
+
+The existing production database was initialized manually. `0003_admin_dashboard.sql` defines the member, admin, audit, and archive tables. The historical `0002_account_rosters.sql` is empty; `0004_account_rosters_schema.sql` supplies account-roster storage for new installations without replacing an existing table. Do not replay the original unguarded migrations against an existing database, and review its migration history before applying a later one. Deployment workflows do not automatically migrate remote D1.
+
+Use clearly labeled local or staging test entries for operational checks. Never reset another player's roster merely to test a change. The prediction experiment does not assign official earned standings or send email notifications.
