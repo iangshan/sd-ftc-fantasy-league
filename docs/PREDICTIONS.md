@@ -58,11 +58,38 @@ node scripts/evaluate-prediction-model.mjs data/predictions/decode-event-history
 
 The report command refuses to overwrite an existing output. Refreshing the source is a separate explicit step using `scripts/import-prediction-history.mjs`; no background feed silently changes PP.
 
+## Pollen pricing in staging
+
+Staging derives Pollen cost from each team's current per-event PP. The public website retains its legacy prices; this policy neither changes the PP forecast formula nor rewrites the frozen Sheet catalog. The implementation is public in [src/predictions/pricing.mjs](../src/predictions/pricing.mjs).
+
+Let $M$ be the highest available PP among all eligible teams. Define a shared PP unit $U$ and each scored team's price $C_i$:
+
+$$
+U = \max\left(1,\left\lceil\frac{M}{11}\right\rceil\right),\qquad
+C_i = \min\left(11,\max\left(3,\left\lceil\frac{\mathrm{PP}_i}{U}\right\rceil\right)\right).
+$$
+
+A team with no PP receives a provisional cost of 3 Pollen; its PP stays missing, not zero. All prices are whole numbers between 3 and 11. The unit is computed and cached from the complete eligible pool, so searching, filtering, roster selections, and planned event counts cannot change prices. Prices never feed back into the PP model.
+
+For the current snapshot, $U=15$. Rust-eze Robotics (#24730), with 59.86 PP, costs 4 Pollen instead of its legacy 11. Crow Force (#10809) costs 11, Fusion (#18142) costs 9, and Runtime Terror (#22105) costs 8.
+
+The 15-Pollen budget supports several roster structures in the current snapshot:
+
+| Teams                                      | Pollen         | Per-event PP |
+| ------------------------------------------ | -------------- | -----------: |
+| Crow Force + Rust-eze Robotics             | 11 + 4 = 15    |       220.96 |
+| Bengal Bots + Pointers + Matador Mechanics | 7 + 5 + 3 = 15 |       219.58 |
+| Pointers + UC Robotics + RoBusted          | 5 + 5 + 5 = 15 |       213.78 |
+
+These illustrate affordable options with different team combinations; they do not guarantee equal performance or establish forecast accuracy. The table displays **Pollen cost** separately from PP. PP per Pollen is a value ratio, and the planner shows both spent and remaining Pollen.
+
+The server applies this policy only in staging, after checking the raw frozen catalog against the Sheet. It derives the effective `priceVersion` from the current priced catalog. Both `/api/draft` and submission validation use that authoritative price quote; an older quote must refresh before a new submission. The browser cannot supply its own prices or change the pricing unit.
+
+Existing receipts, interrupted-save checkpoints, and archived rosters keep their originally paid prices. They are not repriced or reset. Saved-roster forecasts combine those paid costs for budget validation with current team PP, so a price change alone does not invalidate a previously affordable entry.
+
 ## Roster and season scenarios
 
-A valid roster has one to three distinct eligible teams within 15 Pollen. Its per-event PP is the sum of displayed team PP, consistent with the table. Ties use competition ranks (1, 1, 3). Pollen determines affordability and PP per Pollen, never the strength estimate.
-
-Prices retain the Draft board's whole-number tiers of 3, 4, 5, 6, and 11 Pollen. The prediction table displays a separate **Pollen cost** column on desktop and mobile; PP per Pollen is labeled as a value ratio inside the evidence details, not shown as a price. Crow Force costs 11 Pollen and Runtime Terror costs 6. Valid roster structures include 11 + 4, 6 + 6 + 3, and 5 + 5 + 5; these are affordable alternatives, not a claim of equal projected performance. The planner shows both spent and remaining Pollen, and the forecast/roster validators reject fractional prices.
+A new roster has one to three distinct eligible teams within 15 Pollen at the current quoted prices. Its per-event PP is the sum of displayed team PP, consistent with the table. Ties use competition ranks (1, 1, 3). Pollen determines affordability and PP per Pollen, never the strength estimate.
 
 The temporary calculator also accepts a planned event count for each selected team:
 
@@ -76,7 +103,7 @@ The leaderboard now supports actual staging roster submissions. All 87 draftable
 
 Verified accounts can save one roster per season. Preview mode, closed drafts, existing rosters, pending saves, stale/unavailable account state, invalid picks, and missing details block submission. A confirmed receipt displays the server's actual team IDs and total, including when an idempotent retry returns an earlier saved roster. Failed or ambiguous requests preserve the attempted picks and reconcile account state; My dashboard retains the existing interrupted-save recovery flow. Changing accounts clears contact details, selections, scenarios, and receipt state. No roster is saved merely by selecting a team.
 
-The submitted-roster leaderboard reads the isolated staging D1 database for season 2026–2027. Unknown, ineligible, duplicate, over-budget, malformed, or oversized picks are unranked; a saved roster with missing measurements has incomplete PP and a known subtotal. No account IDs or contact details enter the prediction response. Database failure is shown as unavailable rather than falsely empty. A forecast-data outage still allows drafting from the authoritative catalog with PP marked unavailable; a draft-settings outage pauses submissions.
+The submitted-roster leaderboard reads the isolated staging D1 database for season 2026–2027. Unknown, ineligible, duplicate, malformed, or oversized picks are unranked. Saved rosters are checked against the 15-Pollen budget using their recorded paid prices; a roster with missing measurements has incomplete PP and a known subtotal. No account IDs or contact details enter the prediction response. Database failure is shown as unavailable rather than falsely empty. A forecast-data outage still allows drafting from the authoritative catalog with PP marked unavailable; a draft-settings outage pauses submissions.
 
 ## Validation and deployment
 

@@ -9,6 +9,7 @@ import {
   evaluatePredictionHistory,
 } from '../src/predictions/history.mjs';
 import eventHistory from '../data/predictions/decode-event-history.json' with { type: 'json' };
+import { pricePredictionTeams } from '../src/predictions/pricing.mjs';
 
 // The checked-in evidence is immutable for a deployment. Evaluate it once per isolate;
 // do not replay every event for each authenticated page refresh.
@@ -37,7 +38,7 @@ function buildStaticPrediction() {
   });
   const recordedCatalog = historicalCatalog.filter((team) => Number.isFinite(team.averageOpr));
   const eligibleRecordedCatalog = recordedCatalog.filter((team) => draftIds.has(String(team.id)));
-  const draftTeams = draft.teams;
+  const { teams: draftTeams, pricing } = pricePredictionTeams(draft.teams);
   const teams = draftTeams.filter((team) => team.predictionPoints !== null);
   const coverage = {
     region: 'San Diego',
@@ -59,6 +60,7 @@ function buildStaticPrediction() {
   const { name, url, metric, fetchedAt, scope } = history.source;
   return {
     model: draft.model,
+    pricing,
     teams,
     draftTeams,
     counts: { total: teams.length, scored: teams.length, unscored: 0 },
@@ -76,6 +78,24 @@ function buildStaticPrediction() {
   };
 }
 const staticPrediction = buildStaticPrediction();
+const quotedPrices = new Map(staticPrediction.draftTeams.map((team) => [team.id, team.price]));
+
+// The shared application calls this only through the staging wrapper. Keep the
+// whole eligible pool's quote independent of browser filters and planned events.
+export function priceDraftCatalog(catalog) {
+  if (
+    !Array.isArray(catalog) ||
+    catalog.length !== quotedPrices.size ||
+    new Set(catalog.map((team) => team.id)).size !== quotedPrices.size ||
+    catalog.some((team) => !quotedPrices.has(team.id))
+  ) {
+    throw new Error('Prediction prices do not match the eligible draft catalog.');
+  }
+  return {
+    catalog: catalog.map((team) => ({ ...team, price: quotedPrices.get(team.id) })),
+    pricing: { ...staticPrediction.pricing },
+  };
+}
 
 export async function predictionSnapshot(env) {
   const { draftTeams } = staticPrediction;

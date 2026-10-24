@@ -298,24 +298,69 @@ export function predictRoster(teamIds, teamPredictions) {
 }
 
 export function buildRosterPredictions(rows, teams) {
+  const currentTeams = new Map(teams.map((team) => [team.id, team]));
   const rosters = rows.map((row, index) => {
     let picks;
     try {
-      picks = JSON.parse(row.teams_json);
+      picks = JSON.parse(row?.teams_json);
     } catch {
       picks = null;
     }
-    const ids = Array.isArray(picks)
-      ? picks.map((team) =>
-          team && typeof team === 'object' ? String(team.id ?? team.number ?? '') : '',
-        )
-      : null;
-    const result = predictRoster(ids, teams);
+    const validRecords =
+      Array.isArray(picks) &&
+      picks.length >= 1 &&
+      picks.length <= 3 &&
+      picks.every(
+        (team) =>
+          team &&
+          typeof team === 'object' &&
+          !Array.isArray(team) &&
+          /^[1-9][0-9]*$/.test(String(team.id ?? team.number ?? '')) &&
+          (team.id === undefined ||
+            team.number === undefined ||
+            String(team.id) === String(team.number)) &&
+          Number.isInteger(team.price) &&
+          team.price >= 3 &&
+          team.price <= 11,
+      );
+    let result;
+    if (validRecords) {
+      const ids = picks.map((team) => String(team.id ?? team.number));
+      // A saved roster keeps the Pollen actually paid. Only its eligibility and
+      // PP come from the current catalog; market repricing cannot rewrite a draft.
+      const paidTeams = picks.flatMap((pick, pickIndex) => {
+        const current = currentTeams.get(ids[pickIndex]);
+        return current
+          ? [
+              {
+                ...current,
+                price: pick.price,
+                pointsPerPollen:
+                  current.predictionPoints === null
+                    ? null
+                    : round(current.predictionPoints / pick.price),
+              },
+            ]
+          : [];
+      });
+      result = predictRoster(ids, paidTeams);
+    } else {
+      result = {
+        status: 'invalid',
+        predictionPoints: null,
+        knownPoints: 0,
+        totalPollen: null,
+        teams: [],
+        reason: 'Saved roster team records or prices are missing or invalid.',
+      };
+    }
     // No account IDs, email addresses, Discord contacts, or receipt IDs are exposed here.
     return {
       ...result,
-      label: row.display_name?.trim() || `Test roster ${index + 1}`,
-      submittedAt: row.submitted_at,
+      label:
+        (typeof row?.display_name === 'string' && row.display_name.trim()) ||
+        `Test roster ${index + 1}`,
+      submittedAt: typeof row?.submitted_at === 'string' ? row.submitted_at : undefined,
       order: index,
     };
   });

@@ -1,5 +1,5 @@
 import app, { requireAccount, authConfig, LEAGUE_OWNER_UID } from '../dist/staging-app.mjs';
-import { predictionSnapshot } from './predictions.mjs';
+import { predictionSnapshot, priceDraftCatalog } from './predictions.mjs';
 import { predictionPage, predictionClient } from '../dist/staging-prediction-assets.mjs';
 import { withStagingNavigation } from './navigation.mjs';
 import { requireStagingAdmin } from './access.mjs';
@@ -148,7 +148,10 @@ export function createStagingWorker(application = app, verify = requireAccount) 
           'Content-Type': 'text/javascript; charset=utf-8',
         });
       } else {
-        result = await application.fetch(request, env);
+        result = await application.fetch(request, {
+          ...env,
+          DRAFT_PRICE_CATALOG: priceDraftCatalog,
+        });
       }
       const resultHeaders = new Headers(result.headers);
       for (const [key, value] of Object.entries(securityHeaders)) resultHeaders.set(key, value);

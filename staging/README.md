@@ -32,6 +32,10 @@ The **Prediction** leaderboard at `/` is the primary roster-entry page. Navigati
 
 The page reads current prices, eligibility, draft status, and catalog version from `/api/draft`, then saves through the authenticated `/api/submit` service. Successful entries receive the real server receipt and appear in My dashboard. Missing PP does not block an eligible team; unavailable draft or account state pauses submission. See [PREDICTIONS.md](../docs/PREDICTIONS.md) for the formula and its validation limits. Staging entries use isolated test storage.
 
+Staging prices now follow PP: divide a team's PP by the shared unit, round up, and keep the result between 3 and 11 Pollen. The current unit is 15, computed from the highest PP in the complete eligible pool; missing PP receives a provisional cost of 3 without an invented score. Rust-eze Robotics costs 4 Pollen, Crow Force 11, Fusion 9, and Runtime Terror 8. The [full pricing rule](../docs/PREDICTIONS.md#pollen-pricing-in-staging) and [implementation](../src/predictions/pricing.mjs) are public.
+
+The policy runs on the server after the raw legacy Sheet catalog passes validation. Its effective catalog version ensures an old price quote refreshes before a new submission. Public-site prices and frozen Sheet data remain unchanged. Existing receipts, pending saves, and archives retain their original paid prices; no entry is reset or repriced, and saved forecasts use paid costs with current PP.
+
 ## Admin access
 
 The `admin-only` configuration admits the owner and approved staging admins. Access synchronization is a guarded, explicit operation for the two current production admins.
@@ -65,7 +69,7 @@ To temporarily restrict staging to the owner, set `vars.STAGING_MODE` to `"owner
 
 The original draft page is preserved in `web/legacy-draft.html`, with its CSS and browser behavior in `web/league.css` and `web/draft.js`. The staging wrapper chooses which home page to serve.
 
-To restore the board, set `vars.STAGING_DRAFT_VIEW` to `"legacy"` in `staging/wrangler.jsonc`, run the checks, then commit and push to `staging`. The original home page and Draft board navigation return; prediction aliases remain available. Set the value back to `"prediction"` to restore the new home page. This switch does not change database records, the workbook, or saved rosters. Commit `722edef16bbd7d02c76ca71514c55fcfdccf2230` also preserves the version before the home-page replacement.
+To restore the board, set `vars.STAGING_DRAFT_VIEW` to `"legacy"` in `staging/wrangler.jsonc`, run the checks, then commit and push to `staging`. The original home page and Draft board navigation return; prediction aliases remain available. Set the value back to `"prediction"` to restore the new home page. This switch changes the page, not the staging pricing policy, database records, workbook, or saved rosters. Commit `722edef16bbd7d02c76ca71514c55fcfdccf2230` also preserves the version before the home-page replacement.
 
 ## Isolated resources
 

@@ -33,7 +33,7 @@ function safeCell(value) {
   const t = String(value);
   return /^\s*[=+\-@]/.test(t) ? "'" + t : t;
 }
-async function catalogVersion(catalog) {
+async function catalogVersion(catalog, pricing) {
   const canonical = catalog.map((t) => ({
     id: t.id,
     number: t.number,
@@ -44,7 +44,10 @@ async function catalogVersion(catalog) {
     price: t.price,
     available: t.available,
   }));
-  return 'v1-' + (await sha256(JSON.stringify(canonical))).slice(0, 24);
+  // The original Sheet hash remains unchanged. A server pricing policy adds its
+  // identity to the effective quote so old tabs must review a new policy.
+  const versioned = pricing === undefined ? canonical : { catalog: canonical, pricing };
+  return 'v1-' + (await sha256(JSON.stringify(versioned))).slice(0, 24);
 }
 // The frozen 87-row Catalog tab holds DECODE (2025-26) statistics and stays
 // intact for integrity checks. data/not-returning.json and data/rookie-teams.json
@@ -81,6 +84,43 @@ function eligibleCatalog(catalog) {
   return [...returning, ...rookieTeams.map(([number, name]) => rookieEntry(number, name))].map(
     currentTeamName,
   );
+}
+function draftCatalogState(catalog, priceCatalog) {
+  const eligible = eligibleCatalog(catalog);
+  if (priceCatalog === undefined) return { catalog: eligible };
+  if (typeof priceCatalog !== 'function')
+    throw new DraftError('The draft pricing needs organizer attention.', 503);
+  // This hook comes only from the staging server, never a request payload.
+  const quote = priceCatalog(eligible.map((team) => ({ ...team })));
+  if (
+    !quote ||
+    !Array.isArray(quote.catalog) ||
+    quote.catalog.length !== eligible.length ||
+    !quote.pricing ||
+    typeof quote.pricing !== 'object' ||
+    Array.isArray(quote.pricing)
+  )
+    throw new DraftError('The draft pricing needs organizer attention.', 503);
+  const prices = new Map();
+  for (const team of quote.catalog) {
+    if (
+      !team ||
+      prices.has(team.id) ||
+      !Number.isInteger(team.price) ||
+      team.price < 3 ||
+      team.price > 11
+    )
+      throw new DraftError('The draft pricing needs organizer attention.', 503);
+    prices.set(team.id, team.price);
+  }
+  return {
+    catalog: eligible.map((team) => {
+      if (!prices.has(team.id))
+        throw new DraftError('The draft pricing needs organizer attention.', 503);
+      return { ...team, price: prices.get(team.id) };
+    }),
+    pricing: quote.pricing,
+  };
 }
 function required(value, label, max) {
   if (typeof value !== 'string') throw new DraftError('Enter ' + label + '.');
@@ -127,7 +167,7 @@ function validateRoster(ids, catalog) {
     throw new DraftError('Choose one to three different teams.');
   const teams = ids.map((id) => {
     const t = catalog.find((t2) => t2.id === id);
-    if (!t || !t.available || ![3, 4, 5, 6, 11].includes(t.price))
+    if (!t || !t.available || !Number.isInteger(t.price) || t.price < 3 || t.price > 11)
       throw new DraftError('A selected team is unavailable. Review your picks.');
     return t;
   });
@@ -146,6 +186,28 @@ function receipt(row) {
     priceVersion: String(row[4]),
   };
 }
+function validateArchivedRoster(row, currentCatalog) {
+  if (!Array.isArray(row) || row.length < 20)
+    throw new DraftError('The archived roster needs organizer review.', 409);
+  const recordedNumber = (value) =>
+    typeof value === 'number' || (typeof value === 'string' && value.trim()) ? Number(value) : NaN;
+  const savedTeams = [9, 12, 15]
+    .filter((index) => row[index] !== '' && row[index] !== null && row[index] !== undefined)
+    .map((index) => {
+      const id = String(row[index]);
+      const current = currentCatalog.find((team) => team.id === id);
+      return { ...current, id, price: recordedNumber(row[index + 2]) };
+    });
+  // Restoring a receipt restores its paid prices. Current eligibility still
+  // applies, but a later price increase cannot rewrite a historical purchase.
+  const roster = validateRoster(
+    savedTeams.map((team) => team.id),
+    savedTeams,
+  );
+  if (recordedNumber(row[18]) !== roster.total || recordedNumber(row[19]) !== budget - roster.total)
+    throw new DraftError('The archived roster totals need organizer review.', 409);
+  return roster;
+}
 function existingReceipt(rows, input, fingerprint) {
   for (const r of rows)
     if (String(r[2]) === input.submissionToken) {
@@ -158,7 +220,7 @@ function existingReceipt(rows, input, fingerprint) {
     }
   return null;
 }
-async function parseState(catalogRows, settingsRows) {
+async function parseState(catalogRows, settingsRows, priceCatalog) {
   if (catalogRows.length !== 87)
     throw new DraftError('The draft catalog needs organizer attention.', 503);
   const seen = /* @__PURE__ */ new Set();
@@ -206,13 +268,13 @@ async function parseState(catalogRows, settingsRows) {
       'The draft catalog changed after pricing. Please contact the organizer.',
       503,
     );
-  const eligible = eligibleCatalog(catalog);
+  const draft = draftCatalogState(catalog, priceCatalog);
   return {
     title,
     budget,
     maxTeams,
-    catalog: eligible,
-    priceVersion: await catalogVersion(eligible),
+    ...draft,
+    priceVersion: await catalogVersion(draft.catalog, draft.pricing),
     open: settings.Open === true,
   };
 }
@@ -328,7 +390,11 @@ class Sheets {
         encodeURIComponent('Settings!A2:B9') +
         '&valueRenderOption=UNFORMATTED_VALUE',
     );
-    return parseState(r.valueRanges?.[0]?.values || [], r.valueRanges?.[1]?.values || []);
+    return parseState(
+      r.valueRanges?.[0]?.values || [],
+      r.valueRanges?.[1]?.values || [],
+      this.env.DRAFT_PRICE_CATALOG,
+    );
   }
   async responses() {
     const rows = await this.values('Responses!A:T');
@@ -969,7 +1035,7 @@ async function adminMutation(p, { db, sheets, actor }) {
             'This player already has a roster. Reset that roster before restoring an older one.',
             409,
           );
-        validateRoster(receipt(op.row).teamIds, (await sheets.state()).catalog);
+        validateArchivedRoster(op.row, (await sheets.state()).catalog);
         op.range = 'Responses!A' + (rows.length + 1) + ':T' + (rows.length + 1);
       } else {
         op.receiptId = required(p.receiptId, 'Receipt', 100);
@@ -1257,7 +1323,7 @@ async function handle(request, env, context = {}) {
           open: true,
           preview: true,
           priceVersion: 'PREVIEW',
-          catalog: eligibleCatalog(decodeCatalog),
+          ...draftCatalogState(decodeCatalog, env.DRAFT_PRICE_CATALOG),
         });
       const state = await new Sheets(env).state();
       return json({
@@ -1369,7 +1435,15 @@ export default {
 };
 
 // Shared server exports are used by the private staging wrapper and regression tests.
-export { requireAccount, authConfig, LEAGUE_OWNER_UID, submitDraft };
+export {
+  requireAccount,
+  authConfig,
+  LEAGUE_OWNER_UID,
+  submitDraft,
+  parseState,
+  catalogVersion,
+  validateArchivedRoster,
+};
 export function getDecodePredictionCatalog() {
   return decodeCatalog.map(currentTeamName);
 }

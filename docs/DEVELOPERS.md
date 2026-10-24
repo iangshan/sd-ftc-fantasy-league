@@ -26,7 +26,7 @@ Use `npm run format` to apply the shared Prettier configuration before committin
 | `worker.mjs`                        | Production HTTP handlers, authentication, submissions, and administration   |
 | `web/`                              | Shared browser JavaScript, CSS, page templates, and logo                    |
 | `src/pages.mjs`                     | Page assembly from maintained browser assets                                |
-| `src/predictions/`                  | PP model and historical evaluation                                          |
+| `src/predictions/`                  | PP model, historical evaluation, and staging pricing policy                 |
 | `data/decode-catalog.json`          | Frozen 87-team DECODE source catalog                                        |
 | `data/not-returning.json`           | Historical teams excluded from this season, with reasons                    |
 | `data/rookie-teams.json`            | Registered teams missing from the frozen catalog                            |
@@ -53,7 +53,7 @@ Eligibility is maintained in two data files:
 
 Keep `team-names.json` consistent with additions, and run the checks after editing either file. Compare eligibility against the region registration sheet linked from [sdftc.org](https://www.sdftc.org/2026-27registration.html). Event participation alone does not define registration for a new season.
 
-Name and eligibility changes update the catalog version, so an open draft tab may need to refresh before submission. Current pages show current names; existing receipts and saved snapshots retain the names and prices recorded when submitted. Team number remains the stable identity. The frozen catalog is checked against the private Sheet before current names and eligibility are applied.
+Name and eligibility changes update the catalog version, so an open draft tab may need to refresh before submission. Current pages show current names; existing receipts and saved snapshots retain the names and prices recorded when submitted. Team number remains the stable identity. The frozen catalog is checked against the private Sheet before current names and eligibility are applied. Staging then applies the PP-based pricing policy from `src/predictions/pricing.mjs` and computes the effective catalog version. The unit comes from the complete eligible pool, not browser filters or planned events. Public pricing and the frozen Sheet stay unchanged; saved receipts, pending checkpoints, and archives retain their paid prices. See [the pricing formula](PREDICTIONS.md#pollen-pricing-in-staging).
 
 ## Branches and deployment
 

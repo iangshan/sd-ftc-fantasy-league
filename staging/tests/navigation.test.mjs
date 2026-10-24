@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { createStagingWorker, STAGING_HOST, STAGING_SHEET } from '../worker.mjs';
 import { LEAGUE_OWNER_UID } from '../../dist/staging-app.mjs';
 import production from '../../dist/worker.mjs';
+import { withStagingNavigation } from '../navigation.mjs';
 
 const env = { STAGING_MODE: 'admin-only', RESPONSES_SHEET_ID: STAGING_SHEET };
 const origin = 'https://' + STAGING_HOST;
@@ -145,6 +146,27 @@ test('production keeps its original draft page and has no Prediction section or 
     assert.doesNotMatch(html, /class="staging-main-nav"|href="\/prediction"/);
     if (path === '/') assert.match(html, /id="teamGrid"/);
   }
+});
+
+test('legacy staging filters include every PP price while the public board stays unchanged', async () => {
+  const original = await (await production.fetch(request('/'), {})).text();
+  const legacy = await (
+    await worker.fetch(request('/'), { ...env, STAGING_DRAFT_VIEW: 'legacy' })
+  ).text();
+  const filters = (html) => html.match(/<div\b[^>]*class="price-filter"[^>]*>[\s\S]*?<\/div>/)?.[0];
+  const prices = (html) => [...filters(html).matchAll(/data-price="([^"]+)"/g)].map((m) => m[1]);
+  assert.deepEqual(prices(original), ['all', '3', '4', '5', '6', '11']);
+  const expected = ['all', '3', '4', '5', '6', '7', '8', '9', '10', '11'];
+  assert.deepEqual(prices(legacy), expected);
+  assert.deepEqual(prices(withStagingNavigation(legacy, '/', { legacyDraft: true })), expected);
+  assert.equal(
+    filters(withStagingNavigation(original, '/dashboard', { legacyDraft: true })),
+    filters(original),
+  );
+  assert.equal(filters(withStagingNavigation(original, '/')), filters(original));
+  const originalScript = original.match(/<script>[\s\S]*?<\/script>/g);
+  assert.ok(originalScript?.length);
+  assert.deepEqual(legacy.match(/<script>[\s\S]*?<\/script>/g), originalScript);
 });
 
 test('dashboard and account links point readers to Prediction while legacy and production labels stay intact', async () => {
