@@ -49,7 +49,7 @@
     const query = el('teamSearch').value.trim().toLowerCase(), price = el('priceFilter').value;
     const currentDraft = el('teamScope').value === 'draft';
     const pool = currentDraft ? data.draftTeams : data.teams;
-    const teams = pool.filter(team => (!query || `${team.number} ${team.name}`.toLowerCase().includes(query)) && (price === 'all' || team.draftEligible && String(team.price) === price) && (!el('scoredOnly').checked || team.predictionPoints !== null));
+    const teams = pool.filter(team => team.draftEligible && (!query || `${team.number} ${team.name}`.toLowerCase().includes(query)) && (price === 'all' || String(team.price) === price) && (!el('scoredOnly').checked || team.predictionPoints !== null));
     if (el('sortOrder').value === 'value') teams.sort((a, b) => (b.draftEligible ? b.pointsPerPollen ?? -Infinity : -Infinity) - (a.draftEligible ? a.pointsPerPollen ?? -Infinity : -Infinity) || a.number - b.number);
     const rows = el('teamRows');
     rows.replaceChildren();
@@ -57,7 +57,7 @@
       const row = node('tr');
       row.dataset.teamId = team.id;
       const name = node('td', undefined, 'team-cell');
-      name.append(node('strong', team.name), node('small', `#${team.number} · ${team.draftEligible ? team.price + ' pollen' : 'Not in current draft'}`));
+      name.append(node('strong', team.name), node('small', `#${team.number} · ${team.price} pollen`));
       const points = node('td', undefined, 'num points');
       points.append(node('span', team.predictionPoints === null ? 'Unscored' : number(team.predictionPoints), team.predictionPoints === null ? 'score-note' : ''));
       const peak = node('td', number(team.highestOpr), 'num');
@@ -74,7 +74,7 @@
       rows.append(row);
     }
     el('noTeams').hidden = teams.length !== 0;
-    el('teamCaption').textContent = `${teams.length} of ${pool.length} ${currentDraft ? 'current draft' : 'San Diego DECODE'} teams · Ranked by PP`;
+    el('teamCaption').textContent = `${teams.length} of ${pool.length} ${currentDraft ? 'draftable teams' : 'draftable teams with DECODE OPR'} · Ranked by PP`;
   }
   function renderRosters() {
     const rows = el('rosterRows');
@@ -107,9 +107,9 @@
       data = result;
       for (const id of selected) if (!data.draftTeams.some(team => team.id === id)) selected.delete(id);
       el('scoredCount').textContent = String(data.counts.scored);
-      el('poolCount').textContent = 'San Diego teams with recorded DECODE OPR';
-      el('unscoredCount').textContent = String(data.coverage.missingOprTeams);
-      el('coverageNote').textContent = `The frozen San Diego DECODE catalog contains ${data.coverage.catalogTeams} teams. This leaderboard ranks all ${data.coverage.recordedTeams} with recorded OPR, including teams not returning this season. ${data.coverage.missingOprTeams} catalog entries have no recorded OPR and are excluded from the DECODE ranking.`;
+      el('poolCount').textContent = 'Currently available to choose';
+      el('unscoredCount').textContent = String(data.coverage.unscoredDraftTeams);
+      el('coverageNote').textContent = `Only teams available in the current draft are listed. ${data.counts.scored} teams have DECODE OPR and are ranked by PP. The other ${data.coverage.unscoredDraftTeams} draftable teams have no DECODE OPR; select “All draftable teams” to see them marked unscored.`;
       const baseline = data.teams.find(team => team.id === data.baseline.teamId);
       el('baselineTeam').textContent = baseline && data.baseline.strength > 0 ? `#${baseline.number} ${baseline.name}` : 'No positive baseline';
       el('updatedAt').textContent = 'Updated ' + new Date(data.generatedAt).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});

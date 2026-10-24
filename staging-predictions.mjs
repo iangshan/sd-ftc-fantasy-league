@@ -6,14 +6,17 @@ export async function predictionSnapshot(env) {
   const draftCatalog = getDraftPredictionCatalog();
   const draftIds = new Set(draftCatalog.map(team => String(team.id)));
   const recordedCatalog = historicalCatalog.filter(team => Number.isFinite(team.averageOpr));
-  const prediction = buildTeamPredictions(recordedCatalog.map(team => ({...team, draftEligible: draftIds.has(String(team.id))})));
-  const draft = buildTeamPredictions(draftCatalog, {baseline: prediction.baseline});
-  const historicalRanks = new Map(prediction.teams.map(team => [team.id, team.rank]));
-  const draftTeams = draft.teams.map(team => ({...team, rank: historicalRanks.get(team.id) ?? null}));
+  const historical = buildTeamPredictions(recordedCatalog);
+  const eligibleRecordedCatalog = recordedCatalog.filter(team => draftIds.has(String(team.id)));
+  const prediction = buildTeamPredictions(eligibleRecordedCatalog, {baseline: historical.baseline});
+  const draft = buildTeamPredictions(draftCatalog, {baseline: historical.baseline});
+  const draftTeams = draft.teams;
   const coverage = {
     region: 'San Diego', season: 'DECODE 2025–26', source: 'Frozen DECODE catalog',
     catalogTeams: historicalCatalog.length, recordedTeams: recordedCatalog.length,
     missingOprTeams: historicalCatalog.length - recordedCatalog.length,
+    eligibleRecordedTeams: eligibleRecordedCatalog.length,
+    excludedRecordedTeams: recordedCatalog.length - eligibleRecordedCatalog.length,
     draftTeams: draft.counts.total, scoredDraftTeams: draft.counts.scored, unscoredDraftTeams: draft.counts.unscored
   };
   let rosterStatus = 'available', rosters = [];

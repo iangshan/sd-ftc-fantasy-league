@@ -11,7 +11,7 @@ Sign in with the league owner's existing Google account. The server checks the v
 3. Review changes on the private site. Its green banner identifies the test environment.
 4. When ready to publish, open a pull request from `staging` to `main`, review it, then merge. The existing production action deploys `main` to the public site.
 
-Changes to `staging` do not update the public site. Direct pushes to `main` still publish immediately. Do not merge unfinished work. The owner-only [Prediction section](https://sd-ftc-fantasy-staging.sdftcfantasyleague.workers.dev/prediction) appears beside Draft board, My dashboard, and Admin. It ranks all 84 San Diego teams with recorded OPR in the frozen DECODE dataset, including teams no longer in the current draft. The prior `/admin/predictions` address still works. Its formula and validation are documented in [PREDICTIONS.md](PREDICTIONS.md). It does not change draft prices or official scoring.
+Changes to `staging` do not update the public site. Direct pushes to `main` still publish immediately. Do not merge unfinished work. The owner-only [Prediction section](https://sd-ftc-fantasy-staging.sdftcfantasyleague.workers.dev/prediction) appears beside Draft board, My dashboard, and Admin. It ranks the 70 currently draftable San Diego teams with recorded DECODE OPR. Teams outside the current draft are excluded; the “All draftable teams” view also lists 17 eligible teams without DECODE OPR as unscored. The prior `/admin/predictions` address still works. Its formula and validation are documented in [PREDICTIONS.md](PREDICTIONS.md). It does not change draft prices or official scoring.
 
 ## Isolated resources
 
