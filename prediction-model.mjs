@@ -2,8 +2,8 @@
 export const PREDICTION_MODEL = Object.freeze({
   version: 'decode-opr-v2', season: 'DECODE 2025–26',
   averageWeight: 0.85, peakWeight: 0.15, peakCap: 1.5, scale: 100,
-  formula: 'S = 0.85A + 0.15 min(max(H, A), 1.5A); P = 100 S / max(S)',
-  rosterFormula: 'Roster prediction points = sum of its teams’ prediction points',
+  formula: 'S = 0.85A + 0.15 min(max(H, A), 1.5A); PP = 100 S / max(S)',
+  rosterFormula: 'Roster PP = sum of its teams’ PP',
   limitation: 'An experimental index from frozen DECODE OPR summaries, not official points or a validated BioBuzz forecast.'
 });
 

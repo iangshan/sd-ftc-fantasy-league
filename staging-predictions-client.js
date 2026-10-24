@@ -27,7 +27,7 @@
       row.append(node('span', String(index + 1).padStart(2, '0'), 'slot-num'));
       if (team) {
         const info = node('div', undefined, 'pick-info');
-        info.append(node('strong', team.name), node('small', `#${team.number} · ${team.price} pollen · ${team.predictionPoints === null ? 'Unscored' : number(team.predictionPoints) + ' pts'}`));
+        info.append(node('strong', team.name), node('small', `#${team.number} · ${team.price} pollen · ${team.predictionPoints === null ? 'Unscored' : number(team.predictionPoints) + ' PP'}`));
         const remove = node('button', '×', 'remove');
         remove.type = 'button';
         remove.setAttribute('aria-label', `Remove ${team.name}`);
@@ -40,8 +40,8 @@
     const missing = teams.filter(team => team.predictionPoints === null).length;
     const points = teams.reduce((sum, team) => sum + (team.predictionPoints ?? 0), 0);
     el('rosterPoints').textContent = !teams.length || missing ? '—' : number(points);
-    el('projectionLabel').textContent = missing ? 'Prediction incomplete' : 'Predicted roster points';
-    el('projectionNote').textContent = !teams.length ? 'Select a team to start.' : missing ? `${missing} team${missing === 1 ? ' has' : 's have'} no DECODE data. Known subtotal: ${number(points)} pts.` : 'Sum of the selected teams’ prediction points. No entry has been saved.';
+    el('projectionLabel').textContent = missing ? 'Prediction incomplete' : 'Roster PP';
+    el('projectionNote').textContent = !teams.length ? 'Select a team to start.' : missing ? `${missing} team${missing === 1 ? ' has' : 's have'} no DECODE data. Known subtotal: ${number(points)} PP.` : 'Sum of the selected teams’ PP. No entry has been saved.';
     el('clearRoster').disabled = !selected.size;
   }
   function renderTeams() {
@@ -74,7 +74,7 @@
       rows.append(row);
     }
     el('noTeams').hidden = teams.length !== 0;
-    el('teamCaption').textContent = `${teams.length} of ${pool.length} ${currentDraft ? 'current draft' : 'San Diego DECODE'} teams · Ranked by prediction points`;
+    el('teamCaption').textContent = `${teams.length} of ${pool.length} ${currentDraft ? 'current draft' : 'San Diego DECODE'} teams · Ranked by PP`;
   }
   function renderRosters() {
     const rows = el('rosterRows');
@@ -98,7 +98,7 @@
     loading = true;
     el('refresh').disabled = true;
     el('loadStatus').hidden = false;
-    el('loadStatus').textContent = data ? 'Refreshing prediction data…' : 'Loading prediction points…';
+    el('loadStatus').textContent = data ? 'Refreshing prediction data…' : 'Loading PP…';
     try {
       const response = await fetch('/api/admin/predictions', {cache: 'no-store', signal: AbortSignal.timeout(20000)});
       if (!response.ok) throw new Error(response.status === 401 || response.status === 403 ? 'Owner sign-in is required. Sign in again to view predictions.' : 'Predictions could not be loaded. Use Refresh data to retry.');
