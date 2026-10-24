@@ -40,7 +40,9 @@ See [DEVELOPERS.md](DEVELOPERS.md) for setup, checks, source editing, and contri
 
 ## Deployment boundaries
 
-Pull requests run checks. Pushes to `staging` deploy only `wrangler.staging.jsonc`; pushes to `main` deploy the public Worker through `wrangler.jsonc`. Merging staging into main is a release decision, not a prerequisite for keeping the repository current.
+Pull requests and pushes to `main` run checks without deploying the public Worker. Reviewed source can be merged into the default `main` branch while the public site continues running its previous release. Pushes to `staging` still deploy the private Worker through `wrangler.staging.jsonc`.
+
+A public release is a separate action: open **Actions → Check and deploy → Run workflow**, select `main`, and enable `deploy_production`. This checkbox defaults to false; leaving it unchecked runs checks only. An explicitly requested release deploys `wrangler.jsonc` after the checks pass. See [DEVELOPERS.md](DEVELOPERS.md#branches-and-deployment).
 
 The two sites use separate D1 databases, workbooks, and Sheets service accounts. Runtime credentials belong in Cloudflare or GitHub secrets, never in repository files. The Firebase web configuration is a public app identifier, not a private credential.
 

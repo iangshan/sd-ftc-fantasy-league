@@ -54,18 +54,27 @@ Name and eligibility changes update the catalog version, so an open draft tab ma
 
 ## Branches and deployment
 
-Pull requests run checks. The two deployment targets are explicit:
+Pull requests and pushes to `main` run checks only. The deployment targets are explicit:
 
-| Branch    | Workflow                   | Configuration            | Result                               |
-| --------- | -------------------------- | ------------------------ | ------------------------------------ |
-| `staging` | **Deploy private staging** | `wrangler.staging.jsonc` | Private prediction and admin testing |
-| `main`    | **Check and deploy**       | `wrangler.jsonc`         | Public league website                |
+| Branch    | Workflow                   | Configuration            | Result                                                    |
+| --------- | -------------------------- | ------------------------ | --------------------------------------------------------- |
+| `staging` | **Deploy private staging** | `wrangler.staging.jsonc` | Automatic private deployment on push                      |
+| `main`    | **Check and deploy**       | `wrangler.jsonc`         | Public deployment only through an explicit manual release |
 
-Start staging work from `staging`, review it there, and open a pull request to the intended branch. Updating staging does not publish it. Merging `staging` into `main` is a separate public release. Direct pushes to either deployment branch also trigger its workflow, so use review and repository branch rules appropriate to the release process.
+Start staging work from `staging`, review it there, and open a pull request to the intended branch. Merge reviewed source into `main` to keep the default GitHub branch current. Merging or pushing to `main` does not deploy the public website; the running site may remain on an earlier release. A push to `staging` continues to deploy private testing automatically. Use pull-request review and repository branch rules for both branches.
 
 CI installs the lockfile with `npm ci` and uses the repository checks. The existing `CLOUDFLARE_API_TOKEN` GitHub secret authorizes deployment; Worker secrets remain in Cloudflare. A failed build does not replace the active deployment. No workflow automatically runs production database migrations.
 
-For an explicitly authorized manual deployment, build and test first. `npm run deploy` targets production by default. A staging deployment instead uses:
+To make an authorized public release through GitHub:
+
+1. Open **Actions → Check and deploy → Run workflow**.
+2. Select the `main` branch.
+3. Enable the `deploy_production` checkbox, which defaults to false, and run the workflow.
+4. Confirm that the checks and **Deploy production** step succeed.
+
+A manual run with the checkbox unchecked runs checks only. The deployment step requires a `workflow_dispatch` event on `main` with `deploy_production: true`; pull requests, pushes, and dispatches on other branches do not deploy production.
+
+Prefer that release workflow for a recorded public deployment. The CLI command `npm run deploy` directly targets production and requires separate, explicit release authorization. For an authorized manual staging deployment after checks pass, use:
 
 ```sh
 npm run build:staging

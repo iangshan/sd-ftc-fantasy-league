@@ -9,9 +9,10 @@ Staging uses `STAGING_MODE="admin-only"`: the league owner and the two approved 
 1. Start from the `staging` branch and edit the maintained source files listed in [DEVELOPERS.md](DEVELOPERS.md).
 2. Run the checks, review the diff, and push to `staging`. **Deploy private staging** deploys only the staging Worker.
 3. Review the private site. Its green banner identifies the test environment.
-4. When a public release is authorized, open and review a pull request from `staging` to `main`. Merging deploys the public Worker.
+4. Open and review a pull request from `staging` to `main` to update the default GitHub branch. Merging runs checks without deploying the public Worker.
+5. When a public release is separately authorized, open **Actions → Check and deploy → Run workflow**, select `main`, and enable `deploy_production`. It defaults to false; an unchecked run performs checks only.
 
-Changes to `staging` leave the public site unchanged. Direct pushes to `main` publish immediately, so unfinished experiments belong on staging.
+Pushes to `staging` deploy private testing. Pushes and merges to `main` update reviewed source and run checks while the public site stays on its current release. The [manual release workflow](DEVELOPERS.md#branches-and-deployment) controls public deployment.
 
 The **Prediction** leaderboard at `/` is the primary roster-entry page. Navigation contains Prediction, My dashboard, and Admin; `/prediction` and `/admin/predictions` remain aliases. All 87 eligible teams appear, including 70 with PP and 17 unscored teams that remain draftable.
 
