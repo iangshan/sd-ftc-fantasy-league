@@ -53,6 +53,7 @@ export function buildEventPredictions(catalog, {histories = [], method = 'histor
   const teams = catalog.filter(team => team.draftEligible !== false).map(team => {
     const id = String(team.id);
     if (!/^[1-9][0-9]*$/.test(id) || seen.has(id)) throw new Error('Prediction catalog needs unique team IDs.');
+    if (!Number.isInteger(team.price) || team.price < 1 || team.price > 15) throw new Error('Pollen prices must be whole numbers from 1 to 15.');
     seen.add(id);
     const history = byId.get(id);
     const hasHistory = history?.eventCount > 0 && Number.isFinite(history?.candidates?.[method]);
@@ -170,7 +171,7 @@ export function predictRoster(teamIds, teamPredictions) {
   const teams = ids.map(id => byId.get(id));
   const totalPollen = teams.reduce((sum, team) => sum + team.price, 0);
   const knownPoints = round(teams.reduce((sum, team) => sum + (team.predictionPoints ?? 0), 0));
-  if (!Number.isFinite(totalPollen) || teams.some(team => !Number.isFinite(team.price) || team.price <= 0) || totalPollen > 15) {
+  if (!Number.isFinite(totalPollen) || teams.some(team => !Number.isInteger(team.price) || team.price <= 0) || totalPollen > 15) {
     return { status: 'invalid', predictionPoints: null, knownPoints, totalPollen, teams, reason: 'This roster exceeds the 15-pollen budget or has invalid prices.' };
   }
   const missing = teams.filter(team => team.predictionPoints === null);

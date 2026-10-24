@@ -62,6 +62,8 @@ The report command refuses to overwrite an existing output. Refreshing the sourc
 
 A valid roster has one to three distinct eligible teams within 15 pollen. Its per-event PP is the sum of displayed team PP, consistent with the table. Ties use competition ranks (1, 1, 3). Pollen determines affordability and PP per pollen, never the strength estimate.
 
+Prices retain the Draft board's whole-number tiers of 3, 4, 5, 6, and 11 pollen. The prediction table displays a separate **Pollen cost** column on desktop and mobile; PP per pollen is labeled as a value ratio inside the evidence details, not shown as a price. Crow Force costs 11 pollen and Runtime Terror costs 6. Valid roster structures include 11 + 4, 6 + 6 + 3, and 5 + 5 + 5; these are affordable alternatives, not a claim of equal projected performance. The planner shows both spent and remaining pollen, and the forecast/roster validators reject fractional prices.
+
 The temporary calculator also accepts a planned event count for each selected team:
 
 \[

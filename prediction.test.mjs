@@ -233,6 +233,33 @@ test('invalid, duplicate, unknown, excessive, and over-budget picks cannot be ra
   }
 });
 
+test('prediction prices match the draft board and support the three 15-pollen roster styles', async () => {
+  const {draftTeams} = await predictionSnapshot({});
+  const draft = new Map(getDraftPredictionCatalog().map(t => [String(t.id), t]));
+  for (const team of draftTeams) {
+    assert.equal(team.price, draft.get(team.id).price);
+    assert.ok(Number.isInteger(team.price));
+    assert.ok([3, 4, 5, 6, 11].includes(team.price));
+  }
+  assert.equal(draftTeams.find(t => t.id === '10809').price, 11);
+  assert.equal(draftTeams.find(t => t.id === '22105').price, 6);
+  for (const ids of [['10809', '24029'], ['23997', '22105', '32482'], ['24218', '18365', '8097']]) {
+    const result = predictRoster(ids, draftTeams);
+    assert.equal(result.status, 'scored');
+    assert.equal(result.totalPollen, 15);
+    assert.ok(result.predictionPoints > 15, 'PP is performance, not the budget cost');
+  }
+  assert.equal(predictRoster(['10809', '22105'], draftTeams).status, 'invalid');
+});
+
+test('fractional or invalid pollen prices cannot enter a forecast or ranked roster', () => {
+  for (const price of [1.5, 14.65, 18.67, 0, -1, 16, NaN, Infinity, '6']) {
+    const entry = {...team(1, 100), price};
+    assert.throws(() => buildEventPredictions([entry]), /whole numbers/);
+    assert.equal(predictRoster(['1'], [{...entry, predictionPoints: 100}]).status, 'invalid');
+  }
+});
+
 test('saved rosters rank scored ties, leave missing data unranked and handle damaged rows', () => {
   const row = (name, ids) => ({display_name: name, teams_json: JSON.stringify(ids.map(id => ({id}))), submitted_at: '2026-10-23', uid: 'must-not-leak', email: 'must-not-leak'});
   const rows = [row('First', ['1', '2']), row('Second', ['2', '1']), row('Third', ['2']), row('Unscored', ['3']), {display_name: 'Bad row', teams_json: '{broken'}];

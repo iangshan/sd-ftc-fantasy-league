@@ -29,7 +29,7 @@
       row.append(node('span', String(index + 1).padStart(2, '0'), 'slot-num'));
       if (team) {
         const info = node('div', undefined, 'pick-info');
-        info.append(node('strong', team.name), node('small', `#${team.number} · ${team.price} pollen · ${team.predictionPoints === null ? 'Unscored' : number(team.predictionPoints) + ' PP / event'}`));
+        info.append(node('strong', team.name), node('small', `#${team.number} · Cost: ${team.price} Pollen · ${team.predictionPoints === null ? 'Unscored' : number(team.predictionPoints) + ' PP / event'}`));
         const remove = node('button', '×', 'remove');
         remove.type = 'button';
         remove.setAttribute('aria-label', `Remove ${team.name}`);
@@ -49,6 +49,7 @@
       list.append(row);
     }
     el('pollenUsed').textContent = String(pollenUsed());
+    el('pollenRemaining').textContent = String(15 - pollenUsed());
     const missing = teams.filter(team => team.predictionPoints === null).length;
     const points = teams.reduce((sum, team) => sum + (team.predictionPoints ?? 0), 0);
     el('rosterPoints').textContent = !teams.length || missing ? '—' : number(points);
@@ -86,7 +87,7 @@
       : evidence.source === 'summary_only' ? 'Summary only' : 'No historical evidence';
     details.append(node('summary', label));
     const content = node('div', undefined, 'evidence-details');
-    content.append(node('p', `PP per pollen: ${number(team.pointsPerPollen)} per event.`));
+    content.append(node('p', `Cost: ${team.price} Pollen. Value: ${number(team.pointsPerPollen)} PP per event for every 1 Pollen spent.`));
     content.append(node('p', `Average OPR: ${number(team.averageOpr)} · Best OPR: ${number(team.highestOpr)}`));
     if (evidence.source === 'event_history') {
       content.append(node('p', `Latest OPR: ${number(evidence.lastOpr)} · Recent average: ${number(evidence.recentAverageOpr)} · Trend: ${signed(evidence.trendOprPerEvent)} OPR per event.`));
@@ -109,7 +110,10 @@
       const row = node('tr');
       row.dataset.teamId = team.id;
       const name = node('td', undefined, 'team-cell');
-      name.append(node('strong', team.name), node('small', `#${team.number} · ${team.price} pollen`), evidenceDetails(team));
+      name.append(node('strong', team.name), node('small', `#${team.number}`), evidenceDetails(team));
+      const cost = node('td', undefined, 'num pollen-cost');
+      cost.append(node('span', String(team.price), 'cost-badge'));
+      cost.setAttribute('aria-label', `Cost: ${team.price} Pollen`);
       const points = node('td', undefined, 'num points');
       points.append(node('span', team.predictionPoints === null ? 'Unscored' : number(team.predictionPoints), team.predictionPoints === null ? 'score-note' : ''));
       const evidence = team.evidence ?? {};
@@ -121,9 +125,11 @@
       pick.setAttribute('aria-pressed', String(selected.has(team.id)));
       pick.disabled = !selected.has(team.id) && (!team.draftEligible || selected.size >= 3 || pollenUsed() + team.price > 15);
       if (!team.draftEligible) pick.title = 'This DECODE team is not eligible for the current draft.';
+      else if (!selected.has(team.id) && pollenUsed() + team.price > 15) pick.title = `Costs ${team.price} Pollen; ${15 - pollenUsed()} remaining.`;
+      else if (!selected.has(team.id) && selected.size >= 3) pick.title = 'Your roster already has three teams.';
       pick.onclick = () => selectTeam(team);
       pickCell.append(pick);
-      row.append(node('td', team.rank === null ? '—' : String(team.rank), 'rank'), name, points, node('td', number(evidence.lastOpr), 'num'), trend, node('td', number(team.pointsPerPollen), 'num'), pickCell);
+      row.append(node('td', team.rank === null ? '—' : String(team.rank), 'rank'), name, cost, points, node('td', number(evidence.lastOpr), 'num'), trend, pickCell);
       rows.append(row);
     }
     el('noTeams').hidden = teams.length !== 0;
