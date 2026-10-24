@@ -10,7 +10,7 @@ import {
   buildEventPredictions,
   selectEventPredictionModel,
 } from '../src/predictions/model.mjs';
-import { predictionSnapshot } from '../staging/predictions.mjs';
+import { predictionSnapshot, priceDraftCatalog } from '../staging/predictions.mjs';
 import { createStagingWorker, STAGING_HOST, STAGING_SHEET } from '../staging/worker.mjs';
 import {
   getDecodePredictionCatalog,
@@ -341,20 +341,37 @@ test('invalid, duplicate, unknown, excessive, and over-budget picks cannot be ra
   }
 });
 
-test('prediction prices match the draft board and support the three 15-pollen roster styles', async () => {
-  const { draftTeams } = await predictionSnapshot({});
-  const draft = new Map(getDraftPredictionCatalog().map((t) => [String(t.id), t]));
+test('prediction prices match the authoritative staging draft while production retains its prices', async () => {
+  const { draftTeams, pricing } = await predictionSnapshot({});
+  const legacyCatalog = getDraftPredictionCatalog();
+  const response = await createStagingWorker(undefined, async () => ({
+    uid: LEAGUE_OWNER_UID,
+    emailVerified: true,
+    signInProvider: 'google.com',
+  })).fetch(
+    new Request('https://' + STAGING_HOST + '/api/draft', {
+      headers: { Cookie: '__Host-ftc-staging=valid.token.value' },
+    }),
+    { STAGING_MODE: 'admin-only', RESPONSES_SHEET_ID: STAGING_SHEET },
+  );
+  assert.equal(response.status, 200);
+  const quote = await response.json();
+  assert.equal(quote.preview, true);
+  assert.deepEqual(quote.catalog, priceDraftCatalog(legacyCatalog).catalog);
+  assert.deepEqual(quote.pricing, pricing);
+  const draft = new Map(quote.catalog.map((t) => [String(t.id), t]));
   for (const team of draftTeams) {
     assert.equal(team.price, draft.get(team.id).price);
     assert.ok(Number.isInteger(team.price));
-    assert.ok([3, 4, 5, 6, 11].includes(team.price));
+    assert.ok(team.price >= 3 && team.price <= 11);
   }
   assert.equal(draftTeams.find((t) => t.id === '10809').price, 11);
-  assert.equal(draftTeams.find((t) => t.id === '22105').price, 6);
+  assert.equal(draftTeams.find((t) => t.id === '22105').price, 8);
+  assert.equal(draftTeams.find((t) => t.id === '24730').price, 4);
   for (const ids of [
-    ['10809', '24029'],
-    ['23997', '22105', '32482'],
-    ['24218', '18365', '8097'],
+    ['10809', '24730'],
+    ['26013', '5131', '14968'],
+    ['5131', '8380', '24664'],
   ]) {
     const result = predictRoster(ids, draftTeams);
     assert.equal(result.status, 'scored');
@@ -362,6 +379,13 @@ test('prediction prices match the draft board and support the three 15-pollen ro
     assert.ok(result.predictionPoints > 15, 'PP is performance, not the budget cost');
   }
   assert.equal(predictRoster(['10809', '22105'], draftTeams).status, 'invalid');
+  const publicQuote = await (
+    await production.fetch(new Request('https://league.example/api/draft'), {})
+  ).json();
+  assert.deepEqual(publicQuote.catalog, legacyCatalog);
+  assert.equal(publicQuote.catalog.find((team) => team.id === '24730').price, 11);
+  assert.equal(publicQuote.pricing, undefined);
+  assert.throws(() => priceDraftCatalog(legacyCatalog.slice(1)), /eligible draft catalog/);
 });
 
 test('fractional or invalid pollen prices cannot enter a forecast or ranked roster', () => {
@@ -375,7 +399,9 @@ test('fractional or invalid pollen prices cannot enter a forecast or ranked rost
 test('saved rosters rank scored ties, leave missing data unranked and handle damaged rows', () => {
   const row = (name, ids) => ({
     display_name: name,
-    teams_json: JSON.stringify(ids.map((id) => ({ id }))),
+    teams_json: JSON.stringify(
+      ids.map((id) => ({ id, price: catalog().find((team) => team.id === id)?.price })),
+    ),
     submitted_at: '2026-10-23',
     uid: 'must-not-leak',
     email: 'must-not-leak',
@@ -474,7 +500,7 @@ test('prediction endpoints fail closed for production workbook and alternate hos
 
 test('verified owner receives private data and escaped-by-client labels with only SELECT access', async () => {
   const DB = fakeDb([
-    { display_name: '<img src=x onerror=alert(1)>', teams_json: '[{"id":"10809"}]' },
+    { display_name: '<img src=x onerror=alert(1)>', teams_json: '[{"id":"10809","price":11}]' },
   ]);
   const worker = createStagingWorker(undefined, async () => owner);
   const response = await worker.fetch(request('/api/admin/predictions'), { ...env, DB });

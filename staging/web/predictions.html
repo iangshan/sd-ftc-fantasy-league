@@ -1097,12 +1097,14 @@
               <summary>15 Pollen budget · Choose 1–3 teams</summary>
               <p>
                 <strong>Pollen cost</strong> is the whole-number price taken from your budget.
-                <strong>PP</strong> is projected performance and can exceed 15. Prices are 3, 4, 5,
-                6, or 11 Pollen.
+                <strong>PP</strong> is projected performance and can exceed 15. Prices follow PP and
+                are whole numbers from 3 to 11 Pollen. PP is calculated first; prices do not alter
+                the forecast.
               </p>
+              <p id="pricingNote">Loading the current PP-to-Pollen conversion…</p>
               <ul>
                 <li>Premium team + support: <strong>11 + 4 = 15</strong></li>
-                <li>Two strong picks + budget pick: <strong>6 + 6 + 3 = 15</strong></li>
+                <li>Two strong picks + budget pick: <strong>7 + 5 + 3 = 15</strong></li>
                 <li>Three mid-tier picks: <strong>5 + 5 + 5 = 15</strong></li>
               </ul>
             </details>
@@ -1126,6 +1128,10 @@
                   <option value="4">4 Pollen</option>
                   <option value="5">5 Pollen</option>
                   <option value="6">6 Pollen</option>
+                  <option value="7">7 Pollen</option>
+                  <option value="8">8 Pollen</option>
+                  <option value="9">9 Pollen</option>
+                  <option value="10">10 Pollen</option>
                   <option value="11">11 Pollen</option>
                 </select></label
               ><label class="field"
@@ -1180,7 +1186,7 @@
                     <th scope="col">Rank</th>
                     <th scope="col">Test roster</th>
                     <th scope="col">Teams</th>
-                    <th scope="col" class="num">Pollen</th>
+                    <th scope="col" class="num">Paid Pollen</th>
                     <th scope="col" class="num">PP / event</th>
                   </tr>
                 </thead>
@@ -1203,7 +1209,8 @@
           <ol id="rosterPicks" class="roster-picks"></ol>
           <div class="totals" aria-live="polite">
             <div class="total-line">
-              <span>Pollen spent</span><strong><span id="pollenUsed">0</span> / 15</strong>
+              <span id="pollenUsedLabel">Pollen spent</span
+              ><strong><span id="pollenUsed">0</span> / 15</strong>
             </div>
             <div class="total-line budget-remaining">
               <span>Pollen remaining</span><strong id="pollenRemaining">15</strong>
@@ -1212,6 +1219,7 @@
             ><output id="rosterPoints" class="projection">—</output
             ><span id="projectionNote" class="subtle">Select a team to start.</span>
           </div>
+          <p id="savedPriceNote" class="subtle" hidden></p>
           <button id="clearRoster" class="clear" type="button" disabled>Clear selection</button>
           <div id="accountGate" class="account-gate" role="status">
             Checking your league account… <a href="/dashboard">My dashboard</a>

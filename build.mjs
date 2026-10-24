@@ -104,7 +104,7 @@ export async function buildWorker({
 } = {}) {
   const counts = validateTeamData(await readTeamData());
   const exports = staging
-    ? 'default, requireAccount, authConfig, LEAGUE_OWNER_UID, submitDraft, getDecodePredictionCatalog, getDraftPredictionCatalog'
+    ? 'default, requireAccount, authConfig, LEAGUE_OWNER_UID, submitDraft, getDecodePredictionCatalog, getDraftPredictionCatalog, parseState, catalogVersion, validateArchivedRoster'
     : 'default';
   await build({
     stdin: {

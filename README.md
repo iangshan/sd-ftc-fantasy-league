@@ -11,15 +11,17 @@ The repository is public. Staging permits the league owner and the two approved 
 
 ## League and predictions
 
-The current pool contains 87 eligible teams registered for BioBuzz 2026–27. Prices are whole-number tiers of 3, 4, 5, 6, and 11 Pollen. Each verified account may submit one roster per season.
+The current pool contains 87 eligible teams registered for BioBuzz 2026–27. Each verified account may submit one roster per season. Public-site prices retain the legacy tiers of 3, 4, 5, 6, and 11 Pollen. Private staging instead derives whole-number prices from PP, within 3–11 Pollen, while retaining the 15-Pollen roster budget. Teams without PP cost a provisional 3 Pollen and remain unscored.
 
 The scoring rule adds each drafted team's robot-game OPR after every event. Awards, wins, and advancement do not add separate points. Official earned standings are not implemented yet.
 
 The staging prediction model estimates **PP per event** from completed DECODE results. Its formula, constants, source data, evaluation procedure, and limitations are public:
 
 - [PP formula and evaluation](docs/PREDICTIONS.md)
-- [Prediction model](src/predictions/model.mjs) and [historical evaluation](src/predictions/history.mjs)
+- [Prediction model](src/predictions/model.mjs), [historical evaluation](src/predictions/history.mjs), and [staging pricing policy](src/predictions/pricing.mjs)
 - [Event-data provenance and refresh procedure](data/predictions/README.md)
+
+Staging pricing currently uses one Pollen step per 15 PP: Rust-eze Robotics costs 4 Pollen, Crow Force 11, Fusion 9, and Runtime Terror 8. Pricing does not change the PP model, and saved rosters retain the prices paid when submitted. See the [pricing formula and roster examples](docs/PREDICTIONS.md#pollen-pricing-in-staging).
 
 The current snapshot contains 388 team/event results from 20 completed events. Seventy eligible teams have PP; 17 remain unscored and can still be drafted. DECODE-scale estimates are experimental and are not calibrated forecasts for a different season's game.
 

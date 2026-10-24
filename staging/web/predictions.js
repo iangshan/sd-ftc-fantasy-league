@@ -23,16 +23,34 @@
     uncertainSave = false,
     accountIssue = '',
     previousUid;
+  let savedTeams = new Map();
   let accountEpoch = 0,
     submissionToken = makeToken();
   const selected = new Set();
   const plannedEvents = new Map();
   const detailFields = ['playerName', 'playerTeamName', 'discordId'];
-  const pickedTeams = () =>
-    data
+  const pickedTeams = () => {
+    // Current prices are new-entry quotes. Confirmed rosters retain their
+    // recorded costs even when a team's quote changes or it leaves the pool.
+    if (savedReceipt)
+      return savedReceipt.teamIds.map((id) => {
+        const current = data?.draftTeams.find((team) => team.id === id),
+          recorded = savedTeams.get(id);
+        return {
+          ...current,
+          id,
+          number: Number(id),
+          name: recorded?.name || current?.name || 'Saved team',
+          price: recorded?.price ?? null,
+          predictionPoints: current?.predictionPoints ?? null,
+        };
+      });
+    return data
       ? [...selected].map((id) => data.draftTeams.find((team) => team.id === id)).filter(Boolean)
       : [];
-  const pollenUsed = () => pickedTeams().reduce((sum, team) => sum + team.price, 0);
+  };
+  const pollenUsed = () =>
+    savedReceipt ? savedReceipt.total : pickedTeams().reduce((sum, team) => sum + team.price, 0);
   const account = () => window.leagueAccount;
   const locked = () =>
     submitting ||
@@ -77,7 +95,7 @@
         throw new Error('The team catalog needs an organizer update. Submissions are paused.');
       seen.add(id);
       if (entry.available === false) continue;
-      if (!Number.isInteger(entry.price) || ![3, 4, 5, 6, 11].includes(entry.price))
+      if (!Number.isInteger(entry.price) || entry.price < 3 || entry.price > 11)
         throw new Error('A team has an invalid Pollen price. Submissions are paused.');
       catalog.push({ ...entry, id, number: Number(id), available: true });
     }
@@ -88,6 +106,7 @@
       open: value.open,
       preview: value.preview,
       priceVersion: String(value.priceVersion ?? ''),
+      pricing: value.pricing ?? null,
     };
   }
 
@@ -139,6 +158,7 @@
     const scored = teams.filter((team) => team.predictionPoints !== null);
     return {
       ...(predictions ?? {}),
+      pricing: currentDraft.pricing,
       draftTeams: teams,
       teams: scored,
       model: predictions?.model ?? {
@@ -236,7 +256,7 @@
           node('strong', team.name),
           node(
             'small',
-            `#${team.number} · Cost: ${team.price} Pollen · ${team.predictionPoints === null ? 'Unscored' : number(team.predictionPoints) + ' PP / event'}`,
+            `#${team.number} · ${savedReceipt ? 'Paid' : 'Cost'}: ${team.price === null ? 'unavailable' : team.price + ' Pollen'} · ${team.predictionPoints === null ? 'Unscored' : number(team.predictionPoints) + ' PP / event'}`,
           ),
         );
         const remove = node('button', '×', 'remove');
@@ -267,7 +287,13 @@
       list.append(row);
     }
     el('pollenUsed').textContent = String(pollenUsed());
+    el('pollenUsedLabel').textContent = savedReceipt ? 'Pollen paid' : 'Pollen spent';
     el('pollenRemaining').textContent = String(15 - pollenUsed());
+    el('savedPriceNote').hidden = !savedReceipt;
+    el('savedPriceNote').textContent =
+      savedReceipt && savedTeams.size !== savedReceipt.teamIds.length
+        ? 'Your original receipt total is preserved. Individual paid costs are unavailable; check My dashboard for the saved details.'
+        : 'Paid costs stay fixed for your saved roster. The team table shows current prices; PP reflects the current forecast.';
     el('mobileRosterSummary').textContent =
       `${teams.length} team${teams.length === 1 ? '' : 's'} · ${15 - pollenUsed()} Pollen left`;
     const missing = teams.filter((team) => team.predictionPoints === null).length;
@@ -278,7 +304,7 @@
       ? 'Select a team to start.'
       : missing
         ? `${missing} team${missing === 1 ? ' has' : 's have'} no PP estimate. Known subtotal: ${number(points)} PP. Unscored teams can still be drafted.`
-        : 'One event per selected team, on the DECODE scale. PP does not change your Pollen cost.';
+        : 'One event per selected team, on the DECODE scale. New roster prices follow PP; saved rosters retain their paid costs.';
     el('clearRoster').disabled = !selected.size || locked() || loading;
     renderScenario();
   }
@@ -494,6 +520,13 @@
     }
   }
   function renderMetadata() {
+    const pricing = data.pricing;
+    el('pricingNote').textContent =
+      pricing?.version === 'pp-pollen-v1' &&
+      Number.isInteger(pricing.ppPerPollen) &&
+      pricing.ppPerPollen > 0
+        ? `Current conversion: divide team PP by ${pricing.ppPerPollen} and round up, then keep the price between 3 and 11 Pollen. Teams without PP cost 3. The conversion uses the highest PP across all eligible teams; filters do not change prices.`
+        : 'Prices follow PP, using a whole-number conversion based on the highest PP across all eligible teams. Teams without PP cost 3 Pollen. Filters do not change prices.';
     el('scoredCount').textContent = String(data.counts.scored);
     el('poolCount').textContent = 'Expected OPR per event · DECODE scale';
     el('historyCount').textContent = String(data.coverage.historyTeams ?? 0);
@@ -584,13 +617,40 @@
 
   function showReceipt(receipt, roster, moveFocus = false) {
     if (!receiptIsValid(receipt)) return false;
+    if (
+      savedReceipt?.receiptId !== receipt.receiptId ||
+      savedReceipt?.priceVersion !== receipt.priceVersion ||
+      savedReceipt?.total !== receipt.total ||
+      JSON.stringify(savedReceipt?.teamIds) !== JSON.stringify(receipt.teamIds.map(String))
+    )
+      savedTeams = new Map();
     savedReceipt = { ...receipt, teamIds: receipt.teamIds.map(String) };
+    if (roster?.receipt?.receiptId === savedReceipt.receiptId && Array.isArray(roster.teams)) {
+      const recorded = new Map();
+      for (const team of roster.teams) {
+        const id = String(team?.id ?? team?.number ?? '');
+        if (
+          !savedReceipt.teamIds.includes(id) ||
+          recorded.has(id) ||
+          !Number.isInteger(team?.price) ||
+          team.price < 3 ||
+          team.price > 11
+        )
+          break;
+        recorded.set(id, team);
+      }
+      if (
+        recorded.size === savedReceipt.teamIds.length &&
+        roster.teams.length === savedReceipt.teamIds.length &&
+        [...recorded.values()].reduce((sum, team) => sum + team.price, 0) === savedReceipt.total
+      )
+        savedTeams = recorded;
+    }
     uncertainSave = false;
     accountIssue = '';
     selected.clear();
     plannedEvents.clear();
-    for (const id of savedReceipt.teamIds)
-      if (data?.draftTeams.some((team) => team.id === id)) selected.add(id);
+    for (const id of savedReceipt.teamIds) selected.add(id);
     const rows = el('successRoster');
     rows.replaceChildren();
     const names = new Map(
@@ -653,6 +713,7 @@
         uncertainSave = false;
         if (savedReceipt) {
           savedReceipt = null;
+          savedTeams = new Map();
           selected.clear();
           plannedEvents.clear();
           el('successPanel').hidden = true;
@@ -851,6 +912,7 @@
       if (previousUid !== undefined && previousUid !== null) {
         submitting = false;
         savedReceipt = null;
+        savedTeams = new Map();
         uncertainSave = false;
         accountIssue = '';
         selected.clear();

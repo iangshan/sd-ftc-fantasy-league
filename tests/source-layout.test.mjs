@@ -45,11 +45,14 @@ test('production exposes only the Worker entry while staging retains its shared 
   assert.deepEqual(Object.keys(staging).sort(), [
     'LEAGUE_OWNER_UID',
     'authConfig',
+    'catalogVersion',
     'default',
     'getDecodePredictionCatalog',
     'getDraftPredictionCatalog',
+    'parseState',
     'requireAccount',
     'submitDraft',
+    'validateArchivedRoster',
   ]);
 });
 
