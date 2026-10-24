@@ -1,0 +1,872 @@
+[
+  {
+    "id": "10809",
+    "number": 10809,
+    "name": "Crow Force",
+    "averageOpr": 102.63224593582704,
+    "highestOpr": 148.91824495149575,
+    "rank": 1,
+    "price": 11,
+    "available": true
+  },
+  {
+    "id": "19743",
+    "number": 19743,
+    "name": "Definitely Human",
+    "averageOpr": 94.51138405128852,
+    "highestOpr": 111.84396958311333,
+    "rank": 2,
+    "price": 11,
+    "available": true
+  },
+  {
+    "id": "24730",
+    "number": 24730,
+    "name": "Rust-eze Robotics",
+    "averageOpr": 89.00451187008817,
+    "highestOpr": 124.66990349461291,
+    "rank": 3,
+    "price": 11,
+    "available": true
+  },
+  {
+    "id": "31862",
+    "number": 31862,
+    "name": "SEGFAULT",
+    "averageOpr": 87.29921856106644,
+    "highestOpr": 123.48556286414026,
+    "rank": 4,
+    "price": 11,
+    "available": true
+  },
+  {
+    "id": "18142",
+    "number": 18142,
+    "name": "Fusion",
+    "averageOpr": 77.64053680115089,
+    "highestOpr": 113.25207520554738,
+    "rank": 5,
+    "price": 11,
+    "available": true
+  },
+  {
+    "id": "26013",
+    "number": 26013,
+    "name": "Bengal Bots",
+    "averageOpr": 75.00897047090223,
+    "highestOpr": 110.06179660392071,
+    "rank": 6,
+    "price": 6,
+    "available": true
+  },
+  {
+    "id": "12499",
+    "number": 12499,
+    "name": "Gear Up",
+    "averageOpr": 74.7597236952329,
+    "highestOpr": 94.72052341017923,
+    "rank": 7,
+    "price": 6,
+    "available": true
+  },
+  {
+    "id": "24664",
+    "number": 24664,
+    "name": "RoBusted",
+    "averageOpr": 71.20520329303892,
+    "highestOpr": 83.73109788506444,
+    "rank": 8,
+    "price": 6,
+    "available": true
+  },
+  {
+    "id": "23673",
+    "number": 23673,
+    "name": "Mech-A-Mind",
+    "averageOpr": 67.91022204628423,
+    "highestOpr": 90.07825557994532,
+    "rank": 9,
+    "price": 6,
+    "available": true
+  },
+  {
+    "id": "3650",
+    "number": 3650,
+    "name": "Limited Liability",
+    "averageOpr": 67.03050610138585,
+    "highestOpr": 81.88610048813345,
+    "rank": 10,
+    "price": 6,
+    "available": true
+  },
+  {
+    "id": "23997",
+    "number": 23997,
+    "name": "Catalysts",
+    "averageOpr": 62.68387367922065,
+    "highestOpr": 106.57862882070657,
+    "rank": 11,
+    "price": 6,
+    "available": true
+  },
+  {
+    "id": "14535",
+    "number": 14535,
+    "name": "Alpacas",
+    "averageOpr": 60.71136068324929,
+    "highestOpr": 68.54049919154674,
+    "rank": 12,
+    "price": 6,
+    "available": true
+  },
+  {
+    "id": "11212",
+    "number": 11212,
+    "name": "The Clueless",
+    "averageOpr": 60.691430534835504,
+    "highestOpr": 89.83961640750302,
+    "rank": 13,
+    "price": 6,
+    "available": true
+  },
+  {
+    "id": "32159",
+    "number": 32159,
+    "name": "Flight Risk",
+    "averageOpr": 59.34712953925394,
+    "highestOpr": 68.29525644486827,
+    "rank": 14,
+    "price": 6,
+    "available": true
+  },
+  {
+    "id": "15097",
+    "number": 15097,
+    "name": "Python",
+    "averageOpr": 59.29267287034912,
+    "highestOpr": 81.34218476434309,
+    "rank": 15,
+    "price": 6,
+    "available": true
+  },
+  {
+    "id": "26235",
+    "number": 26235,
+    "name": "RoboGenesis",
+    "averageOpr": 55.80391107565381,
+    "highestOpr": 87.68690609787912,
+    "rank": 16,
+    "price": 6,
+    "available": true
+  },
+  {
+    "id": "22105",
+    "number": 22105,
+    "name": "Runtime Terror",
+    "averageOpr": 55.208180761807434,
+    "highestOpr": 100.33016687772964,
+    "rank": 17,
+    "price": 6,
+    "available": true
+  },
+  {
+    "id": "5131",
+    "number": 5131,
+    "name": "Pointers",
+    "averageOpr": 55.05481660772447,
+    "highestOpr": 86.38746023942497,
+    "rank": 18,
+    "price": 6,
+    "available": true
+  },
+  {
+    "id": "32811",
+    "number": 32811,
+    "name": "Pineapple Power",
+    "averageOpr": 52.660933302238035,
+    "highestOpr": 82.51284201841464,
+    "rank": 19,
+    "price": 6,
+    "available": true
+  },
+  {
+    "id": "8380",
+    "number": 8380,
+    "name": "UC Robotics",
+    "averageOpr": 50.19872959789925,
+    "highestOpr": 72.51284830141218,
+    "rank": 20,
+    "price": 6,
+    "available": true
+  },
+  {
+    "id": "4262",
+    "number": 4262,
+    "name": "Ridgebots",
+    "averageOpr": 46.19235304741705,
+    "highestOpr": 64.45140650070418,
+    "rank": 21,
+    "price": 6,
+    "available": true
+  },
+  {
+    "id": "7609",
+    "number": 7609,
+    "name": "Lions",
+    "averageOpr": 45.92892865540631,
+    "highestOpr": 54.32354336809035,
+    "rank": 22,
+    "price": 5,
+    "available": true
+  },
+  {
+    "id": "31420",
+    "number": 31420,
+    "name": "Turtles In a Box",
+    "averageOpr": 44.48214141762146,
+    "highestOpr": 60.968711499378145,
+    "rank": 23,
+    "price": 5,
+    "available": true
+  },
+  {
+    "id": "9266",
+    "number": 9266,
+    "name": "Pyrobots",
+    "averageOpr": 42.83657770481202,
+    "highestOpr": 66.05534802740371,
+    "rank": 24,
+    "price": 5,
+    "available": true
+  },
+  {
+    "id": "18263",
+    "number": 18263,
+    "name": "HIGH VOLTAGE",
+    "averageOpr": 42.55089855912101,
+    "highestOpr": 55.2379721300476,
+    "rank": 25,
+    "price": 5,
+    "available": true
+  },
+  {
+    "id": "23280",
+    "number": 23280,
+    "name": "C.A.R.T",
+    "averageOpr": 41.32745436527598,
+    "highestOpr": 55.463856735181416,
+    "rank": 26,
+    "price": 5,
+    "available": true
+  },
+  {
+    "id": "8097",
+    "number": 8097,
+    "name": "Botcats",
+    "averageOpr": 40.50407007141625,
+    "highestOpr": 66.10319598279668,
+    "rank": 27,
+    "price": 5,
+    "available": true
+  },
+  {
+    "id": "24142",
+    "number": 24142,
+    "name": "Steel Vengeance",
+    "averageOpr": 39.86577812806308,
+    "highestOpr": 46.910949548775285,
+    "rank": 28,
+    "price": 5,
+    "available": true
+  },
+  {
+    "id": "18365",
+    "number": 18365,
+    "name": "Dapper RoboNoodles",
+    "averageOpr": 38.36789181954942,
+    "highestOpr": 57.795249412740695,
+    "rank": 29,
+    "price": 5,
+    "available": true
+  },
+  {
+    "id": "14968",
+    "number": 14968,
+    "name": "Matador Mechanics",
+    "averageOpr": 37.90013059933423,
+    "highestOpr": 49.06604531607669,
+    "rank": 30,
+    "price": 5,
+    "available": true
+  },
+  {
+    "id": "23676",
+    "number": 23676,
+    "name": "Bumblebee",
+    "averageOpr": 37.7086718855187,
+    "highestOpr": 52.90961492992394,
+    "rank": 31,
+    "price": 5,
+    "available": true
+  },
+  {
+    "id": "4216",
+    "number": 4216,
+    "name": "Rise of Hephaestus",
+    "averageOpr": 37.05452462926303,
+    "highestOpr": 46.8959383815905,
+    "rank": 32,
+    "price": 5,
+    "available": true
+  },
+  {
+    "id": "24218",
+    "number": 24218,
+    "name": "BurritoBot",
+    "averageOpr": 36.30212017299341,
+    "highestOpr": 53.689045959741804,
+    "rank": 33,
+    "price": 5,
+    "available": true
+  },
+  {
+    "id": "22567",
+    "number": 22567,
+    "name": "xBots",
+    "averageOpr": 35.64300897644681,
+    "highestOpr": 45.74706087966065,
+    "rank": 34,
+    "price": 5,
+    "available": true
+  },
+  {
+    "id": "7159",
+    "number": 7159,
+    "name": "Robo Ravens",
+    "averageOpr": 35.49549231193132,
+    "highestOpr": 51.853191265192876,
+    "rank": 35,
+    "price": 5,
+    "available": true
+  },
+  {
+    "id": "5015",
+    "number": 5015,
+    "name": "Buffalo Wings",
+    "averageOpr": 35.44694966267715,
+    "highestOpr": 57.81905940531244,
+    "rank": 36,
+    "price": 5,
+    "available": true
+  },
+  {
+    "id": "31973",
+    "number": 31973,
+    "name": "International Robotics Squad (IRS)",
+    "averageOpr": 35.06470645187992,
+    "highestOpr": 44.43822571605836,
+    "rank": 37,
+    "price": 5,
+    "available": true
+  },
+  {
+    "id": "31222",
+    "number": 31222,
+    "name": "Quantum Robotics",
+    "averageOpr": 34.14881116998781,
+    "highestOpr": 38.538577207125314,
+    "rank": 38,
+    "price": 5,
+    "available": true
+  },
+  {
+    "id": "12778",
+    "number": 12778,
+    "name": "Tech Empire",
+    "averageOpr": 32.14059969000963,
+    "highestOpr": 37.840918997656814,
+    "rank": 39,
+    "price": 5,
+    "available": true
+  },
+  {
+    "id": "31800",
+    "number": 31800,
+    "name": "Control Alt Defeat",
+    "averageOpr": 31.235367936013404,
+    "highestOpr": 37.04878371853881,
+    "rank": 40,
+    "price": 5,
+    "available": true
+  },
+  {
+    "id": "13084",
+    "number": 13084,
+    "name": "Robot Raiders",
+    "averageOpr": 30.88947940451539,
+    "highestOpr": 49.75754506958866,
+    "rank": 41,
+    "price": 5,
+    "available": true
+  },
+  {
+    "id": "14338",
+    "number": 14338,
+    "name": "CAOS Robotics (\"Chaos\")",
+    "averageOpr": 29.310189047289878,
+    "highestOpr": 49.35783264701554,
+    "rank": 42,
+    "price": 5,
+    "available": true
+  },
+  {
+    "id": "32122",
+    "number": 32122,
+    "name": "SpyderX",
+    "averageOpr": 28.8724722716657,
+    "highestOpr": 37.27186530325743,
+    "rank": 43,
+    "price": 4,
+    "available": true
+  },
+  {
+    "id": "31622",
+    "number": 31622,
+    "name": "Rayvolution",
+    "averageOpr": 28.771100292086988,
+    "highestOpr": 44.170316130630894,
+    "rank": 44,
+    "price": 4,
+    "available": true
+  },
+  {
+    "id": "24111",
+    "number": 24111,
+    "name": "Coyote CODEX",
+    "averageOpr": 27.360381288947092,
+    "highestOpr": 39.19039029937993,
+    "rank": 45,
+    "price": 4,
+    "available": true
+  },
+  {
+    "id": "24029",
+    "number": 24029,
+    "name": "CocoNuts & Bolts",
+    "averageOpr": 27.158573518576077,
+    "highestOpr": 44.69823642810799,
+    "rank": 46,
+    "price": 4,
+    "available": true
+  },
+  {
+    "id": "32158",
+    "number": 32158,
+    "name": "Thousand Screws Aloose",
+    "averageOpr": 26.973285714468023,
+    "highestOpr": 40.54124799284918,
+    "rank": 47,
+    "price": 4,
+    "available": true
+  },
+  {
+    "id": "6226",
+    "number": 6226,
+    "name": "Bambusa",
+    "averageOpr": 26.165190180896317,
+    "highestOpr": 43.63084551066271,
+    "rank": 48,
+    "price": 4,
+    "available": true
+  },
+  {
+    "id": "6016",
+    "number": 6016,
+    "name": "Ironwolves",
+    "averageOpr": 26.008765635097852,
+    "highestOpr": 38.10311715890798,
+    "rank": 49,
+    "price": 4,
+    "available": true
+  },
+  {
+    "id": "27602",
+    "number": 27602,
+    "name": "Apex Dynamics",
+    "averageOpr": 25.41005757194995,
+    "highestOpr": 34.93433350772283,
+    "rank": 50,
+    "price": 4,
+    "available": true
+  },
+  {
+    "id": "23696",
+    "number": 23696,
+    "name": "Kinematic Flying Chickens",
+    "averageOpr": 24.81393527039108,
+    "highestOpr": 30.842156564715943,
+    "rank": 51,
+    "price": 4,
+    "available": true
+  },
+  {
+    "id": "3848",
+    "number": 3848,
+    "name": "Shockwave",
+    "averageOpr": 24.675926542126966,
+    "highestOpr": 34.507986606991025,
+    "rank": 52,
+    "price": 4,
+    "available": true
+  },
+  {
+    "id": "32210",
+    "number": 32210,
+    "name": "BMMS Engineers",
+    "averageOpr": 24.35641919824184,
+    "highestOpr": 29.025179062427654,
+    "rank": 53,
+    "price": 4,
+    "available": true
+  },
+  {
+    "id": "13089",
+    "number": 13089,
+    "name": "E T Brigade",
+    "averageOpr": 22.827236206359256,
+    "highestOpr": 47.70353852662767,
+    "rank": 54,
+    "price": 4,
+    "available": true
+  },
+  {
+    "id": "9892",
+    "number": 9892,
+    "name": "EngiNERDs",
+    "averageOpr": 22.64160579938236,
+    "highestOpr": 42.88031963028226,
+    "rank": 55,
+    "price": 4,
+    "available": true
+  },
+  {
+    "id": "27600",
+    "number": 27600,
+    "name": "Robot Revolution",
+    "averageOpr": 22.026753010051983,
+    "highestOpr": 30.940247428384918,
+    "rank": 56,
+    "price": 4,
+    "available": true
+  },
+  {
+    "id": "9164",
+    "number": 9164,
+    "name": "Zorrobots",
+    "averageOpr": 21.170184638379048,
+    "highestOpr": 28.176162453915776,
+    "rank": 57,
+    "price": 4,
+    "available": true
+  },
+  {
+    "id": "9049",
+    "number": 9049,
+    "name": "RoboPuffs",
+    "averageOpr": 20.699644214171837,
+    "highestOpr": 24.758704269136356,
+    "rank": 58,
+    "price": 4,
+    "available": true
+  },
+  {
+    "id": "11285",
+    "number": 11285,
+    "name": "PATENT PENDING",
+    "averageOpr": 20.657957295062754,
+    "highestOpr": 23.686148589809797,
+    "rank": 59,
+    "price": 4,
+    "available": true
+  },
+  {
+    "id": "26982",
+    "number": 26982,
+    "name": "Sentinel",
+    "averageOpr": 20.476549797777814,
+    "highestOpr": 44.047054495656575,
+    "rank": 60,
+    "price": 4,
+    "available": true
+  },
+  {
+    "id": "32420",
+    "number": 32420,
+    "name": "Hot Pink Hypothesis",
+    "averageOpr": 20.208388065749,
+    "highestOpr": 31.883731924834077,
+    "rank": 61,
+    "price": 4,
+    "available": true
+  },
+  {
+    "id": "24312",
+    "number": 24312,
+    "name": "Engineering Gear Giants",
+    "averageOpr": 19.184602697925833,
+    "highestOpr": 26.525530679751455,
+    "rank": 62,
+    "price": 4,
+    "available": true
+  },
+  {
+    "id": "22321",
+    "number": 22321,
+    "name": "Holy Calves",
+    "averageOpr": 19.06126884662637,
+    "highestOpr": 25.229104336248415,
+    "rank": 63,
+    "price": 4,
+    "available": true
+  },
+  {
+    "id": "20355",
+    "number": 20355,
+    "name": "Keep It Simple 2",
+    "averageOpr": 18.322771071504135,
+    "highestOpr": 32.278711956116,
+    "rank": 64,
+    "price": 3,
+    "available": true
+  },
+  {
+    "id": "28644",
+    "number": 28644,
+    "name": "Colt- Robotics",
+    "averageOpr": 18.02229379680901,
+    "highestOpr": 24.587124166840688,
+    "rank": 65,
+    "price": 3,
+    "available": true
+  },
+  {
+    "id": "8606",
+    "number": 8606,
+    "name": "RSF Intergalactic Dragons",
+    "averageOpr": 17.869376316332794,
+    "highestOpr": 18.827539324216463,
+    "rank": 66,
+    "price": 3,
+    "available": true
+  },
+  {
+    "id": "32482",
+    "number": 32482,
+    "name": "Tungsten Titans",
+    "averageOpr": 17.16383959225647,
+    "highestOpr": 27.550599424154264,
+    "rank": 67,
+    "price": 3,
+    "available": true
+  },
+  {
+    "id": "22529",
+    "number": 22529,
+    "name": "RoboGOATs",
+    "averageOpr": 16.77034495457481,
+    "highestOpr": 24.863170832449832,
+    "rank": 68,
+    "price": 3,
+    "available": true
+  },
+  {
+    "id": "1622",
+    "number": 1622,
+    "name": "Team Spyder",
+    "averageOpr": 16.299882923476396,
+    "highestOpr": 28.100900607633964,
+    "rank": 69,
+    "price": 3,
+    "available": true
+  },
+  {
+    "id": "10793",
+    "number": 10793,
+    "name": "Voltrons",
+    "averageOpr": 16.25698422408821,
+    "highestOpr": 21.932084764642703,
+    "rank": 70,
+    "price": 3,
+    "available": true
+  },
+  {
+    "id": "30556",
+    "number": 30556,
+    "name": "T3rm!n@tor",
+    "averageOpr": 16.158227860758114,
+    "highestOpr": 26.393574040074206,
+    "rank": 71,
+    "price": 3,
+    "available": true
+  },
+  {
+    "id": "31139",
+    "number": 31139,
+    "name": "Safety Hazard",
+    "averageOpr": 16.089138391604042,
+    "highestOpr": 18.572278911032512,
+    "rank": 72,
+    "price": 3,
+    "available": true
+  },
+  {
+    "id": "26471",
+    "number": 26471,
+    "name": "Steady State",
+    "averageOpr": 15.20614720170044,
+    "highestOpr": 21.764203878840277,
+    "rank": 73,
+    "price": 3,
+    "available": true
+  },
+  {
+    "id": "32005",
+    "number": 32005,
+    "name": "State Machine",
+    "averageOpr": 13.81622788788086,
+    "highestOpr": 21.385590398920588,
+    "rank": 74,
+    "price": 3,
+    "available": true
+  },
+  {
+    "id": "24041",
+    "number": 24041,
+    "name": "Solid State",
+    "averageOpr": 13.598908521769717,
+    "highestOpr": 20.815093777904146,
+    "rank": 75,
+    "price": 3,
+    "available": true
+  },
+  {
+    "id": "32007",
+    "number": 32007,
+    "name": "State Space",
+    "averageOpr": 13.542403996790316,
+    "highestOpr": 16.58684300601756,
+    "rank": 76,
+    "price": 3,
+    "available": true
+  },
+  {
+    "id": "32627",
+    "number": 32627,
+    "name": "Iron Assassins",
+    "averageOpr": 12.49333439194758,
+    "highestOpr": 19.288210827582315,
+    "rank": 77,
+    "price": 3,
+    "available": true
+  },
+  {
+    "id": "6565",
+    "number": 6565,
+    "name": "Mechanical Meatloaf",
+    "averageOpr": 11.71169686528026,
+    "highestOpr": 15.992443071182741,
+    "rank": 78,
+    "price": 3,
+    "available": true
+  },
+  {
+    "id": "32689",
+    "number": 32689,
+    "name": "MTM",
+    "averageOpr": 10.376437602758704,
+    "highestOpr": 14.943928760419416,
+    "rank": 79,
+    "price": 3,
+    "available": true
+  },
+  {
+    "id": "31742",
+    "number": 31742,
+    "name": "Super Nova",
+    "averageOpr": 10.288467881385303,
+    "highestOpr": 18.74784274621223,
+    "rank": 80,
+    "price": 3,
+    "available": true
+  },
+  {
+    "id": "20422",
+    "number": 20422,
+    "name": "Team Spyder Too",
+    "averageOpr": 9.369688544199857,
+    "highestOpr": 14.028302732864702,
+    "rank": 81,
+    "price": 3,
+    "available": true
+  },
+  {
+    "id": "30622",
+    "number": 30622,
+    "name": "Rebel Dolphins",
+    "averageOpr": 8.787875294094695,
+    "highestOpr": 24.03931467018863,
+    "rank": 82,
+    "price": 3,
+    "available": true
+  },
+  {
+    "id": "26637",
+    "number": 26637,
+    "name": "Circuit Crawlers",
+    "averageOpr": 8.202035049931258,
+    "highestOpr": 13.410232132879237,
+    "rank": 83,
+    "price": 3,
+    "available": true
+  },
+  {
+    "id": "33418",
+    "number": 33418,
+    "name": "State Pattern",
+    "averageOpr": 5.5847968634117615,
+    "highestOpr": 11.38658428980787,
+    "rank": 84,
+    "price": 3,
+    "available": true
+  },
+  {
+    "id": "26852",
+    "number": 26852,
+    "name": "Team Hope",
+    "averageOpr": null,
+    "highestOpr": null,
+    "rank": null,
+    "price": null,
+    "available": false
+  },
+  {
+    "id": "27521",
+    "number": 27521,
+    "name": "Pineapple Power",
+    "averageOpr": null,
+    "highestOpr": null,
+    "rank": null,
+    "price": null,
+    "available": false
+  },
+  {
+    "id": "31996",
+    "number": 31996,
+    "name": "Autonomous Edge",
+    "averageOpr": null,
+    "highestOpr": null,
+    "rank": null,
+    "price": null,
+    "available": false
+  }
+]

@@ -1,39 +1,41 @@
 # League accounts
 
-Firebase Authentication project: `ftc-fantasy-league` (Spark/free). Sign-in is federated only: Google, Apple, and GitHub. Email/password sign-in and registration are disabled; existing account records and rosters are retained. Analytics, Firebase Hosting, and paid services are not needed. The public web configuration in the Worker is an app identifier, not a service-account credential. Never place the Sheets service-account key in client code.
+Firebase Authentication provides identity for the league; Cloudflare D1 binds each roster to a Firebase UID and season. `/dashboard` displays the participant's saved roster and account status.
 
-Cloudflare continues to host the site and private roster ownership in D1. `/dashboard` is the participant dashboard. Firebase handles token refresh and federated sign-in. The Worker validates every account API token through Google's authenticated account lookup, checks its expected project and uid, and rejects disabled or revoked sessions. Email verification is required to submit.
+Google sign-in is enabled. Apple and GitHub integrations exist but remain disabled in `enabledProviders` until their Firebase settings are configured. Email/password sign-in is disabled. Public Firebase web configuration identifies the app; it is not a service-account credential.
 
-Apply `migrations/0002_account_rosters.sql` to the existing D1 database before deploying this version. This migration was applied manually through the Cloudflare console on 2026-10-20. It is idempotent. Do not replay `0001_write_locks.sql` on this existing database.
+## Server verification
 
-Roster ownership is bound to the authenticated Firebase uid and season. Client-supplied names, email, Discord, uid, and submission tokens cannot select an owner. A server-generated submission token and the existing write lock coordinate the Sheets row and D1 ownership snapshot. The ownership checkpoint is persisted before attempting a Sheets write and remains until both stores confirm success. Users can recover only their own pending entry after two minutes. Organizer recovery also records account ownership. The saved roster keeps the names and prices from submission time.
+Every account API request verifies its ID token through Google's `accounts:lookup` service. The server checks the expected Firebase project, issuer, UID, timestamps, and revocation state. Disabled or deleted accounts are rejected. A verified email is required to submit a roster.
 
-Existing submissions made before accounts existed have no authenticated owner. Do not automatically assign them based on a matching name, email, or Discord string. Verify ownership with the organizer before a manual migration. The existing Google Sheets response columns are unchanged.
+The token's sign-in provider is trusted only after Google validates the token for the same UID. Private staging additionally requires a **Google sign-in**, a verified email, and either the pinned owner UID or an active staging admin role under its `admin-only` configuration. [STAGING.md](STAGING.md#admin-access) describes the guarded two-admin synchronization and the `owner-only` rollback mode. Linking a Google account does not make a session authenticated through a different provider eligible for staging.
 
-The dashboard offers Google, Apple, and GitHub sign-in. Each creates a league account automatically on first use and requests basic identity only: Apple with the `email` and `name` scopes, GitHub with `user:email`. The authorized production domain is `sd-ftc-fantasy-league.sdftcfantasyleague.workers.dev`. If a custom domain is added, add its exact hostname in Firebase Authentication → Settings → Authorized domains.
+Client-provided names, email addresses, roles, UIDs, and submission tokens cannot choose a roster's owner. The submission service derives ownership and its idempotency token from the authenticated UID and season.
 
-## Enabling the sign-in providers
+## Saving and recovering a roster
 
-This is a two-step switch, and both steps are required.
+One account may save one roster per season. The service records an ownership checkpoint before writing to Sheets and retains it until both Sheets and D1 confirm the save. Repeating an already-completed request returns the original receipt rather than creating another entry.
 
-1. Turn the provider on in Firebase Authentication → Sign-in method.
-2. Set its flag to `true` in `enabledProviders` in `worker.mjs`, then deploy.
+A participant can check an interrupted save in My dashboard after the recovery delay. An admin can also recover it through the admin dashboard. Recovery verifies the expected response row before writing. Saved snapshots retain the names and prices recorded at submission time.
 
-`enabledProviders` is served to the dashboard by `/api/auth/config`. A provider left `false` renders a disabled button labelled "Not available yet" instead of letting a player tap it and hit `auth/operation-not-allowed`. As of 2026-10-20 the live project has Google enabled and Apple and GitHub unconfigured, so the flags are `{ google: true, apple: false, github: false }`. Verify the Firebase side before flipping a flag:
+Legacy entries created before account ownership was introduced require an explicit admin link. A matching name, email, or Discord contact alone is not proof of ownership.
 
-```
-curl -s -X POST "https://identitytoolkit.googleapis.com/v1/accounts:createAuthUri?key=<apiKey>" \
-  -H 'Content-Type: application/json' \
-  -d '{"providerId":"apple.com","continueUri":"https://sd-ftc-fantasy-league.sdftcfantasyleague.workers.dev/dashboard"}'
-```
+## Provider configuration
 
-An `authUri` in the response means the provider is live; `OPERATION_NOT_ALLOWED` means it is not configured yet. The `apiKey` is the public web config already in `worker.mjs`.
+To enable another provider:
 
-- **Apple** requires a paid Apple Developer Program membership. Create a Services ID and a Sign in with Apple private key, then give Firebase the Services ID, Team ID, Key ID, and key. Add Firebase's OAuth callback URL to the Services ID's Return URLs. Apple accounts arrive with a verified email, which may be an `@privaterelay.appleid.com` address that forwards to the player.
-- **GitHub** requires a GitHub OAuth app. Paste its Client ID and secret into Firebase and set the app's Authorization callback URL to the one Firebase shows. GitHub identities arrive **unverified**, so those players must use **Send verification email** and **I've verified my email** on the dashboard before they can submit a roster. The server enforces this; it does not special-case any provider.
+1. Configure it in Firebase Authentication → Sign-in method.
+2. Set its entry in `enabledProviders` to `true` in `worker.mjs`.
+3. Verify the callback and authorized domains, test the flow, then deploy the intended environment.
 
-Firebase's default "one account per email address" setting means a player who first signs in with Google and later picks GitHub with the same address gets `auth/account-exists-with-different-credential`. The dashboard tells them to use the option they signed in with originally. Roster ownership is keyed on the Firebase uid, so two providers on one email are two separate league accounts unless they are linked; do not link them without confirming identity with the organizer.
+A disabled provider appears as **Not available yet**. Apple requires its own developer configuration and credentials; GitHub requires an OAuth application. Keep provider secrets in Firebase, not in browser code or Git.
 
-Submissions are enabled and the draft is open. The old Apps Script deployment is archived. Administration uses verified Firebase roles at `/admin`; no organizer password is needed. Scoring is not configured; dashboard copy explicitly says no points or standings are assigned. The previous hostname has been removed from Firebase authorized domains.
+Firebase's account-per-email policy can reject a different sign-in provider with `auth/account-exists-with-different-credential`. Ask the player to use their original sign-in option. Do not link identities or move a roster without verifying ownership.
 
-Validation: 20 local checks cover project/token rejection, email verification, account isolation, duplicate submission prevention, uncertain-write recovery, immutable roster snapshots, and cross-origin rejection. Live account sign-in and dashboard verification are recorded separately in the project handoff state.
+The production and staging hostnames must each be authorized in Firebase. Identity is shared between environments, while roster and admin records are stored separately. Signing in to one hostname does not create the other site's session cookie.
+
+## Database and testing
+
+Production account storage was initialized manually on 2026-10-20, and staging account storage was initialized separately. The historical `0002_account_rosters.sql` is empty and retained for migration history. `0004_account_rosters_schema.sql` creates the account table if missing, making the full migration sequence usable for a fresh database. Inspect the existing schema and migration history before changing an existing database; deployments do not automatically apply remote migrations.
+
+The repository includes tests for authentication boundaries, account isolation, idempotent submissions, invalid rosters, and interrupted-save recovery. Local submission tests use SQLite and a memory-only Sheets adapter. A passing local suite does not establish that another user's live Google sign-in has been performed; Google validates that user's session when they sign in.

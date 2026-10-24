@@ -1,0 +1,8 @@
+# Dependencies, runtime state, and generated deployment bundles.
+node_modules/
+.wrangler/
+dist/
+package-lock.json
+
+# Reproducible data exports keep the importer's canonical JSON layout.
+prediction-data/*.json

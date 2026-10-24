@@ -7,9 +7,20 @@
     "build": "node build.mjs",
     "check": "node build.mjs && node --check dist/worker.mjs",
     "deploy": "npm run check && wrangler deploy",
-    "dev": "npm run build && wrangler dev"
+    "dev": "npm run build && wrangler dev",
+    "build:staging": "node build-staging.mjs",
+    "pretest": "npm run build && npm run build:staging",
+    "test": "node --test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
-    "wrangler": "4.92.0"
+    "wrangler": "4.92.0",
+    "esbuild": "0.27.3",
+    "prettier": "3.6.2"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.13.0"
   }
 }

@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+    <title>San Diego FTC Fantasy League</title>
+    <script>
+      /* THEME_INIT */
+    </script>
+
+    <style>
+      /* LEAGUE_STYLES */
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="brand">
+          <img
+            class="brand-icon"
+            src="__LEAGUE_LOGO__"
+            width="225"
+            height="225"
+            alt="FIRST Tech Challenge — San Diego Region"
+          />
+          <div><div class="brand-name">San Diego FTC Fantasy League</div></div>
+        </div>
+        <div class="header-actions">
+          <div class="season">BioBuzz 2026–2027</div>
+          <div class="theme-switch" role="group" aria-label="Color theme">
+            <button
+              class="theme-choice"
+              type="button"
+              data-theme-choice="light"
+              aria-label="Light mode"
+              aria-pressed="false"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="4" />
+                <path
+                  d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"
+                /></svg
+              ><span>Light</span></button
+            ><button
+              class="theme-choice"
+              type="button"
+              data-theme-choice="dark"
+              aria-label="Dark mode"
+              aria-pressed="true"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                aria-hidden="true"
+              >
+                <path d="M20.7 13A9 9 0 0 1 11 3.3 9 9 0 1 0 20.7 13Z" /></svg
+              ><span>Dark</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="page">
+      <nav class="account-nav" aria-label="League navigation">
+        <a href="/" aria-current="page">Draft board</a><a href="/dashboard">My dashboard</a
+        ><a href="/dashboard" class="account-link" id="accountNavLink">Sign in</a>
+      </nav>
+      <div class="intro">
+        <div>
+          <p class="eyebrow">San Diego · BioBuzz 2026–2027</p>
+          <h1>The draft board.</h1>
+          <p class="intro-copy" id="introCopy">
+            Compare the teams, make your picks, and enter your roster. Everyone in the San Diego FTC
+            community is welcome.
+          </p>
+        </div>
+        <div class="intro-rule" aria-label="Draft at a glance">
+          <div class="rule-stat"><strong id="heroBudget">15</strong><span>Pollen budget</span></div>
+          <div class="rule-stat">
+            <strong id="heroTeams">1–3</strong><span>Teams per roster</span>
+          </div>
+          <div class="rule-stat"><strong id="heroPool">—</strong><span>Available teams</span></div>
+        </div>
+      </div>
+      <div id="previewNotice" class="notice" role="status" hidden>
+        Preview · Team stats are from your uploaded file. Try the team picker; entries will open
+        once Google Sheets is connected.
+      </div>
+      <div id="statusNotice" class="notice" role="status" hidden></div>
+      <div id="errorNotice" class="notice error" role="alert" hidden></div>
+      <div class="layout" id="draftLayout">
+        <section class="catalog" aria-labelledby="catalogTitle">
+          <div class="catalog-heading">
+            <h2 id="catalogTitle">Team pool</h2>
+            <span class="count" id="teamCount">Loading teams…</span>
+          </div>
+          <button
+            type="button"
+            id="jumpToRoster"
+            class="mobile-roster-link"
+            style="display: none; width: 100%"
+          >
+            Your roster <span id="mobileRosterCount">0 / 3 teams · 15 pollen left ↓</span>
+          </button>
+          <div class="toolbar">
+            <div class="search-row">
+              <div class="search-wrap">
+                <label class="sr-only" for="teamSearch">Search teams by name or number</label
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  aria-hidden="true"
+                >
+                  <circle cx="10.5" cy="10.5" r="6.5"></circle>
+                  <path d="m15.5 15.5 5 5"></path></svg
+                ><input
+                  type="search"
+                  id="teamSearch"
+                  placeholder="Search name or number"
+                  autocomplete="off"
+                />
+              </div>
+              <label class="sr-only" for="sortTeams">Sort teams</label
+              ><select id="sortTeams" class="sort">
+                <option value="average">Average OPR ↓</option>
+                <option value="price">Pollen: low to high</option>
+                <option value="number">Team number</option>
+                <option value="name">Team name</option>
+              </select>
+            </div>
+            <div class="filter-row">
+              <div class="price-filter" role="group" aria-label="Filter by pollen cost">
+                <span class="filter-label">Pollen</span
+                ><button type="button" class="chip" data-price="all" aria-pressed="true">All</button
+                ><button type="button" class="chip" data-price="3" aria-pressed="false">3</button
+                ><button type="button" class="chip" data-price="4" aria-pressed="false">4</button
+                ><button type="button" class="chip" data-price="5" aria-pressed="false">5</button
+                ><button type="button" class="chip" data-price="6" aria-pressed="false">6</button
+                ><button type="button" class="chip" data-price="11" aria-pressed="false">11</button>
+              </div>
+              <label class="peak-toggle"
+                ><input type="checkbox" id="showHighest" />Show highest OPR</label
+              >
+            </div>
+          </div>
+          <div id="teamGrid" class="team-grid">
+            <div class="loading">
+              <span class="loading-dot" aria-hidden="true"></span>Loading the team pool…
+            </div>
+          </div>
+        </section>
+        <aside class="sidebar" id="yourRoster" aria-labelledby="rosterTitle">
+          <div class="roster-panel">
+            <div class="roster-heading">
+              <div class="roster-title-row">
+                <h2 id="rosterTitle">Your roster</h2>
+                <span id="slotsCount" class="slots-count">0 / 3 teams</span>
+              </div>
+              <div class="budget-row">
+                <div>
+                  <span class="budget-large" id="budgetRemaining">15</span
+                  ><span class="budget-label">Pollen left</span>
+                </div>
+                <div class="budget-spent">
+                  <strong id="budgetSpent">0</strong> / <span id="budgetTotal">15</span> pollen used
+                </div>
+              </div>
+              <div
+                class="budget-track"
+                role="progressbar"
+                id="budgetProgress"
+                aria-label="Pollen used"
+                aria-valuemin="0"
+                aria-valuemax="15"
+                aria-valuenow="0"
+              >
+                <div class="budget-fill" id="budgetFill"></div>
+              </div>
+            </div>
+            <div class="roster-body">
+              <ol class="roster-list" id="rosterList"></ol>
+              <p class="selection-tip" id="selectionTip">
+                Pick 1 to 3 teams. You don’t have to spend your full budget.
+              </p>
+              <hr class="form-divider" />
+              <div class="account-gate">
+                <p id="draftAccountStatus">Sign in to save your roster to your account.</p>
+                <a href="/dashboard" id="draftAccountLink">Sign in / create account</a>
+              </div>
+              <form id="draftForm">
+                <div class="field">
+                  <label class="form-label" for="playerName">Your name <span>*</span></label
+                  ><input
+                    id="playerName"
+                    name="playerName"
+                    required
+                    maxlength="80"
+                    autocomplete="name"
+                    placeholder="First and last name"
+                  />
+                </div>
+                <div class="field">
+                  <label class="form-label" for="playerTeamName"
+                    >Your FTC team name <span>*</span></label
+                  ><input
+                    id="playerTeamName"
+                    name="playerTeamName"
+                    required
+                    maxlength="80"
+                    autocomplete="organization"
+                    placeholder="Your FTC team"
+                  />
+                </div>
+                <div class="field">
+                  <label class="form-label" for="discordId"
+                    >Discord ID or username <span>*</span></label
+                  ><input
+                    id="discordId"
+                    name="discordId"
+                    required
+                    maxlength="100"
+                    autocapitalize="none"
+                    spellcheck="false"
+                    autocomplete="off"
+                    placeholder="@yourusername"
+                  /><small>Use the account your league organizer knows.</small>
+                </div>
+                <p id="formMessage" class="form-message" role="alert" hidden></p>
+                <button type="submit" class="submit" id="submitDraft" disabled>
+                  Choose your teams to continue
+                </button>
+                <p class="privacy">
+                  Your name, FTC team, Discord ID, and roster go to the league organizer. One entry
+                  per Discord ID.
+                </p>
+              </form>
+            </div>
+          </div>
+          <p class="sidebar-note">
+            <strong>Draft rules</strong><br />Choose 1–3 different teams. Multiple players may
+            select the same team. Use your 15 pollen to build a roster. Pollen is a game resource;
+            joining and drafting are free.
+          </p>
+        </aside>
+      </div>
+      <section
+        id="successPanel"
+        class="success"
+        aria-labelledby="successTitle"
+        tabindex="-1"
+        hidden
+      >
+        <div class="success-mark" aria-hidden="true">✓</div>
+        <p class="eyebrow">Roster submitted</p>
+        <h2 id="successTitle">Roster received.</h2>
+        <p>Your picks have been saved. You’re entered in the league.</p>
+        <ul id="successRoster" class="success-roster"></ul>
+        <div class="success-total"><span>Draft total</span><span id="successTotal"></span></div>
+        <p>Receipt: <span id="receiptId" style="overflow-wrap: anywhere"></span></p>
+        <p class="success-footnote">One entry per person. Please don’t submit another roster.</p>
+      </section>
+      <footer class="footer">
+        <p>
+          Stats will switch to BioBuzz after the first meet. Current stats: DECODE OPRs · OPR
+          estimates scoring contribution. Average and highest OPR are calculated across exported San
+          Diego events.<br />Stats:
+          <a
+            href="https://ftcscout.org/records/2025/teams?region=USCASD"
+            target="_blank"
+            rel="noopener noreferrer"
+            >FTCScout</a
+          >
+          · Team names:
+          <a
+            href="https://ftc-events.firstinspires.org/2025/region/USCASD"
+            target="_blank"
+            rel="noopener noreferrer"
+            >FIRST</a
+          >
+        </p>
+        <p>
+          San Diego FTC Fantasy League<br />Independent community competition<br /><a
+            href="/organizer"
+            >Organizer</a
+          >
+        </p>
+      </footer>
+      <div
+        id="liveAnnouncement"
+        class="sr-only"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      ></div>
+    </main>
+    <script>
+      /* DRAFT */
+    </script>
+    <script src="/assets/accounts.js" defer></script>
+  </body>
+</html>
