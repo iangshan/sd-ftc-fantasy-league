@@ -179,7 +179,7 @@ export function normalizeHistory(
 }
 
 export async function importHistory({
-  outputPath = resolve('prediction-data/decode-event-history.json'),
+  outputPath = resolve('data/predictions/decode-event-history.json'),
 } = {}) {
   // Build the staging app first so eligibility/name overrides come from its exact catalog.
   const { getDecodePredictionCatalog, getDraftPredictionCatalog } = await import(

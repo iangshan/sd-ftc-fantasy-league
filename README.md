@@ -7,7 +7,7 @@ A community fantasy league for San Diego FTC teams. Players draft one to three t
 | [Public league](https://sd-ftc-fantasy-league.sdftcfantasyleague.workers.dev/)    | `main`    | Released draft board and participant dashboard          |
 | [Private staging](https://sd-ftc-fantasy-staging.sdftcfantasyleague.workers.dev/) | `staging` | Prediction leaderboard, roster entry, and admin testing |
 
-The repository is public. Staging permits the league owner and the two approved admins using verified Google accounts; see [admin access](STAGING.md#admin-access). A public source repository does not grant access to league accounts, private workbooks, or staging.
+The repository is public. Staging permits the league owner and the two approved admins using verified Google accounts; see [admin access](staging/README.md#admin-access). The `staging/` folder contains public source for the private testing site. GitHub does not support private folders inside a public repository; staging access is controlled by Google sign-in and admin roles.
 
 ## League and predictions
 
@@ -17,9 +17,9 @@ The scoring rule adds each drafted team's robot-game OPR after every event. Awar
 
 The staging prediction model estimates **PP per event** from completed DECODE results. Its formula, constants, source data, evaluation procedure, and limitations are public:
 
-- [PP formula and evaluation](PREDICTIONS.md)
-- [Prediction model](prediction-model.mjs) and [historical evaluation](prediction-history.mjs)
-- [Event-data provenance and refresh procedure](prediction-data/README.md)
+- [PP formula and evaluation](docs/PREDICTIONS.md)
+- [Prediction model](src/predictions/model.mjs) and [historical evaluation](src/predictions/history.mjs)
+- [Event-data provenance and refresh procedure](data/predictions/README.md)
 
 The current snapshot contains 388 team/event results from 20 completed events. Seventy eligible teams have PP; 17 remain unscored and can still be drafted. DECODE-scale estimates are experimental and are not calibrated forecasts for a different season's game.
 
@@ -27,30 +27,37 @@ The current snapshot contains 388 team/event results from 20 completed events. S
 
 Cloudflare Workers serve the website and API. Google Sheets stores the frozen catalog and active entries. Cloudflare D1 stores account ownership, admin roles, archives, audit events, and recoverable write checkpoints. Firebase Authentication provides Google sign-in; Apple and GitHub integrations remain disabled until configured.
 
-Maintained source files are separate from generated bundles:
+## Repository layout
 
-- `worker.mjs`: HTTP handlers, account checks, submission service, and administration.
-- `data/`: frozen catalog and season configuration.
-- `web/` and `src/pages.mjs`: readable browser assets and page assembly.
-- `team-names.json`: names keyed by team number.
-- `staging-*.mjs`, `staging-predictions.html`, and `staging-predictions-client.js`: private staging access and prediction experience.
-- `dist/`: generated Worker artifacts, excluded from Git.
+| Location                                 | Contents                                                                    |
+| ---------------------------------------- | --------------------------------------------------------------------------- |
+| [staging/](staging/README.md)            | Private-site Worker, configuration, browser assets, admin tools, and tests  |
+| [src/](src/)                             | Shared page assembly and the public PP model in `src/predictions/`          |
+| [web/](web/)                             | Shared website templates, JavaScript, styles, and logo                      |
+| [data/](data/)                           | Catalog, eligibility lists, and prediction evidence with source attribution |
+| [docs/](docs/DEVELOPERS.md)              | Developer workflow, accounts, administration, and PP formula                |
+| [tests/](tests/)                         | Shared application, model, and migration tests with local fixtures          |
+| [scripts/](scripts/)                     | Prediction-data import and evaluation tools                                 |
+| [migrations/](migrations/)               | D1 schema history                                                           |
+| [.github/workflows/](.github/workflows/) | Automated checks and environment-specific deployment workflows              |
 
-See [DEVELOPERS.md](DEVELOPERS.md) for setup, checks, source editing, and contribution workflow.
+The production entry point, shared build, and production configuration remain at the root as `worker.mjs`, `build.mjs`, and `wrangler.jsonc`. `team-names.json` holds current team names. Builds generate `dist/`, which is excluded from Git.
+
+See [the developer guide](docs/DEVELOPERS.md) for setup, checks, source editing, and contribution workflow.
 
 ## Deployment boundaries
 
-Pull requests and pushes to `main` run checks without deploying the public Worker. Reviewed source can be merged into the default `main` branch while the public site continues running its previous release. Pushes to `staging` still deploy the private Worker through `wrangler.staging.jsonc`.
+Pull requests and pushes to `main` run checks without deploying the public Worker. Reviewed source can be merged into the default `main` branch while the public site continues running its previous release. Pushes to `staging` still deploy the private Worker through `staging/wrangler.jsonc`.
 
-A public release is a separate action: open **Actions → Check and deploy → Run workflow**, select `main`, and enable `deploy_production`. This checkbox defaults to false; leaving it unchecked runs checks only. An explicitly requested release deploys `wrangler.jsonc` after the checks pass. See [DEVELOPERS.md](DEVELOPERS.md#branches-and-deployment).
+A public release is a separate action: open **Actions → Check and deploy → Run workflow**, select `main`, and enable `deploy_production`. This checkbox defaults to false; leaving it unchecked runs checks only. An explicitly requested release deploys `wrangler.jsonc` after the checks pass. See [DEVELOPERS.md](docs/DEVELOPERS.md#branches-and-deployment).
 
 The two sites use separate D1 databases, workbooks, and Sheets service accounts. Runtime credentials belong in Cloudflare or GitHub secrets, never in repository files. The Firebase web configuration is a public app identifier, not a private credential.
 
 ## Operations
 
-- [Accounts and sign-in](ACCOUNTS.md)
-- [Admin roles, roster support, and recovery](ADMIN.md)
-- [Private staging, admin access, and rollback](STAGING.md)
+- [Accounts and sign-in](docs/ACCOUNTS.md)
+- [Admin roles, roster support, and recovery](docs/ADMIN.md)
+- [Private staging, admin access, and rollback](staging/README.md)
 
 Submissions and admin mutations share a D1 lock. An uncertain write keeps a checkpoint so recovery can complete the original operation without creating a duplicate. Do not edit, sort, insert, or delete response rows while a write is pending.
 
@@ -58,4 +65,4 @@ The existing production database was initialized manually. Do not replay migrati
 
 ## License and attribution
 
-Project code is available under the [MIT License](LICENSE). FTCScout and FIRST supply third-party competition data; see the [data-source documentation](prediction-data/README.md) for attribution and provenance. The project license does not assert ownership of or relicense third-party data, names, or trademarks.
+Project code is available under the [MIT License](LICENSE). FTCScout and FIRST supply third-party competition data; see the [data-source documentation](data/predictions/README.md) for attribution and provenance. The project license does not assert ownership of or relicense third-party data, names, or trademarks.

@@ -1,10 +1,10 @@
 # Developer workflow
 
-The repository is public and the project code is [MIT licensed](LICENSE). Contributions use branches and pull requests. Repository access and league admin access are separate; code deployed to a Worker runs with that environment's bindings and secrets.
+The repository is public and the project code is [MIT licensed](../LICENSE). Contributions use branches and pull requests. Repository access and league admin access are separate; code deployed to a Worker runs with that environment's bindings and secrets.
 
 ## Local setup and checks
 
-Use Node.js 22.13 or later. Install the exact dependency versions recorded in `package-lock.json`:
+Run the commands below from the repository root using Node.js 22.13 or later. Paths in this guide are also relative to the repository root. Install the exact dependency versions recorded in `package-lock.json`:
 
 ```sh
 npm ci
@@ -21,23 +21,26 @@ Use `npm run format` to apply the shared Prettier configuration before committin
 
 ## Source layout
 
-| Location                                                                     | Purpose                                                        |
-| ---------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| `worker.mjs`                                                                 | HTTP handlers, authentication, submissions, and administration |
-| `web/`                                                                       | Browser JavaScript, CSS, page templates, and logo              |
-| `src/pages.mjs`                                                              | Page assembly from maintained browser assets                   |
-| `data/decode-catalog.json`                                                   | Frozen 87-team DECODE source catalog                           |
-| `data/not-returning.json`                                                    | Historical teams excluded from this season, with reasons       |
-| `data/rookie-teams.json`                                                     | Registered teams missing from the frozen catalog               |
-| `team-names.json`                                                            | Current names keyed by team number                             |
-| `prediction-*.mjs` and `prediction-data/`                                    | PP model, evaluation, and source evidence                      |
-| `staging-*.mjs`, `staging-predictions.html`, `staging-predictions-client.js` | Private access wrapper and prediction roster page              |
-| `build.mjs` and `build-staging.mjs`                                          | Shared esbuild pipeline and staging asset generation           |
-| `migrations/`                                                                | D1 schema history                                              |
-| `*.test.mjs`, `scripts/*.test.mjs`                                           | Automated checks                                               |
-| `dist/`                                                                      | Generated deployment artifacts, excluded from Git              |
+| Location                            | Purpose                                                                     |
+| ----------------------------------- | --------------------------------------------------------------------------- |
+| `worker.mjs`                        | Production HTTP handlers, authentication, submissions, and administration   |
+| `web/`                              | Shared browser JavaScript, CSS, page templates, and logo                    |
+| `src/pages.mjs`                     | Page assembly from maintained browser assets                                |
+| `src/predictions/`                  | PP model and historical evaluation                                          |
+| `data/decode-catalog.json`          | Frozen 87-team DECODE source catalog                                        |
+| `data/not-returning.json`           | Historical teams excluded from this season, with reasons                    |
+| `data/rookie-teams.json`            | Registered teams missing from the frozen catalog                            |
+| `data/predictions/`                 | Prediction evidence and source documentation                                |
+| `team-names.json`                   | Current names keyed by team number                                          |
+| `staging/`                          | Private-site wrapper, configuration, browser assets, admin tools, and tests |
+| `build.mjs` and `staging/build.mjs` | Shared esbuild pipeline and staging asset generation                        |
+| `scripts/`                          | Prediction-data import and evaluation tools                                 |
+| `tests/` and `tests/support/`       | Shared checks and local fixtures                                            |
+| `migrations/`                       | D1 schema history                                                           |
+| `docs/`                             | Developer and operating guides                                              |
+| `dist/`                             | Generated deployment artifacts, excluded from Git                           |
 
-Both environments build from the same application source. Production exports only the Worker entry point; the staging bundle also exposes the helpers used by its authentication wrapper and tests. Do not edit generated bundles or make regular changes in Cloudflare's quick editor: the next Git deployment replaces them.
+The staging folder is public source for an access-controlled website; moving files there does not make them private. Both environments build from the same application source. Production exports only the Worker entry point; the staging bundle also exposes the helpers used by its authentication wrapper and tests. Do not edit generated bundles or make regular changes in Cloudflare's quick editor: the next Git deployment replaces them.
 
 ## Names and eligibility
 
@@ -58,7 +61,7 @@ Pull requests and pushes to `main` run checks only. The deployment targets are e
 
 | Branch    | Workflow                   | Configuration            | Result                                                    |
 | --------- | -------------------------- | ------------------------ | --------------------------------------------------------- |
-| `staging` | **Deploy private staging** | `wrangler.staging.jsonc` | Automatic private deployment on push                      |
+| `staging` | **Deploy private staging** | `staging/wrangler.jsonc` | Automatic private deployment on push                      |
 | `main`    | **Check and deploy**       | `wrangler.jsonc`         | Public deployment only through an explicit manual release |
 
 Start staging work from `staging`, review it there, and open a pull request to the intended branch. Merge reviewed source into `main` to keep the default GitHub branch current. Merging or pushing to `main` does not deploy the public website; the running site may remain on an earlier release. A push to `staging` continues to deploy private testing automatically. Use pull-request review and repository branch rules for both branches.
@@ -78,10 +81,10 @@ Prefer that release workflow for a recorded public deployment. The CLI command `
 
 ```sh
 npm run build:staging
-npx wrangler deploy --config wrangler.staging.jsonc
+npx wrangler deploy --config staging/wrangler.jsonc
 ```
 
-Staging uses `admin-only` access for the owner and approved admins. The explicit two-admin synchronization requires D1 permission on the Actions token and must succeed before its deployment proceeds. See [STAGING.md](STAGING.md) for the synchronization procedure, owner-only access rollback, resource isolation, and original-board rollback switch.
+Staging uses `admin-only` access for the owner and approved admins. The explicit two-admin synchronization requires D1 permission on the Actions token and must succeed before its deployment proceeds. See [Staging guide](../staging/README.md) for the synchronization procedure, owner-only access rollback, resource isolation, and original-board rollback switch.
 
 ## Database setup
 

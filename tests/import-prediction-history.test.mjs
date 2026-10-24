@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeHistory } from './import-prediction-history.mjs';
+import { normalizeHistory } from '../scripts/import-prediction-history.mjs';
 
 const options = { teamNumbers: [10809], fetchedAt: '2026-10-24T00:00:00.000Z' };
 const row = () => ({

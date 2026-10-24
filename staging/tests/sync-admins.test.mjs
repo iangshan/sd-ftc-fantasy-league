@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { SYNC_TARGETS, parseSyncArguments, syncStagingAdmins } from './sync-staging-admins.mjs';
+import { SYNC_TARGETS, parseSyncArguments, syncStagingAdmins } from '../scripts/sync-admins.mjs';
 
 const TOKEN = 'test-token-never-log';
 const NOW = '2026-10-24T12:00:00.000Z';

@@ -1,6 +1,6 @@
 # Robot-game PP — private staging experiment
 
-The **Prediction** leaderboard is the private staging home page at `/`, replacing the draft board as the roster-entry page. The owner and the two approved admins can access it with verified Google accounts under the staging access rules. `/prediction` and `/admin/predictions` remain aliases. Its forecast data is served by `/api/admin/predictions`; draft settings and submissions use the existing `/api/draft` and `/api/submit` services. Production does not include the replacement page, forecast routes, or navigation. [STAGING.md](STAGING.md) documents access setup, the preserved original board, and the rollback switch.
+The **Prediction** leaderboard is the private staging home page at `/`, replacing the draft board as the roster-entry page. The owner and the two approved admins can access it with verified Google accounts under the staging access rules. `/prediction` and `/admin/predictions` remain aliases. Its forecast data is served by `/api/admin/predictions`; draft settings and submissions use the existing `/api/draft` and `/api/submit` services. Production does not include the replacement page, forecast routes, or navigation. [Staging guide](../staging/README.md) documents access setup, the preserved original board, and the rollback switch.
 
 ## Scoring target
 
@@ -10,7 +10,7 @@ PP now uses **projected OPR per event**, rounded to two decimals, rather than th
 
 ## Historical evidence
 
-`prediction-data/decode-event-history.json` records 388 measured team/event rows for 84 historical teams at 20 completed official DECODE events, November 22, 2025 through June 21, 2026. These include San Diego league events and championships/Premier divisions outside the region. The importer retains only historical/current San Diego catalog teams and excludes unfinished events, scrimmages, offseason events, and parent championship records without qualification results. See [source details](prediction-data/README.md).
+`data/predictions/decode-event-history.json` records 388 measured team/event rows for 84 historical teams at 20 completed official DECODE events, November 22, 2025 through June 21, 2026. These include San Diego league events and championships/Premier divisions outside the region. The importer retains only historical/current San Diego catalog teams and excludes unfinished events, scrimmages, offseason events, and parent championship records without qualification results. See [source details](../data/predictions/README.md).
 
 The metric is FTCScout qualification `opr.totalPointsNp`, excluding points awarded from opponents' penalties. Autonomous and driver-controlled OPR are retained as evidence, but never added again as bonuses to total OPR. Signed measured OPR is preserved. No individual-match OPR is invented.
 
@@ -49,11 +49,11 @@ The imported snapshot yields 304 usable next-event forecasts. There are 288 sele
 
 The selected method has about 37.2% lower MAE than the historical mean on these 16 examples. This is **not an accuracy percentage**. Prior peak performs better on that later block (MAE 16.981), but switching to it after seeing those outcomes would reuse the test set for selection. The small, championship-heavy sample is not representative of every regional team. Team/event errors are correlated, and this experiment establishes neither statistical significance nor cross-season calibration. Final corrected source records are not contemporaneous historical snapshots.
 
-Reproduce all methods and optionally save a new detailed report:
+From the repository root, reproduce all methods and optionally save a new detailed report:
 
 ```sh
 node scripts/evaluate-prediction-model.mjs
-node scripts/evaluate-prediction-model.mjs prediction-data/decode-event-history.json /tmp/decode-replay-report.json
+node scripts/evaluate-prediction-model.mjs data/predictions/decode-event-history.json /tmp/decode-replay-report.json
 ```
 
 The report command refuses to overwrite an existing output. Refreshing the source is a separate explicit step using `scripts/import-prediction-history.mjs`; no background feed silently changes PP.
@@ -80,6 +80,8 @@ The submitted-roster leaderboard reads the isolated staging D1 database for seas
 
 ## Validation and deployment
 
+Run from the repository root:
+
 ```sh
 npm ci
 npm run format:check
@@ -89,4 +91,4 @@ npm test
 
 Checks cover chronological leakage, invalid evidence, selection/holdout separation, signed and missing data, roster behavior, current eligibility, owner/admin Google authentication, role revocation, workbook isolation, homepage/alias/rollback routing, and absence of prediction routes in production. The original submission service is exercised with real local SQLite and a memory-only Sheets boundary, including duplicate prevention and interrupted-write recovery. Browser integration checks cover the actual client-to-submission-service payload and receipt flow, reloads, unscored picks, stale prices, draft closure, preview mode, forecast outages, event-scenario arithmetic, and mobile entry. External Firebase/Sheets authentication is not simulated as a claim of live verification; no existing remote roster is reset or overwritten during these checks.
 
-Push to `staging` to run **Deploy private staging**, which deploys only `wrangler.staging.jsonc`. Reviewed source can be merged into `main` without changing the public site. Public Worker deployment requires a separately authorized **Check and deploy** manual run on `main` with `deploy_production` enabled; it defaults to false. See [the release procedure](DEVELOPERS.md#branches-and-deployment).
+Push to `staging` to run **Deploy private staging**, which deploys only `staging/wrangler.jsonc`. Reviewed source can be merged into `main` without changing the public site. Public Worker deployment requires a separately authorized **Check and deploy** manual run on `main` with `deploy_production` enabled; it defaults to false. See [the release procedure](DEVELOPERS.md#branches-and-deployment).

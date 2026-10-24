@@ -8,7 +8,7 @@ Google sign-in is enabled. Apple and GitHub integrations exist but remain disabl
 
 Every account API request verifies its ID token through Google's `accounts:lookup` service. The server checks the expected Firebase project, issuer, UID, timestamps, and revocation state. Disabled or deleted accounts are rejected. A verified email is required to submit a roster.
 
-The token's sign-in provider is trusted only after Google validates the token for the same UID. Private staging additionally requires a **Google sign-in**, a verified email, and either the pinned owner UID or an active staging admin role under its `admin-only` configuration. [STAGING.md](STAGING.md#admin-access) describes the guarded two-admin synchronization and the `owner-only` rollback mode. Linking a Google account does not make a session authenticated through a different provider eligible for staging.
+The token's sign-in provider is trusted only after Google validates the token for the same UID. Private staging additionally requires a **Google sign-in**, a verified email, and either the pinned owner UID or an active staging admin role under its `admin-only` configuration. [Staging guide](../staging/README.md#admin-access) describes the guarded two-admin synchronization and the `owner-only` rollback mode. Linking a Google account does not make a session authenticated through a different provider eligible for staging.
 
 Client-provided names, email addresses, roles, UIDs, and submission tokens cannot choose a roster's owner. The submission service derives ownership and its idempotency token from the authenticated UID and season.
 

@@ -8,7 +8,7 @@
     "check": "node build.mjs && node --check dist/worker.mjs",
     "deploy": "npm run check && wrangler deploy",
     "dev": "npm run build && wrangler dev",
-    "build:staging": "node build-staging.mjs",
+    "build:staging": "node staging/build.mjs",
     "pretest": "npm run build && npm run build:staging",
     "test": "node --test",
     "format": "prettier --write .",

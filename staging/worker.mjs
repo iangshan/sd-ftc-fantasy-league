@@ -1,9 +1,9 @@
-import app, { requireAccount, authConfig, LEAGUE_OWNER_UID } from './dist/staging-app.mjs';
-import { predictionSnapshot } from './staging-predictions.mjs';
-import { predictionPage, predictionClient } from './dist/staging-prediction-assets.mjs';
-import { withStagingNavigation } from './staging-navigation.mjs';
-import { requireStagingAdmin } from './staging-access.mjs';
-import { loginPage, loginClient, stagingBanner } from './dist/staging-login-assets.mjs';
+import app, { requireAccount, authConfig, LEAGUE_OWNER_UID } from '../dist/staging-app.mjs';
+import { predictionSnapshot } from './predictions.mjs';
+import { predictionPage, predictionClient } from '../dist/staging-prediction-assets.mjs';
+import { withStagingNavigation } from './navigation.mjs';
+import { requireStagingAdmin } from './access.mjs';
+import { loginPage, loginClient, stagingBanner } from '../dist/staging-login-assets.mjs';
 
 export const STAGING_HOST = 'sd-ftc-fantasy-staging.sdftcfantasyleague.workers.dev';
 export const STAGING_SHEET = '1Md_Ys5uf9x4kka_ltkTPM5SkHnJZAv9VUGkhnheBRJE';

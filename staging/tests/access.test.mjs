@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { createStagingWorker, STAGING_HOST, STAGING_SHEET } from './staging-worker.mjs';
-import { requireAccount, LEAGUE_OWNER_UID } from './dist/staging-app.mjs';
+import { createStagingWorker, STAGING_HOST, STAGING_SHEET } from '../worker.mjs';
+import { requireAccount, LEAGUE_OWNER_UID } from '../../dist/staging-app.mjs';
 
 const env = { STAGING_MODE: 'admin-only', RESPONSES_SHEET_ID: STAGING_SHEET };
 const origin = 'https://' + STAGING_HOST;
@@ -154,18 +154,18 @@ test('forged token is rejected by real Firebase verifier, even with owner claims
   }
 });
 test('database, workbook and deployment target differ from production', () => {
-  const config = JSON.parse(fs.readFileSync(new URL('./wrangler.staging.jsonc', import.meta.url)));
-  const production = JSON.parse(fs.readFileSync(new URL('./wrangler.jsonc', import.meta.url)));
+  const config = JSON.parse(fs.readFileSync(new URL('../wrangler.jsonc', import.meta.url)));
+  const production = JSON.parse(fs.readFileSync(new URL('../../wrangler.jsonc', import.meta.url)));
   assert.notEqual(config.name, production.name);
   assert.equal(config.preview_urls, false);
   assert.notEqual(config.d1_databases[0].database_id, production.d1_databases[0].database_id);
   assert.equal(config.vars.RESPONSES_SHEET_ID, STAGING_SHEET);
   const workflow = fs.readFileSync(
-    new URL('./.github/workflows/staging.yml', import.meta.url),
+    new URL('../../.github/workflows/staging.yml', import.meta.url),
     'utf8',
   );
   assert.match(workflow, /github.ref == 'refs\/heads\/staging'/);
-  assert.match(workflow, /--config wrangler.staging.jsonc/);
+  assert.match(workflow, /--config staging\/wrangler.jsonc/);
 });
 
 function roleDatabase(ids) {

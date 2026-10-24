@@ -5,12 +5,12 @@
 Run from the repository root after building the staging app:
 
 ```sh
-node build-staging.mjs
-node --test scripts/import-prediction-history.test.mjs
+npm run build:staging
+node --test tests/import-prediction-history.test.mjs
 node scripts/import-prediction-history.mjs
 ```
 
-The default output is `prediction-data/decode-event-history.json`. The importer discovers all official events attended by team numbers from the combined frozen and current-draft catalogs, including championships outside San Diego. It then fetches each unique event and retains only the selected catalog teams. Inactive historical teams can supply evaluation data; this does not make them eligible for display or drafting. It excludes scrimmages, offseason events, and unfinished/unpublished events. A past date is insufficient: the source must also report that the event is finished and not ongoing, and every scheduled qualification match must have a played flag and score record. Missing qualification results cause the whole event to be excluded and recorded in `excludedEvents`.
+The default output is `data/predictions/decode-event-history.json`. The importer discovers all official events attended by team numbers from the combined frozen and current-draft catalogs, including championships outside San Diego. It then fetches each unique event and retains only the selected catalog teams. Inactive historical teams can supply evaluation data; this does not make them eligible for display or drafting. It excludes scrimmages, offseason events, and unfinished/unpublished events. A past date is insufficient: the source must also report that the event is finished and not ongoing, and every scheduled qualification match must have a played flag and score record. Missing qualification results cause the whole event to be excluded and recorded in `excludedEvents`.
 
 Schema version 1 contains `season`, `source`, `selectedTeamNumbers`, `excludedEvents`, and `events`. Each event supplies `code`, `name`, `startDate`, `endDate`, `type`, `region`, `status: "complete"`, `qualificationMatches`, and `teams`. Each measured team row supplies `teamNumber`, `opr`, `autoOpr`, `driverControlledOpr`, and `qualMatchesPlayed`. Negative measured OPR is retained as source data; missing OPR is not replaced with zero. Rows with no recorded qualifying match are excluded.
 

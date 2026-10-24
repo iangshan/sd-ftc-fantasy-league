@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createStagingWorker, STAGING_HOST, STAGING_SHEET } from './staging-worker.mjs';
-import { LEAGUE_OWNER_UID } from './dist/staging-app.mjs';
-import production from './dist/worker.mjs';
+import { createStagingWorker, STAGING_HOST, STAGING_SHEET } from '../worker.mjs';
+import { LEAGUE_OWNER_UID } from '../../dist/staging-app.mjs';
+import production from '../../dist/worker.mjs';
 
 const env = { STAGING_MODE: 'admin-only', RESPONSES_SHEET_ID: STAGING_SHEET };
 const origin = 'https://' + STAGING_HOST;
