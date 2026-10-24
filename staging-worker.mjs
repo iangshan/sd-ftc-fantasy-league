@@ -1,4 +1,6 @@
 import app, { requireAccount, authConfig, LEAGUE_OWNER_UID } from './dist/staging-app.mjs';
+import { predictionSnapshot } from './staging-predictions.mjs';
+import { predictionPage, predictionClient } from './dist/staging-prediction-assets.mjs';
 
 export const STAGING_HOST = 'sd-ftc-fantasy-staging.sdftcfantasyleague.workers.dev';
 export const STAGING_SHEET = '1Md_Ys5uf9x4kka_ltkTPM5SkHnJZAv9VUGkhnheBRJE';
@@ -83,11 +85,24 @@ export function createStagingWorker(application = app, verify = requireAccount) 
     if (path === '/__staging/session' && request.method === 'POST') return json({ ok: true }, 200, { 'Set-Cookie': sessionCookie(token) });
     if (path.startsWith('/__staging/')) return json({ error: 'Not found.' }, 404);
     // Never send an authenticated request to the production Worker.
-    const result = await application.fetch(request, env);
+    let result;
+    if (path === '/api/admin/predictions') {
+      if (request.method !== 'GET') return json({ error: 'Method not allowed.' }, 405, { Allow: 'GET' });
+      return json(await predictionSnapshot(env));
+    }
+    if (path === '/admin/predictions') {
+      if (request.method !== 'GET') return json({ error: 'Method not allowed.' }, 405, { Allow: 'GET' });
+      result = response(predictionPage, 200, { 'Content-Type': 'text/html; charset=utf-8' });
+    } else if (path === '/assets/predictions.js') {
+      if (request.method !== 'GET') return json({ error: 'Method not allowed.' }, 405, { Allow: 'GET' });
+      return response(predictionClient, 200, { 'Content-Type': 'text/javascript; charset=utf-8' });
+    } else {
+      result = await application.fetch(request, env);
+    }
     const resultHeaders = new Headers(result.headers);
     for (const [key, value] of Object.entries(securityHeaders)) resultHeaders.set(key, value);
     if (resultHeaders.get('Content-Type')?.includes('text/html')) {
-      const banner = '<aside style="padding:10px 18px;background:#354f3c;color:white;font:13px system-ui;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><span><strong>Private staging</strong> · Only you can view this site. Test data only.</span><button type="button" id="stagingSignOut" style="font:inherit;background:transparent;color:inherit;border:1px solid #aabdaa;padding:5px 10px;border-radius:6px;cursor:pointer">Leave staging</button></aside>';
+      const banner = '<aside style="padding:10px 18px;background:#354f3c;color:white;font:13px system-ui;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><span><strong>Private staging</strong> · Only you can view this site. Test data only. <a href="/admin/predictions" style="color:inherit;margin-left:12px;text-underline-offset:3px">Prediction leaderboard ↗</a></span><button type="button" id="stagingSignOut" style="font:inherit;background:transparent;color:inherit;border:1px solid #aabdaa;padding:5px 10px;border-radius:6px;cursor:pointer">Leave staging</button></aside>';
       const html = (await result.text()).replace(/<body([^>]*)>/i, '<body$1>' + banner).replace('</body>', '<script type="module" src="/__staging/client.js"></script></body>');
       resultHeaders.delete('Content-Length');
       return new Response(html, { status: result.status, headers: resultHeaders });
