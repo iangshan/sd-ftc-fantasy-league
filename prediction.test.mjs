@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import { buildTeamPredictions, decodeStrength, predictRoster, buildRosterPredictions } from './prediction-model.mjs';
 import { predictionSnapshot } from './staging-predictions.mjs';
 import { createStagingWorker, STAGING_HOST, STAGING_SHEET } from './staging-worker.mjs';
-import { getDecodePredictionCatalog, LEAGUE_OWNER_UID } from './dist/staging-app.mjs';
+import { getDecodePredictionCatalog, getDraftPredictionCatalog, LEAGUE_OWNER_UID } from './dist/staging-app.mjs';
 import production from './dist/worker.mjs';
 
 const team = (id, averageOpr, highestOpr = averageOpr, price = 3) => ({id: String(id), number: id, name: `Team ${id}`, averageOpr, highestOpr, price});
@@ -58,13 +58,69 @@ test('zero baselines, empty pools and wholly missing data never produce NaN or I
   assert.throws(() => buildTeamPredictions([team(1, 10), team(1, 20)]), /unique/);
 });
 
-test('the real DECODE snapshot produces 70 scored teams and 17 unscored teams', () => {
-  const result = buildTeamPredictions(getDecodePredictionCatalog());
-  assert.deepEqual(result.counts, {total: 87, scored: 70, unscored: 17});
+test('the leaderboard includes all 84 recorded DECODE teams, including teams absent from the current draft', async () => {
+  const result = await predictionSnapshot({});
+  assert.deepEqual(result.counts, {total: 84, scored: 84, unscored: 0});
   assert.equal(result.teams[0].id, '10809');
   assert.equal(result.teams[0].predictionPoints, 100);
+  assert.equal(result.teams[1].id, '19743');
+  assert.equal(result.teams[1].predictionPoints, 88.63);
+  assert.equal(result.teams[1].draftEligible, false);
+  assert.equal(result.teams[3].id, '31862');
+  assert.equal(result.teams[3].draftEligible, false);
   assert.equal(result.teams.find(t => t.id === '24730').predictionPoints, 86.11);
-  for (const row of result.teams.filter(t => t.status === 'scored')) assert.ok(row.predictionPoints >= 0 && row.predictionPoints <= 100);
+  assert.equal(result.teams.filter(t => !t.draftEligible).length, 14);
+  for (const row of result.teams) assert.ok(row.predictionPoints >= 0 && row.predictionPoints <= 100);
+});
+
+test('historical coverage excludes missing OPR and current-season newcomers without inventing participation', async () => {
+  const result = await predictionSnapshot({});
+  const archived = getDecodePredictionCatalog(), current = getDraftPredictionCatalog();
+  assert.deepEqual(result.coverage, {
+    region: 'San Diego', season: 'DECODE 2025–26', source: 'Frozen DECODE catalog',
+    catalogTeams: 87, recordedTeams: 84, missingOprTeams: 3,
+    draftTeams: 87, scoredDraftTeams: 70, unscoredDraftTeams: 17
+  });
+  assert.deepEqual(new Set(result.teams.map(t => t.id)), new Set(archived.filter(t => Number.isFinite(t.averageOpr)).map(t => t.id)));
+  const archiveIds = new Set(archived.map(t => t.id));
+  const newcomerIds = current.filter(t => !archiveIds.has(t.id)).map(t => t.id);
+  assert.equal(newcomerIds.length, 15);
+  for (const id of newcomerIds) {
+    assert.equal(result.teams.some(t => t.id === id), false);
+    assert.equal(result.draftTeams.find(t => t.id === id).predictionPoints, null);
+  }
+  assert.equal(result.draftTeams.filter(t => t.predictionPoints === null).length, 17);
+});
+
+test('draft views reuse the historical baseline even when its reference team is no longer draftable', () => {
+  const historical = buildTeamPredictions([team(1, 100), team(2, 50), team(3, 25)]);
+  const current = buildTeamPredictions([team(2, 50), team(3, 25), team(4, null)], {baseline: historical.baseline});
+  assert.deepEqual(current.baseline, historical.baseline);
+  assert.equal(current.teams[0].predictionPoints, 50);
+  assert.equal(current.teams[1].predictionPoints, 25);
+  assert.equal(current.teams[2].predictionPoints, null);
+  assert.throws(() => buildTeamPredictions([team(1, 100)], {baseline: {strength: 50, teamId: '2'}}), /baseline/);
+});
+
+test('current-draft scored rows retain historical scores and ranks', async () => {
+  const result = await predictionSnapshot({});
+  const historical = new Map(result.teams.map(team => [team.id, team]));
+  for (const row of result.draftTeams.filter(team => team.predictionPoints !== null)) {
+    assert.equal(row.predictionPoints, historical.get(row.id).predictionPoints);
+    assert.equal(row.rank, historical.get(row.id).rank);
+    assert.equal(row.draftEligible, true);
+  }
+  assert.equal(result.draftTeams.find(t => t.id === '24730').rank, 3);
+});
+
+test('historical teams absent from the current draft cannot enter a predicted roster', async () => {
+  const result = await predictionSnapshot({});
+  assert.equal(predictRoster(['19743'], result.teams).status, 'invalid');
+  assert.equal(predictRoster(['19743'], result.draftTeams).status, 'invalid');
+  const unscored = result.draftTeams.find(team => team.predictionPoints === null);
+  const currentRoster = predictRoster([unscored.id], result.draftTeams);
+  assert.equal(currentRoster.status, 'incomplete');
+  assert.equal(currentRoster.predictionPoints, null);
 });
 
 test('roster points equal the sum of the displayed team points, independent of pick order', () => {
@@ -119,7 +175,8 @@ const request = (path, headers = cookie, method = 'GET') => new Request('https:/
 test('snapshot distinguishes a failed database from an empty test league', async () => {
   const unavailable = await predictionSnapshot({});
   assert.equal(unavailable.rosterStatus, 'unavailable');
-  assert.equal(unavailable.teams.length, 87);
+  assert.equal(unavailable.teams.length, 84);
+  assert.equal(unavailable.draftTeams.length, 87);
   assert.equal((await predictionSnapshot({DB: fakeDb()})).rosterStatus, 'available');
 });
 

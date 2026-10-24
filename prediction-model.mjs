@@ -1,6 +1,6 @@
 // Experimental, DECODE-only comparison points. These weights are not a fitted forecast.
 export const PREDICTION_MODEL = Object.freeze({
-  version: 'decode-opr-v1', season: 'DECODE 2025–26',
+  version: 'decode-opr-v2', season: 'DECODE 2025–26',
   averageWeight: 0.85, peakWeight: 0.15, peakCap: 1.5, scale: 100,
   formula: 'S = 0.85A + 0.15 min(max(H, A), 1.5A); P = 100 S / max(S)',
   rosterFormula: 'Roster prediction points = sum of its teams’ prediction points',
@@ -36,7 +36,7 @@ function ranked(items, secondary) {
   });
 }
 
-export function buildTeamPredictions(catalog) {
+export function buildTeamPredictions(catalog, {baseline} = {}) {
   const seen = new Set();
   const teams = catalog.map(team => {
     const id = String(team.id);
@@ -44,13 +44,22 @@ export function buildTeamPredictions(catalog) {
     seen.add(id);
     return {
       id, number: Number(id), name: team.name, price: team.price,
+      draftEligible: team.draftEligible !== false,
       averageOpr: Number.isFinite(team.averageOpr) ? team.averageOpr : null,
       highestOpr: Number.isFinite(team.highestOpr) ? team.highestOpr : null,
       ...decodeStrength(team)
     };
   });
-  // All eligible teams define the baseline. Search, filters, and roster picks never change it.
-  const baselineStrength = Math.max(0, ...teams.map(team => team.strength ?? 0));
+  // Historical DECODE teams define the reference. Draft subsets reuse that same reference.
+  // Search, current eligibility, filters, and roster picks never renormalize points.
+  const referenceTeam = teams.filter(team => team.strength !== undefined)
+    .sort((a, b) => b.strength - a.strength || a.number - b.number)[0];
+  const ownBaseline = {strength: referenceTeam?.strength ?? 0, teamId: referenceTeam?.id ?? null};
+  if (baseline !== undefined && (!baseline || !Number.isFinite(baseline.strength) || baseline.strength < 0 || ownBaseline.strength > baseline.strength)) {
+    throw new Error('The prediction baseline must cover every supplied team.');
+  }
+  const reference = baseline ?? ownBaseline;
+  const baselineStrength = reference.strength;
   const scored = teams.map(team => {
     const hasData = team.strength !== undefined;
     const predictionPoints = hasData ? round(baselineStrength > 0 ? 100 * team.strength / baselineStrength : 0) : null;
@@ -62,7 +71,7 @@ export function buildTeamPredictions(catalog) {
   const leaderboard = ranked(scored, (a, b) => a.number - b.number);
   return {
     model: PREDICTION_MODEL, teams: leaderboard,
-    baseline: { strength: baselineStrength, teamId: leaderboard.find(team => team.predictionPoints !== null)?.id ?? null },
+    baseline: { strength: baselineStrength, teamId: reference.teamId },
     counts: { total: teams.length, scored: teams.filter(team => team.strength !== undefined).length, unscored: teams.filter(team => team.strength === undefined).length }
   };
 }
@@ -73,7 +82,7 @@ export function predictRoster(teamIds, teamPredictions) {
     return { status: 'invalid', predictionPoints: null, knownPoints: 0, totalPollen: null, teams: [], reason: 'Choose one to three teams.' };
   }
   const ids = teamIds.map(String);
-  if (new Set(ids).size !== ids.length || ids.some(id => !byId.has(id))) {
+  if (new Set(ids).size !== ids.length || ids.some(id => !byId.has(id) || byId.get(id).draftEligible === false)) {
     return { status: 'invalid', predictionPoints: null, knownPoints: 0, totalPollen: null, teams: [], reason: 'A team is duplicated or is not in the eligible catalog.' };
   }
   const teams = ids.map(id => byId.get(id));

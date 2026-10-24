@@ -10,12 +10,12 @@
   const number = value => value === null || value === undefined ? '—' : value.toFixed(2);
   let data = null, loading = false;
   const selected = new Set();
-  const pickedTeams = () => data ? [...selected].map(id => data.teams.find(team => team.id === id)).filter(Boolean) : [];
+  const pickedTeams = () => data ? [...selected].map(id => data.draftTeams.find(team => team.id === id)).filter(Boolean) : [];
   const pollenUsed = () => pickedTeams().reduce((sum, team) => sum + team.price, 0);
 
   function selectTeam(team) {
     if (selected.has(team.id)) selected.delete(team.id);
-    else if (selected.size < 3 && pollenUsed() + team.price <= 15) selected.add(team.id);
+    else if (team.draftEligible && selected.size < 3 && pollenUsed() + team.price <= 15) selected.add(team.id);
     renderTeams();
     renderCalculator();
   }
@@ -47,15 +47,17 @@
   function renderTeams() {
     if (!data) return;
     const query = el('teamSearch').value.trim().toLowerCase(), price = el('priceFilter').value;
-    const teams = data.teams.filter(team => (!query || `${team.number} ${team.name}`.toLowerCase().includes(query)) && (price === 'all' || String(team.price) === price) && (!el('scoredOnly').checked || team.predictionPoints !== null));
-    if (el('sortOrder').value === 'value') teams.sort((a, b) => (b.pointsPerPollen ?? -Infinity) - (a.pointsPerPollen ?? -Infinity) || a.number - b.number);
+    const currentDraft = el('teamScope').value === 'draft';
+    const pool = currentDraft ? data.draftTeams : data.teams;
+    const teams = pool.filter(team => (!query || `${team.number} ${team.name}`.toLowerCase().includes(query)) && (price === 'all' || team.draftEligible && String(team.price) === price) && (!el('scoredOnly').checked || team.predictionPoints !== null));
+    if (el('sortOrder').value === 'value') teams.sort((a, b) => (b.draftEligible ? b.pointsPerPollen ?? -Infinity : -Infinity) - (a.draftEligible ? a.pointsPerPollen ?? -Infinity : -Infinity) || a.number - b.number);
     const rows = el('teamRows');
     rows.replaceChildren();
     for (const team of teams) {
       const row = node('tr');
       row.dataset.teamId = team.id;
       const name = node('td', undefined, 'team-cell');
-      name.append(node('strong', team.name), node('small', `#${team.number} · ${team.price} pollen`));
+      name.append(node('strong', team.name), node('small', `#${team.number} · ${team.draftEligible ? team.price + ' pollen' : 'Not in current draft'}`));
       const points = node('td', undefined, 'num points');
       points.append(node('span', team.predictionPoints === null ? 'Unscored' : number(team.predictionPoints), team.predictionPoints === null ? 'score-note' : ''));
       const peak = node('td', number(team.highestOpr), 'num');
@@ -64,14 +66,15 @@
       pick.type = 'button';
       pick.setAttribute('aria-label', `${selected.has(team.id) ? 'Remove' : 'Add'} ${team.number} ${team.name}`);
       pick.setAttribute('aria-pressed', String(selected.has(team.id)));
-      pick.disabled = !selected.has(team.id) && (selected.size >= 3 || pollenUsed() + team.price > 15);
+      pick.disabled = !selected.has(team.id) && (!team.draftEligible || selected.size >= 3 || pollenUsed() + team.price > 15);
+      if (!team.draftEligible) pick.title = 'This DECODE team is not eligible for the current draft.';
       pick.onclick = () => selectTeam(team);
       pickCell.append(pick);
-      row.append(node('td', team.rank === null ? '—' : String(team.rank), 'rank'), name, node('td', number(team.averageOpr), 'num'), peak, points, node('td', number(team.pointsPerPollen), 'num'), pickCell);
+      row.append(node('td', team.rank === null ? '—' : String(team.rank), 'rank'), name, node('td', number(team.averageOpr), 'num'), peak, points, node('td', team.draftEligible ? number(team.pointsPerPollen) : '—', 'num'), pickCell);
       rows.append(row);
     }
     el('noTeams').hidden = teams.length !== 0;
-    el('teamCaption').textContent = `${teams.length} of ${data.counts.total} eligible teams · Model ranks by prediction points`;
+    el('teamCaption').textContent = `${teams.length} of ${pool.length} ${currentDraft ? 'current draft' : 'San Diego DECODE'} teams · Ranked by prediction points`;
   }
   function renderRosters() {
     const rows = el('rosterRows');
@@ -100,12 +103,13 @@
       const response = await fetch('/api/admin/predictions', {cache: 'no-store', signal: AbortSignal.timeout(20000)});
       if (!response.ok) throw new Error(response.status === 401 || response.status === 403 ? 'Owner sign-in is required. Sign in again to view predictions.' : 'Predictions could not be loaded. Use Refresh data to retry.');
       const result = await response.json();
-      if (!Array.isArray(result.teams) || !Array.isArray(result.rosters) || !result.model || !result.counts) throw new Error('Prediction data was incomplete. Use Refresh data to retry.');
+      if (!Array.isArray(result.teams) || !Array.isArray(result.draftTeams) || !Array.isArray(result.rosters) || !result.model || !result.counts || !result.coverage) throw new Error('Prediction data was incomplete. Use Refresh data to retry.');
       data = result;
-      for (const id of selected) if (!data.teams.some(team => team.id === id)) selected.delete(id);
+      for (const id of selected) if (!data.draftTeams.some(team => team.id === id)) selected.delete(id);
       el('scoredCount').textContent = String(data.counts.scored);
-      el('poolCount').textContent = `${data.counts.total} teams in the eligible pool`;
-      el('unscoredCount').textContent = String(data.counts.unscored);
+      el('poolCount').textContent = 'San Diego teams with recorded DECODE OPR';
+      el('unscoredCount').textContent = String(data.coverage.missingOprTeams);
+      el('coverageNote').textContent = `The frozen San Diego DECODE catalog contains ${data.coverage.catalogTeams} teams. This leaderboard ranks all ${data.coverage.recordedTeams} with recorded OPR, including teams not returning this season. ${data.coverage.missingOprTeams} catalog entries have no recorded OPR and are excluded from the DECODE ranking.`;
       const baseline = data.teams.find(team => team.id === data.baseline.teamId);
       el('baselineTeam').textContent = baseline && data.baseline.strength > 0 ? `#${baseline.number} ${baseline.name}` : 'No positive baseline';
       el('updatedAt').textContent = 'Updated ' + new Date(data.generatedAt).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
@@ -116,7 +120,7 @@
       el('loadStatus').textContent = (error.name === 'TimeoutError' ? 'Loading timed out. Use Refresh data to retry.' : error.message) + (data ? ' Previously loaded results are still shown.' : '');
     } finally { loading = false; el('refresh').disabled = false; }
   }
-  for (const id of ['teamSearch', 'priceFilter', 'sortOrder', 'scoredOnly']) el(id).addEventListener(id === 'teamSearch' ? 'input' : 'change', renderTeams);
+  for (const id of ['teamSearch', 'teamScope', 'priceFilter', 'sortOrder', 'scoredOnly']) el(id).addEventListener(id === 'teamSearch' ? 'input' : 'change', renderTeams);
   for (const [buttonId, panelId] of [['teamTab', 'teamPanel'], ['rosterTab', 'rosterPanel']]) {
     el(buttonId).onclick = () => {
       for (const [button, panel] of [['teamTab', 'teamPanel'], ['rosterTab', 'rosterPanel']]) {
