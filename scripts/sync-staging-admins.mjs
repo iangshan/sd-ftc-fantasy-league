@@ -361,11 +361,25 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       runId: process.env.GITHUB_RUN_ID || randomUUID(),
     });
     console.log(JSON.stringify(summary));
+    if (process.env.GITHUB_ACTIONS === 'true') {
+      console.log(
+        `::notice title=Staging admin access::${summary.mode === 'applied' ? 'Verified' : 'Checked'} ${summary.approvedAdmins} approved admin accounts; ${summary.grantsNeeded} staging grants ${summary.mode === 'applied' ? 'were needed' : 'are needed'}.`,
+      );
+    }
     console.log(
       'Only approved staging access was checked. Google sign-in and verified identity are enforced again by the staging server on every request.',
     );
   } catch (error) {
     console.error(error.message);
+    if (process.env.GITHUB_ACTIONS === 'true') {
+      // The sync exposes only sanitized messages. Surface the same message in
+      // the check result so diagnosing a failure does not require private logs.
+      const annotation = error.message
+        .replaceAll('%', '%25')
+        .replaceAll('\r', '%0D')
+        .replaceAll('\n', '%0A');
+      console.error(`::error title=Staging admin access::${annotation}`);
+    }
     process.exitCode = 1;
   }
 }
