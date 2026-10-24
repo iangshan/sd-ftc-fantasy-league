@@ -26,6 +26,12 @@ jobs:
       - run: node --check staging-worker.mjs
       - run: node --check staging-predictions-client.js
       - run: node --test *.test.mjs scripts/*.test.mjs
+      - name: Inspect token-management capability when requested
+        if: github.event_name == 'push' && github.ref == 'refs/heads/staging' && contains(github.event.head_commit.message, '[check-cloudflare-access]')
+        run: node scripts/check-cloudflare-token-access.mjs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: '59d4d2dd49ba336fb1240d43f1535207'
       - name: Grant the two existing admins staging access when explicitly requested
         if: github.event_name == 'push' && github.ref == 'refs/heads/staging' && contains(github.event.head_commit.message, '[sync-staging-admins]')
         run: node scripts/sync-staging-admins.mjs --apply --expected-count=2

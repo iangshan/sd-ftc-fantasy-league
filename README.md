@@ -7,7 +7,7 @@ A community fantasy league for San Diego FTC teams. Players draft one to three t
 | [Public league](https://sd-ftc-fantasy-league.sdftcfantasyleague.workers.dev/)    | `main`    | Released draft board and participant dashboard          |
 | [Private staging](https://sd-ftc-fantasy-staging.sdftcfantasyleague.workers.dev/) | `staging` | Prediction leaderboard, roster entry, and admin testing |
 
-The repository is public. The staging website is restricted to the league owner and approved admins using verified Google accounts. A public source repository does not grant access to league accounts, private workbooks, or staging.
+The repository is public. Staging currently permits only the league owner using a verified Google account. Access for the two existing admins is prepared but awaits the deployment token's D1 permission; see [admin access setup](STAGING.md#admin-access). A public source repository does not grant access to league accounts, private workbooks, or staging.
 
 ## League and predictions
 

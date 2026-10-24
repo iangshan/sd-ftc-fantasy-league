@@ -106,7 +106,7 @@ test('missing or production configuration and alternate hosts fail closed', asyn
   for (const badEnv of [
     {},
     { ...env, STAGING_MODE: '' },
-    { ...env, STAGING_MODE: 'owner-only' },
+    { ...env, STAGING_MODE: 'public' },
     { ...env, RESPONSES_SHEET_ID: '1euojcqzLLZIrhUZZlsphzk5cyjl41Ka7oUD-eJ3pd6E' },
   ])
     assert.equal((await worker.fetch(req('/', cookie), badEnv)).status, 503);
@@ -189,6 +189,31 @@ function roleDatabase(ids) {
     },
   };
 }
+
+test('owner-only mode preserves access without enabling any existing admin roles', async () => {
+  const DB = roleDatabase(['approved-admin']);
+  const limited = { ...env, STAGING_MODE: 'owner-only', DB };
+  const admin = { uid: 'approved-admin', emailVerified: true, signInProvider: 'google.com' };
+  const worker = createStagingWorker(application, async () => admin);
+  assert.equal((await worker.fetch(req('/api/draft', cookie), limited)).status, 403);
+  assert.equal((await worker.fetch(req('/', cookie), limited)).status, 302);
+  assert.equal(
+    (await worker.fetch(req('/__staging/session', { ...cookie, Origin: origin }, 'POST'), limited))
+      .status,
+    403,
+  );
+  assert.equal(DB.reads(), 0);
+  const ownerWorker = createStagingWorker(application, async () => owner);
+  const page = await ownerWorker.fetch(req('/dashboard', cookie), limited);
+  assert.equal(page.status, 200);
+  assert.match(await page.text(), /League owner only/);
+  for (const mode of ['owner-only', 'admin-only']) {
+    const login = await ownerWorker.fetch(req('/__staging/login'), { ...env, STAGING_MODE: mode });
+    const html = await login.text();
+    assert.doesNotMatch(html, /__STAGING_ALLOWED_ACCOUNTS__/);
+    assert.equal(html.includes('approved admins'), mode === 'admin-only');
+  }
+});
 
 test('both approved Google admins can access protected pages, APIs, and scripts', async () => {
   const DB = roleDatabase(['first-approved-admin', 'second-approved-admin']);

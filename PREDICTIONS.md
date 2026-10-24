@@ -1,6 +1,6 @@
 # Robot-game PP — private staging experiment
 
-The **Prediction** leaderboard, available to the owner and approved admins, is the staging home page at `/`, replacing the draft board as the roster-entry page. `/prediction` and `/admin/predictions` remain aliases. Its forecast data is served by `/api/admin/predictions`; draft settings and submissions use the existing `/api/draft` and `/api/submit` services. Production does not include the replacement page, forecast routes, or navigation. [STAGING.md](STAGING.md) documents the preserved original board and rollback switch.
+The **Prediction** leaderboard is the private staging home page at `/`, replacing the draft board as the roster-entry page. Access currently remains owner-only while the admin setup awaits Cloudflare database permission. `/prediction` and `/admin/predictions` remain aliases. Its forecast data is served by `/api/admin/predictions`; draft settings and submissions use the existing `/api/draft` and `/api/submit` services. Production does not include the replacement page, forecast routes, or navigation. [STAGING.md](STAGING.md) documents access setup, the preserved original board, and the rollback switch.
 
 ## Scoring target
 

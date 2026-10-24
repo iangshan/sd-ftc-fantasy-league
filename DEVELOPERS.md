@@ -72,7 +72,7 @@ npm run build:staging
 npx wrangler deploy --config wrangler.staging.jsonc
 ```
 
-See [STAGING.md](STAGING.md) for access synchronization, resource isolation, and the original-board rollback switch.
+Staging currently remains `owner-only`. The prepared two-admin access mode requires D1 permission on the Actions token and a successful guarded synchronization before deployment. See [STAGING.md](STAGING.md) for the enable procedure, resource isolation, and the original-board rollback switch.
 
 ## Database setup
 

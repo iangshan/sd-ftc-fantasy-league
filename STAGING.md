@@ -2,7 +2,7 @@
 
 [Open the private staging site](https://sd-ftc-fantasy-staging.sdftcfantasyleague.workers.dev/).
 
-The league owner and approved admins sign in with their existing Google accounts. The server verifies the Google session, verified email, and owner UID or staging admin role before serving league pages, assets, or APIs. Public source access does not grant access to the site.
+Staging currently uses `STAGING_MODE="owner-only"`: the league owner signs in with their existing Google account. The server verifies the Google session, verified email, and owner UID before serving league pages, assets, or APIs. Access for the two existing admins is prepared but not enabled. Public source access does not grant access to the site.
 
 ## Make and review changes
 
@@ -19,7 +19,16 @@ The page reads current prices, eligibility, draft status, and catalog version fr
 
 ## Admin access
 
-With `STAGING_MODE="admin-only"`, every protected request requires all of the following:
+The current configuration remains `owner-only`. The attempted access synchronization received HTTP 403 from Cloudflare during the production admin lookup because the Actions token lacks D1 access. No admin records were changed. The code also supports `admin-only`, but that mode must wait for a successful guarded synchronization.
+
+To enable the two existing admins:
+
+1. Add **Account → D1 → Edit** to the existing Cloudflare API token for the same Cloudflare account, retaining its current Worker deployment permissions. If replacing the token, update the repository's `CLOUDFLARE_API_TOKEN` Actions secret directly; never commit or post the token.
+2. Set `vars.STAGING_MODE` to `"admin-only"` in `wrangler.staging.jsonc` and run the repository checks.
+3. Push the reviewed change to `staging` with `[sync-staging-admins]` in the head commit message. The workflow runs `scripts/sync-staging-admins.mjs --apply --expected-count=2` before deployment.
+4. Confirm that the guarded two-account synchronization and staging deployment both succeed, then have the admins sign in with their existing Google accounts. A failed synchronization stops deployment; keep the active site owner-only until it succeeds.
+
+Once enabled, `STAGING_MODE="admin-only"` requires all of the following on every protected request:
 
 - A valid Firebase token verified through Google, with a verified email.
 - A session authenticated through `google.com`.
@@ -68,4 +77,4 @@ The test command builds both environments. Local submission tests use SQLite and
 
 Both builds share the same application source; production excludes the staging authentication wrapper and prediction routes. Version preview URLs are disabled, alternate hostnames fail closed, staging responses are private/no-store and noindex, and the server rejects an unexpected workbook ID.
 
-The staging session uses a host-only, Secure, HttpOnly cookie. Google token validation and the current role are checked on each protected request. Sessions expire after roughly an hour and renew while signed in. Use **Leave staging** to sign out.
+The staging session uses a host-only, Secure, HttpOnly cookie. Google token validation and the selected mode's owner or admin access check run on each protected request. Sessions expire after roughly an hour and renew while signed in. Use **Leave staging** to sign out.

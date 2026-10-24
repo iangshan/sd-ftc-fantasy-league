@@ -64,15 +64,19 @@ export function createStagingWorker(application = app, verify = requireAccount) 
       // Reject version/alternate hostnames and fail closed if the wrong workbook is bound.
       if (
         url.hostname !== STAGING_HOST ||
-        env.STAGING_MODE !== 'admin-only' ||
+        !['owner-only', 'admin-only'].includes(env.STAGING_MODE) ||
         env.RESPONSES_SHEET_ID !== STAGING_SHEET
       ) {
         return response('Private staging is unavailable.', 503);
       }
+      const ownerOnly = env.STAGING_MODE === 'owner-only';
+      const allowedAccounts = ownerOnly ? 'league owner' : 'league owner and approved admins';
       if (path === '/robots.txt' && request.method === 'GET')
         return response('User-agent: *\nDisallow: /\n', 200, { 'Content-Type': 'text/plain' });
       if (path === '/__staging/login' && request.method === 'GET')
-        return response(loginPage, 200, { 'Content-Type': 'text/html; charset=utf-8' });
+        return response(loginPage.replace('__STAGING_ALLOWED_ACCOUNTS__', allowedAccounts), 200, {
+          'Content-Type': 'text/html; charset=utf-8',
+        });
       if (path === '/__staging/client.js' && request.method === 'GET')
         return response(client, 200, { 'Content-Type': 'text/javascript; charset=utf-8' });
       if (
@@ -88,6 +92,8 @@ export function createStagingWorker(application = app, verify = requireAccount) 
         if (!token || token.length > 8000 || !/^[A-Za-z0-9_.-]+$/.test(token))
           throw { status: 401 };
         user = await verify(authRequest(request, token), true);
+        // Broader access stays disabled until the explicit admin sync succeeds.
+        if (ownerOnly && user?.uid !== LEAGUE_OWNER_UID) throw { status: 403 };
         await requireStagingAdmin(user, env.DB, LEAGUE_OWNER_UID);
       } catch (error) {
         const status = error.status === 503 ? 503 : error.status === 403 ? 403 : 401;
@@ -156,10 +162,12 @@ export function createStagingWorker(application = app, verify = requireAccount) 
         return new Response(body, { status: result.status, headers: resultHeaders });
       }
       if (resultHeaders.get('Content-Type')?.includes('text/html')) {
-        const banner = stagingBanner.replace(
-          '__PREDICTION_PATH__',
-          legacyDraft ? '/prediction' : '/',
-        );
+        const banner = stagingBanner
+          .replace('__PREDICTION_PATH__', legacyDraft ? '/prediction' : '/')
+          .replace(
+            '__STAGING_ACCESS_LABEL__',
+            ownerOnly ? 'League owner only' : 'League owner and approved admins only',
+          );
         const body = await result.text();
         const html = withStagingNavigation(legacyDraft ? body : predictionLabels(body), path, {
           legacyDraft,
