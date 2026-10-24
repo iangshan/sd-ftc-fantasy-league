@@ -8,7 +8,7 @@ The owner UID is pinned in `worker.mjs`. Only the owner can grant or revoke admi
 
 Admins may inspect participant entries, reset or restore rosters, link verified accounts to legacy entries, open or close the draft, and recover interrupted saves. They cannot appoint other admins. Each protected request rechecks the current role, so removing an admin takes effect on the next request.
 
-Roles are separate in production and staging. Private staging currently runs in `owner-only` mode and requires the pinned owner's verified Google session. The prepared `admin-only` mode also admits staging admins, but access for the two existing admins awaits the deployment token's D1 permission and a successful [access synchronization](STAGING.md#admin-access). That explicit synchronization copies approved admin records into staging; it does not connect staging to the production database at runtime. A later production role change is not automatically mirrored into staging.
+Roles are separate in production and staging. Private staging runs in `admin-only` mode and requires a verified Google session for the pinned owner or an active staging admin. The explicit [two-admin access synchronization](STAGING.md#admin-access) copies approved admin records into staging; it does not connect staging to the production database at runtime. A later production role change is not automatically mirrored into staging. The documented `owner-only` rollback temporarily restricts the site without deleting admin records.
 
 Repository contributors do not automatically become league admins. People who can deploy code remain trusted because deployed code runs with the environment's bindings and secrets.
 
