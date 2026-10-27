@@ -15,6 +15,7 @@
   ],
   "vars": {
     "STAGING_MODE": "admin-only",
+    "STAGING_LEAGUES_ENABLED": "true",
     "SUBMISSIONS_ENABLED": "true",
     "STAGING_DRAFT_VIEW": "prediction",
     "RESPONSES_SHEET_ID": "1Md_Ys5uf9x4kka_ltkTPM5SkHnJZAv9VUGkhnheBRJE"

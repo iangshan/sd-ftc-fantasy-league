@@ -23,4 +23,16 @@ await fs.writeFile(
     .map(([name, value]) => `export const ${name} = ${JSON.stringify(value)};`)
     .join('\n') + '\n',
 );
+const [leagueTemplate, leagueStyles, leagueClient] = await Promise.all([
+  fs.readFile(new URL('./web/leagues.html', import.meta.url), 'utf8'),
+  fs.readFile(new URL('./web/leagues.css', import.meta.url), 'utf8'),
+  fs.readFile(new URL('./web/leagues.js', import.meta.url), 'utf8'),
+]);
+const leaguePage = leagueTemplate.replace('/* LEAGUE_WORKSPACE_STYLES */', () => leagueStyles);
+await fs.writeFile(
+  new URL('../dist/staging-league-assets.mjs', import.meta.url),
+  Object.entries({ leaguePage, leagueClient })
+    .map(([name, value]) => `export const ${name} = ${JSON.stringify(value)};`)
+    .join('\n') + '\n',
+);
 console.log('Built private staging using the shared application sources.');

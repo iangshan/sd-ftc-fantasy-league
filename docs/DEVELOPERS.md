@@ -84,7 +84,7 @@ npm run build:staging
 npx wrangler deploy --config staging/wrangler.jsonc
 ```
 
-Staging uses `admin-only` access for the owner and approved admins. The explicit two-admin synchronization requires D1 permission on the Actions token and must succeed before its deployment proceeds. See [Staging guide](../staging/README.md) for the synchronization procedure, owner-only access rollback, resource isolation, and original-board rollback switch.
+Staging uses verified Google accounts with scoped league memberships and owner-only league switching. Its deployment applies the idempotent league schema with the Actions token's D1 Edit permission, then verifies the invitation landing page and anonymous access protections. See [Staging leagues](../staging/LEAGUES.md) for permissions and storage boundaries, and [Staging guide](../staging/README.md) for owner-only access and original-board rollback switches.
 
 ## Database setup
 
@@ -94,7 +94,7 @@ To initialize a fresh local development database without touching Cloudflare's r
 npx wrangler d1 migrations apply DB --local --config wrangler.jsonc
 ```
 
-The empty historical `0002_account_rosters.sql` is retained for migration history; `0004_account_rosters_schema.sql` supplies the missing account table for fresh installations. Production and staging were initialized manually before this repair. Inspect their schema and migration history before any remote migration; do not replay the original unguarded migrations against an existing database. Builds and deployments do not migrate remote D1 automatically.
+The empty historical `0002_account_rosters.sql` is retained for migration history; `0004_account_rosters_schema.sql` supplies the missing account table for fresh installations. Production and staging were initialized manually before this repair. Inspect their schema and migration history before any remote migration; do not replay the original unguarded migrations against an existing database. The only automatic remote schema operation is staging's additive `staging/migrations/0001_leagues.sql`; production is excluded. To test league features locally, initialize the existing application schema first, then execute that staging SQL against the same local database.
 
 ## Review a change
 

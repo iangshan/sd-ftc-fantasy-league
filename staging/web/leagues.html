@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>My league · Fantasy League</title>
+    <style>
+      /* LEAGUE_WORKSPACE_STYLES */
+    </style>
+  </head>
+  <body>
+    <main class="league-shell">
+      <nav aria-label="League navigation"></nav>
+      <p class="eyebrow">Your league, your community</p>
+      <h1 id="leagueName">Loading your league…</h1>
+      <p id="leagueDetails" class="intro"></p>
+      <p id="leagueMessage" role="status" tabindex="-1"></p>
+      <button id="leagueRefresh" type="button">Refresh</button>
+      <section id="leagueOverview" class="panel" hidden>
+        <h2 id="draftHeading">League setup</h2>
+        <p id="draftDescription"></p>
+        <a id="draftLink" class="button primary" href="/" hidden>Open prediction leaderboard</a>
+        <p class="muted">Membership, invitations, and staff access belong to this league only.</p>
+      </section>
+      <section id="ownerLeagues" class="panel" hidden>
+        <h2>Your leagues</h2>
+        <p>
+          Only your owner account can switch leagues. Everyone else stays in the league they joined.
+        </p>
+        <form id="switchLeagueForm" class="form-row">
+          <label>Active league<select id="leagueSelect" required></select></label>
+          <button type="submit">Switch league</button>
+        </form>
+        <details>
+          <summary>Add a region or group</summary>
+          <form id="createLeagueForm" class="form-grid">
+            <label
+              >League name<input
+                id="newLeagueName"
+                maxlength="100"
+                required
+                placeholder="Example: North County FRC Fantasy League"
+            /></label>
+            <label
+              >Region or group<input
+                id="newLeagueRegion"
+                maxlength="100"
+                required
+                placeholder="North County"
+            /></label>
+            <label
+              >Program<select id="newLeagueProgram">
+                <option>FRC</option>
+                <option>FTC</option>
+              </select></label
+            >
+            <p class="muted">
+              New leagues start with drafting disabled until their rules and team pool are
+              configured.
+            </p>
+            <button type="submit">Create league</button>
+          </form>
+        </details>
+      </section>
+      <section id="invitePanel" class="panel" hidden>
+        <h2>Invite your community</h2>
+        <p id="inviteDescription"></p>
+        <form id="createInviteForm" class="form-grid">
+          <label id="inviteRoleLabel"
+            >Role<select id="inviteRole">
+              <option value="player">Player</option>
+              <option value="moderator">Region moderator</option>
+              <option value="admin">League administrator</option>
+            </select></label
+          >
+          <label
+            >Google account email <span id="inviteEmailHint">(optional for players)</span
+            ><input id="inviteEmail" type="email" maxlength="254" autocomplete="off"
+          /></label>
+          <label
+            >Expires in days<input
+              id="inviteDays"
+              type="number"
+              min="1"
+              max="30"
+              value="7"
+              required
+          /></label>
+          <label
+            >Maximum joins<input
+              id="inviteUses"
+              type="number"
+              min="1"
+              max="100"
+              value="25"
+              required
+          /></label>
+          <button type="submit">Create invitation</button>
+        </form>
+        <div id="newInvite" class="invite-result" hidden>
+          <h3>Your invitation is ready</h3>
+          <p>Copy this now. The code will not be shown again.</p>
+          <label>Invite link<input id="inviteLink" readonly /></label>
+          <label>Invite code<input id="inviteCode" readonly /></label>
+          <button id="copyInvite" type="button">Copy link</button>
+        </div>
+        <h3>Recent invitations</h3>
+        <div id="inviteList" class="rows"></div>
+      </section>
+      <section id="memberPanel" class="panel" hidden>
+        <h2>League members</h2>
+        <p id="roleDescription"></p>
+        <div id="memberList" class="rows"></div>
+      </section>
+      <section id="auditPanel" class="panel" hidden>
+        <h2>Recent access changes</h2>
+        <div id="leagueAudit" class="rows"></div>
+      </section>
+    </main>
+    <script src="/assets/leagues.js" defer></script>
+  </body>
+</html>

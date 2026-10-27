@@ -1,5 +1,5 @@
-export function stagingNavigation(path, { legacyDraft = false } = {}) {
-  const sections = legacyDraft
+export function stagingNavigation(path, { legacyDraft = false, leagueContext } = {}) {
+  let sections = legacyDraft
     ? [
         ['/', 'Draft board'],
         ['/dashboard', 'My dashboard'],
@@ -11,6 +11,22 @@ export function stagingNavigation(path, { legacyDraft = false } = {}) {
         ['/dashboard', 'My dashboard'],
         ['/admin', 'Admin'],
       ];
+  if (leagueContext) {
+    const coordinator = ['owner', 'admin', 'moderator'].includes(leagueContext.role);
+    if (leagueContext.league.engine !== 'legacy-ftc') {
+      sections = [
+        ['/', 'League home'],
+        ['/leagues', coordinator ? 'Manage league' : 'My league'],
+      ];
+    } else {
+      if (!['owner', 'admin'].includes(leagueContext.role))
+        sections = sections.filter(([href]) => href !== '/admin');
+      sections.push([
+        '/leagues',
+        leagueContext.owner ? 'Leagues & access' : coordinator ? 'Manage league' : 'My league',
+      ]);
+    }
+  }
   const predictionHome = legacyDraft ? '/prediction' : '/';
   const active = path === '/prediction' || path === '/admin/predictions' ? predictionHome : path;
   const links = sections

@@ -7,7 +7,7 @@ A community fantasy league for San Diego FTC teams. Players draft one to three t
 | [Public league](https://sd-ftc-fantasy-league.sdftcfantasyleague.workers.dev/)    | `main`    | Released draft board and participant dashboard          |
 | [Private staging](https://sd-ftc-fantasy-staging.sdftcfantasyleague.workers.dev/) | `staging` | Prediction leaderboard, roster entry, and admin testing |
 
-The repository is public. Staging permits the league owner and the two approved admins using verified Google accounts; see [admin access](staging/README.md#admin-access). The `staging/` folder contains public source for the private testing site. GitHub does not support private folders inside a public repository; staging access is controlled by Google sign-in and admin roles.
+The repository is public. Staging uses verified Google accounts and invitation-based membership for separate FTC/FRC regional leagues. Only the owner can switch leagues or appoint staff; existing admins retain FTC access. San Diego FRC drafting remains disabled until its rules are decided. See [leagues, invitations, and roles](staging/LEAGUES.md). The `staging/` folder contains public source for the private testing site; GitHub does not support private folders inside a public repository.
 
 ## League and predictions
 
@@ -63,7 +63,7 @@ The two sites use separate D1 databases, workbooks, and Sheets service accounts.
 
 Submissions and admin mutations share a D1 lock. An uncertain write keeps a checkpoint so recovery can complete the original operation without creating a duplicate. Do not edit, sort, insert, or delete response rows while a write is pending.
 
-The existing production database was initialized manually. Do not replay migrations against it without checking its schema and migration history. The historical `0002_account_rosters.sql` file is empty; `0004_account_rosters_schema.sql` supplies the account table for new installations and leaves an existing table intact. Deployment does not automatically run remote migrations. Local submission tests use isolated SQLite and do not modify remote resources.
+The existing production database was initialized manually. Do not replay migrations against it without checking its schema and migration history. The historical `0002_account_rosters.sql` file is empty; `0004_account_rosters_schema.sql` supplies the account table for new installations and leaves an existing table intact. Staging deployment applies only its additive league schema; production migrations remain manual. Local submission tests use isolated SQLite and do not modify remote resources.
 
 ## License and attribution
 

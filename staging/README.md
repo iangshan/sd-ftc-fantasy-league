@@ -2,7 +2,9 @@
 
 [Open the private staging site](https://sd-ftc-fantasy-staging.sdftcfantasyleague.workers.dev/).
 
-Staging uses `STAGING_MODE="admin-only"`: the league owner and the two approved admins sign in with their existing Google accounts. The server verifies the Google session, verified email, and owner UID or staging admin role before serving league pages, assets, or APIs. This folder is public source for that private website. GitHub folder names do not create access restrictions; the deployed Worker enforces them.
+Staging uses verified Google sign-in and invitation-based league membership with `STAGING_LEAGUES_ENABLED="true"`. The owner can switch between San Diego FTC, San Diego FRC, and new regional/group leagues; other accounts stay in their assigned league. Previously approved admins retain FTC access. FRC drafting is disabled pending its rules. See [league setup, invitations, and roles](LEAGUES.md).
+
+This folder is public source for the private website. GitHub folder names do not create access restrictions; the deployed Worker enforces them.
 
 ## Folder layout
 
@@ -10,6 +12,7 @@ Staging uses `STAGING_MODE="admin-only"`: the league owner and the two approved 
 | -------------------------------------------- | ------------------------------------------------------------------ |
 | `worker.mjs`, `access.mjs`, `navigation.mjs` | Staging entry point, Google/admin access checks, and navigation    |
 | `predictions.mjs`                            | Prediction API and roster integration                              |
+| `leagues.mjs`, `migrations/`                 | League membership, invitations, role checks, and isolated schema   |
 | `build.mjs`                                  | Build staging from the shared application and local browser assets |
 | `wrangler.jsonc`                             | Staging Worker, isolated bindings, and feature switches            |
 | `web/`                                       | Login, banner, and prediction page assets                          |
@@ -28,7 +31,7 @@ Paths in this table are relative to `staging/`. Commands and other file paths be
 
 Pushes to `staging` deploy private testing. Pushes and merges to `main` update reviewed source and run checks while the public site stays on its current release. The [manual release workflow](../docs/DEVELOPERS.md#branches-and-deployment) controls public deployment.
 
-The **Prediction** leaderboard at `/` is the primary roster-entry page. Navigation contains Prediction, My dashboard, and Admin; `/prediction` and `/admin/predictions` remain aliases. All 87 eligible teams appear, including 70 with PP and 17 unscored teams that remain draftable.
+Within San Diego FTC, the **Prediction** leaderboard at `/` is the primary roster-entry page. Navigation includes **Leagues & access** for the owner and **Manage league** or **My league** for other roles; `/prediction` and `/admin/predictions` remain aliases. All 87 eligible teams appear, including 70 with PP and 17 unscored teams that remain draftable. FRC and new regional leagues show their separate setup workspace.
 
 The page reads current prices, eligibility, draft status, and catalog version from `/api/draft`, then saves through the authenticated `/api/submit` service. Successful entries receive the real server receipt and appear in My dashboard. Missing PP does not block an eligible team; unavailable draft or account state pauses submission. See [PREDICTIONS.md](../docs/PREDICTIONS.md) for the formula and its validation limits. Staging entries use isolated test storage.
 
@@ -38,7 +41,9 @@ The policy runs on the server after the raw legacy Sheet catalog passes validati
 
 ## Admin access
 
-The `admin-only` configuration admits the owner and approved staging admins. Access synchronization is a guarded, explicit operation for the two current production admins.
+Use **Leagues & access → League members** to manage current staging access, or an email-bound staff invitation to add someone new. Only the owner can assign administrators and region moderators. This applies while the league feature is enabled. [LEAGUES.md](LEAGUES.md) documents the role boundaries and revocation behavior.
+
+The older two-admin synchronization below is retained for historical provisioning. It is not the normal way to add staff now, and its expected-count checks stop it when new FTC administrators exist. The following legacy access behavior applies only with `STAGING_LEAGUES_ENABLED="false"`.
 
 To refresh approved admin access:
 
@@ -83,7 +88,7 @@ To restore the board, set `vars.STAGING_DRAFT_VIEW` to `"legacy"` in `staging/wr
 
 The Sheets service account has no project roles and Editor access only to the test workbook. Its key belongs in the staging Worker's `GOOGLE_SERVICE_ACCOUNT_JSON` secret. Firebase identity is shared, while rosters, admin records, write locks, and audit events use staging's separate D1 and Sheet. The explicit admin synchronization copies only the account metadata needed for access and the admin directory.
 
-Staging was initialized on 2026-10-22 using the existing application schema, including `account_rosters`. The empty historical migration `0002` remains in the repository; migration `0004` supplies that table for fresh installations. Deployments do not automatically migrate either remote database. Inspect existing schema and migration history before applying migrations.
+Staging was initialized on 2026-10-22 using the existing application schema, including `account_rosters`. The empty historical migration `0002` remains in the repository; migration `0004` supplies that table for fresh installations. The staging workflow now applies only `staging/migrations/0001_leagues.sql` before deployment. Other application migrations and all production migrations remain manual. Inspect existing schema and migration history before applying them.
 
 ## Build and safeguards
 
@@ -98,4 +103,4 @@ The test command builds both environments. Local submission tests use SQLite and
 
 Both builds share the same application source; production excludes the staging authentication wrapper and prediction routes. Version preview URLs are disabled, alternate hostnames fail closed, staging responses are private/no-store and noindex, and the server rejects an unexpected workbook ID.
 
-The staging session uses a host-only, Secure, HttpOnly cookie. Google token validation and the selected mode's owner or admin access check run on each protected request. Sessions expire after roughly an hour and renew while signed in. Use **Leave staging** to sign out.
+The staging session uses a host-only, Secure, HttpOnly cookie. Google token validation and current league membership checks run on each protected request. Only the owner can choose the league-selection cookie; other users' league is derived from the membership table. Sessions expire after roughly an hour and renew while signed in. Use **Leave staging** to sign out.
