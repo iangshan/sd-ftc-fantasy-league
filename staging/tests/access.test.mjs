@@ -222,15 +222,12 @@ test('both approved Google admins can access protected pages, APIs, and scripts'
     const worker = createStagingWorker(application, async () => admin);
     for (const path of [
       '/',
-      '/prediction',
-      '/admin/predictions',
       '/dashboard',
       '/admin',
       '/api/draft',
       '/api/account',
       '/api/admin',
       '/assets/accounts.js',
-      '/assets/predictions.js',
     ]) {
       assert.equal((await worker.fetch(req(path, cookie), { ...env, DB })).status, 200, path);
     }
@@ -241,7 +238,7 @@ test('both approved Google admins can access protected pages, APIs, and scripts'
     assert.equal(session.status, 200);
     assert.match(session.headers.get('Set-Cookie'), /Secure; HttpOnly; SameSite=Strict/);
   }
-  assert.equal(DB.reads(), 22);
+  assert.equal(DB.reads(), 16);
 });
 
 test('admin membership is checked again for existing cookies and revocation is immediate', async () => {

@@ -2,20 +2,20 @@
 
 A community fantasy league for San Diego FTC teams. Players draft one to three teams within a **15-Pollen budget**; joining and drafting are free.
 
-| Environment                                                                       | Branch    | Experience                                              |
-| --------------------------------------------------------------------------------- | --------- | ------------------------------------------------------- |
-| [Public league](https://sd-ftc-fantasy-league.sdftcfantasyleague.workers.dev/)    | `main`    | Released draft board and participant dashboard          |
-| [Private staging](https://sd-ftc-fantasy-staging.sdftcfantasyleague.workers.dev/) | `staging` | Prediction leaderboard, roster entry, and admin testing |
+| Environment                                                                       | Branch    | Experience                                       |
+| --------------------------------------------------------------------------------- | --------- | ------------------------------------------------ |
+| [Public league](https://sd-ftc-fantasy-league.sdftcfantasyleague.workers.dev/)    | `main`    | Released draft board and participant dashboard   |
+| [Private staging](https://sd-ftc-fantasy-staging.sdftcfantasyleague.workers.dev/) | `staging` | Draft board, regional leagues, and admin testing |
 
 The repository is public. Staging uses verified Google accounts and invitation-based membership for separate FTC/FRC regional leagues. Only the owner can switch leagues or appoint staff; existing admins retain FTC access. San Diego FRC drafting remains disabled until its rules are decided. See [leagues, invitations, and roles](staging/LEAGUES.md). The `staging/` folder contains public source for the private testing site; GitHub does not support private folders inside a public repository.
 
-## League and predictions
+## Drafting and pricing
 
 The current pool contains 87 eligible teams registered for BioBuzz 2026–27. Each verified account may submit one roster per season. Public-site prices retain the legacy tiers of 3, 4, 5, 6, and 11 Pollen. Private staging instead derives whole-number prices from PP, within 3–11 Pollen, while retaining the 15-Pollen roster budget. Teams without PP cost a provisional 3 Pollen and remain unscored.
 
 The scoring rule adds each drafted team's robot-game OPR after every event. Awards, wins, and advancement do not add separate points. Official earned standings are not implemented yet.
 
-The staging prediction model estimates **PP per event** from completed DECODE results. Its formula, constants, source data, evaluation procedure, and limitations are public:
+The prediction leaderboard has been removed. Staging keeps the established Pollen costs, derived from the historical DECODE model, while FTC roster entry uses the draft board. The pricing formula, constants, source evidence, and limitations remain public:
 
 - [PP formula and evaluation](docs/PREDICTIONS.md)
 - [Prediction model](src/predictions/model.mjs), [historical evaluation](src/predictions/history.mjs), and [staging pricing policy](src/predictions/pricing.mjs)

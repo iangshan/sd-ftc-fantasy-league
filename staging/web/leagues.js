@@ -72,8 +72,8 @@
     const enabled = data.drafting === 'existing-ftc';
     el('draftHeading').textContent = enabled ? 'Your FTC league' : 'Drafting is not open yet';
     el('draftDescription').textContent = enabled
-      ? 'Your prediction leaderboard, 15-Pollen roster, and existing entries are ready in this league.'
-      : 'This league has its own membership and coordinators. Drafting will stay disabled until its rules, team pool, and scoring are decided. No Pollen prices or PP have been assigned yet.';
+      ? 'Your draft board, 15-Pollen roster, and existing entries are ready in this league.'
+      : 'This league has its own membership and coordinators. Drafting will stay disabled until its rules, team pool, and scoring are decided. No team prices have been assigned yet.';
     el('draftLink').hidden = !enabled;
     el('ownerLeagues').hidden = !data.viewer.owner;
     el('leagueSelect').replaceChildren(

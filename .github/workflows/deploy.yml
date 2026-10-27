@@ -30,7 +30,7 @@ jobs:
       - run: npm run check
       - run: npm run build:staging
       - run: node --check staging/worker.mjs
-      - run: node --check staging/web/predictions.js
+      - run: node --check web/draft.js
       - run: node --test
       - name: Deploy production
         if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.deploy_production == true

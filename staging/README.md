@@ -11,11 +11,11 @@ This folder is public source for the private website. GitHub folder names do not
 | Path                                         | Purpose                                                            |
 | -------------------------------------------- | ------------------------------------------------------------------ |
 | `worker.mjs`, `access.mjs`, `navigation.mjs` | Staging entry point, Google/admin access checks, and navigation    |
-| `predictions.mjs`                            | Prediction API and roster integration                              |
+| `pricing.mjs`                                | Current Pollen pricing without a leaderboard API                   |
 | `leagues.mjs`, `migrations/`                 | League membership, invitations, role checks, and isolated schema   |
 | `build.mjs`                                  | Build staging from the shared application and local browser assets |
 | `wrangler.jsonc`                             | Staging Worker, isolated bindings, and feature switches            |
-| `web/`                                       | Login, banner, and prediction page assets                          |
+| `web/`                                       | Login, banner, and league-management assets                        |
 | `scripts/`                                   | Guarded admin synchronization and token-access diagnostics         |
 | `tests/`                                     | Staging access, navigation, submission, and synchronization checks |
 
@@ -31,13 +31,13 @@ Paths in this table are relative to `staging/`. Commands and other file paths be
 
 Pushes to `staging` deploy private testing. Pushes and merges to `main` update reviewed source and run checks while the public site stays on its current release. The [manual release workflow](../docs/DEVELOPERS.md#branches-and-deployment) controls public deployment.
 
-Within San Diego FTC, the **Prediction** leaderboard at `/` is the primary roster-entry page. Navigation includes **Leagues & access** for the owner and **Manage league** or **My league** for other roles; `/prediction` and `/admin/predictions` remain aliases. All 87 eligible teams appear, including 70 with PP and 17 unscored teams that remain draftable. FRC and new regional leagues show their separate setup workspace.
+Within San Diego FTC, the **Draft board** at `/` is the roster-entry page. It supports all 87 eligible teams, a 15-Pollen budget, and one to three picks. Navigation includes **Leagues & access** for the owner and **Manage league** or **My league** for other roles. FRC and new regional leagues retain their separate setup workspace with drafting disabled.
 
-The page reads current prices, eligibility, draft status, and catalog version from `/api/draft`, then saves through the authenticated `/api/submit` service. Successful entries receive the real server receipt and appear in My dashboard. Missing PP does not block an eligible team; unavailable draft or account state pauses submission. See [PREDICTIONS.md](../docs/PREDICTIONS.md) for the formula and its validation limits. Staging entries use isolated test storage.
+The page reads current prices, eligibility, draft status, and catalog version from `/api/draft`, then saves through the authenticated `/api/submit` service. Successful entries receive the real server receipt and appear in My dashboard. Unavailable draft or account state pauses submission. See [PREDICTIONS.md](../docs/PREDICTIONS.md) for the formula and its validation limits. Staging entries use isolated test storage.
 
 Staging prices now follow PP: divide a team's PP by the shared unit, round up, and keep the result between 3 and 11 Pollen. The current unit is 15, computed from the highest PP in the complete eligible pool; missing PP receives a provisional cost of 3 without an invented score. Rust-eze Robotics costs 4 Pollen, Crow Force 11, Fusion 9, and Runtime Terror 8. The [full pricing rule](../docs/PREDICTIONS.md#pollen-pricing-in-staging) and [implementation](../src/predictions/pricing.mjs) are public.
 
-The policy runs on the server after the raw legacy Sheet catalog passes validation. Its effective catalog version ensures an old price quote refreshes before a new submission. Public-site prices and frozen Sheet data remain unchanged. Existing receipts, pending saves, and archives retain their original paid prices; no entry is reset or repriced, and saved forecasts use paid costs with current PP.
+The policy runs on the server after the raw legacy Sheet catalog passes validation. Its effective catalog version ensures an old price quote refreshes before a new submission. Public-site prices and frozen Sheet data remain unchanged. Existing receipts, pending saves, and archives retain their original paid prices; no entry is reset or repriced.
 
 ## Admin access
 
@@ -70,11 +70,11 @@ Stored verification records establish which accounts to grant; they do not subst
 
 To temporarily restrict staging to the owner, set `vars.STAGING_MODE` to `"owner-only"`, run the checks, then commit and push to `staging` without the synchronization marker. This rollback still requires the owner's verified Google session and leaves staging admin records and rosters intact. Restore `admin-only` only after reviewing the approved roles; use the guarded synchronization when those records need to be refreshed.
 
-## Restore the original draft board
+## Removed prediction leaderboard
 
-The original draft page is preserved in `web/legacy-draft.html`, with its CSS and browser behavior in `web/league.css` and `web/draft.js`. The staging wrapper chooses which home page to serve.
+The prediction leaderboard, browser assets, roster forecast API, and scenario calculator have been removed. Old `/prediction` and `/admin/predictions` bookmarks redirect to the current league home after authentication. `/api/admin/predictions` and `/assets/predictions.js` return 404 for authenticated requests. `STAGING_DRAFT_VIEW` no longer selects a prediction page.
 
-To restore the board, set `vars.STAGING_DRAFT_VIEW` to `"legacy"` in `staging/wrangler.jsonc`, run the checks, then commit and push to `staging`. The original home page and Draft board navigation return; prediction aliases remain available. Set the value back to `"prediction"` to restore the new home page. This switch changes the page, not the staging pricing policy, database records, workbook, or saved rosters. Commit `722edef16bbd7d02c76ca71514c55fcfdccf2230` also preserves the version before the home-page replacement.
+The FTC board uses the maintained page in `web/legacy-draft.html`, styles in `web/league.css`, and client in `web/draft.js`. Staging adds filters for every current price from 3 through 11. The existing pricing model remains solely to preserve Pollen costs; its formula and evidence remain public in [PREDICTIONS.md](../docs/PREDICTIONS.md). The removed leaderboard is recoverable from Git history before this change.
 
 ## Isolated resources
 
@@ -101,6 +101,6 @@ npm test
 
 The test command builds both environments. Local submission tests use SQLite and a memory-only Sheets adapter, with no live entries. For an authorized manual deployment after checks pass, use `npx wrangler deploy --config staging/wrangler.jsonc`.
 
-Both builds share the same application source; production excludes the staging authentication wrapper and prediction routes. Version preview URLs are disabled, alternate hostnames fail closed, staging responses are private/no-store and noindex, and the server rejects an unexpected workbook ID.
+Both builds share the same application source; production excludes the staging authentication and league-management wrappers. Version preview URLs are disabled, alternate hostnames fail closed, staging responses are private/no-store and noindex, and the server rejects an unexpected workbook ID.
 
 The staging session uses a host-only, Secure, HttpOnly cookie. Google token validation and current league membership checks run on each protected request. Only the owner can choose the league-selection cookie; other users' league is derived from the membership table. Sessions expire after roughly an hour and renew while signed in. Use **Leave staging** to sign out.

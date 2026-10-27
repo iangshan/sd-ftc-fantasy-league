@@ -29,6 +29,7 @@
     priceFilter: 'all',
     preview: false,
     token: makeToken(),
+    accountEpoch: 0,
   };
   const pollen = (value) =>
     Number(value).toLocaleString('en-US', { maximumFractionDigits: 0 }) + ' pollen';
@@ -419,6 +420,7 @@
       message('Please remove line breaks or hidden control characters from your details.');
       return;
     }
+    const accountEpoch = state.accountEpoch;
     state.submitting = true;
     message('');
     renderAll();
@@ -431,9 +433,9 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      submitted(result, teams);
+      if (accountEpoch === state.accountEpoch) submitted(result, teams);
     } catch (error) {
-      submitFailed(error);
+      if (accountEpoch === state.accountEpoch) submitFailed(error);
     }
   }
   function submitFailed(error) {
@@ -463,16 +465,28 @@
     el('statusNotice').hidden = true;
     const list = el('successRoster');
     list.replaceChildren();
-    const returnedIds = Array.isArray(result.teamIds)
-      ? result.teamIds.map(String)
-      : teams.map((t) => t.id);
+    const returnedIds = Array.isArray(result.teamIds) ? result.teamIds.map(String) : [];
+    const saved = window.leagueAccount?.data?.roster;
+    const recorded = saved?.receipt?.receiptId === result.receiptId ? saved.teams : null;
+    // An idempotent retry can return an older receipt. Only display per-team
+    // paid costs when the saved snapshot or this exact quote proves them.
+    const paidTeams = Array.isArray(recorded)
+      ? recorded
+      : result.priceVersion === state.priceVersion
+        ? teams
+        : [];
+    const paid = new Map(paidTeams.map((team) => [String(team.id ?? team.number), team]));
+    const paidKnown =
+      returnedIds.length > 0 &&
+      paid.size === returnedIds.length &&
+      returnedIds.every((id) => Number.isInteger(paid.get(id)?.price)) &&
+      returnedIds.reduce((sum, id) => sum + (paid.get(id)?.price ?? 0), 0) === result.total;
     returnedIds.forEach((id) => {
-      const team = state.catalog.find((t) => t.id === id);
-      if (!team) return;
+      const team = paid.get(id) || state.catalog.find((t) => t.id === id);
       const row = node('li', '');
       row.append(
-        node('span', '', '#' + team.number + ' · ' + team.name),
-        node('strong', '', pollen(team.price)),
+        node('span', '', '#' + id + (team?.name ? ' · ' + team.name : ' · Saved team')),
+        node('strong', '', paidKnown ? pollen(paid.get(id).price) : 'Saved'),
       );
       list.appendChild(row);
     });
@@ -527,9 +541,15 @@
     const account = window.leagueAccount,
       user = account?.user;
     if (previousUid && previousUid !== user?.uid) {
+      state.accountEpoch++;
+      state.submitting = false;
+      state.token = makeToken();
       state.selected = [];
+      el('successPanel').hidden = true;
+      el('draftLayout').hidden = false;
       ['playerName', 'playerTeamName', 'discordId'].forEach((id) => {
         el(id).value = '';
+        el(id).disabled = state.preview;
       });
       message('');
     }

@@ -2,7 +2,7 @@
 
 Open **Leagues & access** from the FTC navigation or **Switch league / manage access** in the staging banner. The owner can select San Diego FTC or San Diego FRC, create another regional/group league, and manage its members. Other accounts have one assigned league and cannot switch, including through API calls or altered cookies.
 
-San Diego FTC retains its existing prediction leaderboard, 15-Pollen budget, three-team limit, paid rosters, and isolated test workbook. **San Diego FRC drafting is disabled** until its rules and team pool are decided. New regional leagues also start with drafting disabled. No FTC team data, PP model, Pollen costs, or saved roster is presented as FRC data.
+San Diego FTC retains its draft board, 15-Pollen budget, three-team limit, paid rosters, and isolated test workbook. **San Diego FRC drafting is disabled** until its rules and team pool are decided. New regional leagues also start with drafting disabled. No FTC team data, PP model, Pollen costs, or saved roster is presented as FRC data.
 
 ## Invite people
 
@@ -33,7 +33,7 @@ The owner changes roles and restores/revokes membership in **League members**. A
 
 The staging workflow runs the idempotent migration against **ftc-draft-staging** before deploying the staging Worker. It needs the existing Cloudflare token's D1 Edit permission. SQL failure stops deployment. Reapplying the migration preserves role changes and revoked memberships. It never alters FTC receipt tables, the Sheet catalog, or production storage. The existing application migrations still require separate deliberate application when provisioning a fresh database.
 
-The legacy FTC engine can only be called from the San Diego FTC context. New-league/FRC APIs either serve league-specific account/setup data or reject the request; they cannot fall through to FTC roster, admin, recovery, or prediction handlers. FTC administrator grants update the legacy admin table atomically with membership; FRC administrators never enter it. Existing FTC admin buttons route through the same membership checks.
+The legacy FTC engine can only be called from the San Diego FTC context. New-league/FRC APIs either serve league-specific account/setup data or reject the request; they cannot fall through to FTC roster, admin, or recovery handlers. FTC administrator grants update the legacy admin table atomically with membership; FRC administrators never enter it. Existing FTC admin buttons route through the same membership checks.
 
 `STAGING_MODE="owner-only"` is the emergency restriction: it rejects all non-owner access and invitation redemption, preserving the database. The previous admin-only implementation remains available with `STAGING_LEAGUES_ENABLED="false"`, but that disables league isolation and invited-player access; keep the flag enabled for normal multi-league testing.
 

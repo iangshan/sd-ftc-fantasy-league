@@ -48,7 +48,7 @@ To rename a team, edit only its value in `team-names.json`, retaining the team-n
 
 Eligibility is maintained in two data files:
 
-- `data/not-returning.json` removes historical teams from the draft, prediction board, roster validation, and archive restoration.
+- `data/not-returning.json` removes historical teams from the draft, roster validation, and archive restoration.
 - `data/rookie-teams.json` adds registered teams absent from the frozen catalog as `[number, "Name"]`. These teams have no invented OPR or rank and use the cheapest price tier. An eligible historical team with no scored DECODE result is also draftable at that tier.
 
 Keep `team-names.json` consistent with additions, and run the checks after editing either file. Compare eligibility against the region registration sheet linked from [sdftc.org](https://www.sdftc.org/2026-27registration.html). Event participation alone does not define registration for a new season.

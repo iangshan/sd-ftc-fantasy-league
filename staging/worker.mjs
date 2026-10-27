@@ -1,6 +1,5 @@
 import app, { requireAccount, authConfig, LEAGUE_OWNER_UID } from '../dist/staging-app.mjs';
-import { predictionSnapshot, priceDraftCatalog } from './predictions.mjs';
-import { predictionPage, predictionClient } from '../dist/staging-prediction-assets.mjs';
+import { priceDraftCatalog } from './pricing.mjs';
 import { withStagingNavigation } from './navigation.mjs';
 import { requireStagingAdmin } from './access.mjs';
 import { loginPage, loginClient, stagingBanner } from '../dist/staging-login-assets.mjs';
@@ -53,17 +52,6 @@ function authRequest(request, token) {
   const headers = new Headers(request.headers);
   headers.set('Authorization', 'Bearer ' + token);
   return new Request(request.url, { headers });
-}
-function predictionLabels(text) {
-  // Only participant-facing labels change; shared account logic and API paths
-  // remain exactly as shipped by the application.
-  return text
-    .replaceAll('Browse the draft board', 'Browse the prediction leaderboard')
-    .replaceAll(
-      'You can return to the draft board.',
-      'You can return to the prediction leaderboard.',
-    )
-    .replaceAll('Back to the draft board', 'Back to the prediction leaderboard');
 }
 const escapeHtml = (value) =>
   String(value).replace(
@@ -174,6 +162,14 @@ export function createStagingWorker(application = app, verify = requireAccount) 
       if (path === '/__staging/session' && request.method === 'POST')
         return json({ ok: true }, 200, { 'Set-Cookie': sessionCookie(token) });
       if (path.startsWith('/__staging/')) return json({ error: 'Not found.' }, 404);
+      // Retired pages lead to the current league home. Their data and script
+      // endpoints are gone, including for the owner and legacy configurations.
+      if (['/prediction', '/admin/predictions'].includes(path))
+        return request.method === 'GET'
+          ? response('', 302, { Location: '/' })
+          : json({ error: 'Not found.' }, 404);
+      if (['/api/admin/predictions', '/assets/predictions.js'].includes(path))
+        return json({ error: 'Not found.' }, 404);
       if (context) {
         try {
           if (path === '/api/leagues') {
@@ -253,41 +249,18 @@ export function createStagingWorker(application = app, verify = requireAccount) 
           return leagueFailure(error);
         }
       }
-      // The unchanged application still contains the original draft page. This
-      // explicit staging-only switch restores it without touching saved rosters.
-      const legacyDraft = env.STAGING_DRAFT_VIEW === 'legacy';
       // Never send an authenticated request to the production Worker.
       let result;
       const leagueWorkspace =
         context &&
         (path === '/leagues' ||
-          (context.league.id !== FTC_LEAGUE &&
-            ['/', '/prediction', '/dashboard', '/admin', '/admin/predictions'].includes(path)));
-      if (path === '/api/admin/predictions') {
-        if (request.method !== 'GET')
-          return json({ error: 'Method not allowed.' }, 405, { Allow: 'GET' });
-        return json(await predictionSnapshot(env));
-      }
+          (context.league.id !== FTC_LEAGUE && ['/', '/dashboard', '/admin'].includes(path)));
       if (leagueWorkspace) {
         if (request.method !== 'GET')
           return json({ error: 'Method not allowed.' }, 405, { Allow: 'GET' });
         result = response(leaguePage, 200, { 'Content-Type': 'text/html; charset=utf-8' });
       } else if (context && context.league.id !== FTC_LEAGUE) {
         return json({ error: 'Not found.' }, 404);
-      } else if (
-        (path === '/' && !legacyDraft) ||
-        path === '/prediction' ||
-        path === '/admin/predictions'
-      ) {
-        if (request.method !== 'GET')
-          return json({ error: 'Method not allowed.' }, 405, { Allow: 'GET' });
-        result = response(predictionPage, 200, { 'Content-Type': 'text/html; charset=utf-8' });
-      } else if (path === '/assets/predictions.js') {
-        if (request.method !== 'GET')
-          return json({ error: 'Method not allowed.' }, 405, { Allow: 'GET' });
-        return response(predictionClient, 200, {
-          'Content-Type': 'text/javascript; charset=utf-8',
-        });
       } else {
         result = await application.fetch(request, {
           ...env,
@@ -296,18 +269,9 @@ export function createStagingWorker(application = app, verify = requireAccount) 
       }
       const resultHeaders = new Headers(result.headers);
       for (const [key, value] of Object.entries(securityHeaders)) resultHeaders.set(key, value);
-      if (
-        !legacyDraft &&
-        path === '/assets/accounts.js' &&
-        resultHeaders.get('Content-Type')?.includes('javascript')
-      ) {
-        const body = predictionLabels(await result.text());
-        resultHeaders.delete('Content-Length');
-        return new Response(body, { status: result.status, headers: resultHeaders });
-      }
       if (resultHeaders.get('Content-Type')?.includes('text/html')) {
         let banner = stagingBanner
-          .replace('__PREDICTION_PATH__', legacyDraft ? '/prediction' : '/')
+          .replace('__DRAFT_PATH__', '/')
           .replace(
             '__STAGING_ACCESS_LABEL__',
             ownerOnly
@@ -318,14 +282,13 @@ export function createStagingWorker(application = app, verify = requireAccount) 
           );
         if (context)
           banner = banner
-            .replace('href="' + (legacyDraft ? '/prediction' : '/') + '"', 'href="/leagues"')
+            .replace('href="/"', 'href="/leagues"')
             .replace(
-              'Prediction leaderboard ↗',
+              'Draft board ↗',
               context.owner ? 'Switch league / manage access ↗' : 'My league ↗',
             );
         const body = await result.text();
-        const html = withStagingNavigation(legacyDraft ? body : predictionLabels(body), path, {
-          legacyDraft,
+        const html = withStagingNavigation(body, path, {
           leagueContext: context,
         })
           .replace(/<body([^>]*)>/i, '<body$1>' + banner)

@@ -24,7 +24,7 @@ jobs:
       - run: npm run check
       - run: npm run build:staging
       - run: node --check staging/worker.mjs
-      - run: node --check staging/web/predictions.js
+      - run: node --check web/draft.js
       - run: node --test
       - name: Inspect token-management capability when requested
         if: github.event_name == 'push' && github.ref == 'refs/heads/staging' && contains(github.event.head_commit.message, '[check-cloudflare-access]')

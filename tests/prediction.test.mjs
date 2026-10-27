@@ -1,7 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import vm from 'node:vm';
 import {
   buildTeamPredictions,
   decodeStrength,
@@ -10,13 +8,9 @@ import {
   buildEventPredictions,
   selectEventPredictionModel,
 } from '../src/predictions/model.mjs';
-import { predictionSnapshot, priceDraftCatalog } from '../staging/predictions.mjs';
+import { priceDraftCatalog } from '../staging/pricing.mjs';
 import { createStagingWorker, STAGING_HOST, STAGING_SHEET } from '../staging/worker.mjs';
-import {
-  getDecodePredictionCatalog,
-  getDraftPredictionCatalog,
-  LEAGUE_OWNER_UID,
-} from '../dist/staging-app.mjs';
+import { getDraftPredictionCatalog, LEAGUE_OWNER_UID } from '../dist/staging-app.mjs';
 import production from '../dist/worker.mjs';
 
 const team = (id, averageOpr, highestOpr = averageOpr, price = 3) => ({
@@ -192,78 +186,6 @@ test('zero baselines, empty pools and wholly missing data never produce NaN or I
   assert.throws(() => buildTeamPredictions([team(1, 10), team(1, 20)]), /unique/);
 });
 
-test('the leaderboard includes only the 70 draftable teams with recorded DECODE OPR', async () => {
-  const result = await predictionSnapshot({});
-  assert.deepEqual(result.counts, { total: 70, scored: 70, unscored: 0 });
-  assert.equal(result.teams[0].id, '10809');
-  assert.equal(result.model.target, 'next-event-opr');
-  assert.equal(result.model.scale, 'DECODE OPR per event');
-  assert.equal(result.model.method, 'dampedTrend');
-  assert.equal(result.teams[0].predictionPoints, 161.1);
-  assert.equal(result.teams[1].id, '18142');
-  assert.equal(result.teams[1].predictionPoints, 125.81);
-  for (const row of result.teams) {
-    assert.equal(row.draftEligible, true);
-    assert.ok(Number.isFinite(row.predictionPoints));
-    assert.equal(row.evidence.source, 'event_history');
-  }
-});
-
-test('API lists exclude every ineligible historical team while retaining source coverage and unscored draft teams', async () => {
-  const result = await predictionSnapshot({});
-  const archived = getDecodePredictionCatalog(),
-    current = getDraftPredictionCatalog();
-  assert.deepEqual(result.coverage, {
-    region: 'San Diego',
-    season: 'DECODE 2025–26',
-    source: 'FTCScout completed official DECODE events',
-    catalogTeams: 87,
-    recordedTeams: 84,
-    missingOprTeams: 3,
-    eligibleRecordedTeams: 70,
-    excludedRecordedTeams: 14,
-    draftTeams: 87,
-    scoredDraftTeams: 70,
-    unscoredDraftTeams: 17,
-    historyTeams: 70,
-    summaryOnlyTeams: 0,
-    historyEvents: 20,
-    historyRecords: 388,
-  });
-  const currentIds = new Set(current.map((t) => t.id));
-  const recorded = archived.filter((t) => Number.isFinite(t.averageOpr));
-  assert.deepEqual(
-    new Set(result.teams.map((t) => t.id)),
-    new Set(recorded.filter((t) => currentIds.has(t.id)).map((t) => t.id)),
-  );
-  assert.deepEqual(new Set(result.draftTeams.map((t) => t.id)), currentIds);
-  const excludedIds = recorded.filter((t) => !currentIds.has(t.id)).map((t) => t.id);
-  assert.equal(excludedIds.length, 14);
-  assert.ok(excludedIds.includes('19743'));
-  assert.ok(excludedIds.includes('31862'));
-  for (const id of excludedIds) {
-    assert.equal(
-      result.teams.some((t) => t.id === id),
-      false,
-    );
-    assert.equal(
-      result.draftTeams.some((t) => t.id === id),
-      false,
-    );
-  }
-  const archiveIds = new Set(archived.map((t) => t.id));
-  const newcomerIds = current.filter((t) => !archiveIds.has(t.id)).map((t) => t.id);
-  assert.equal(newcomerIds.length, 15);
-  for (const id of newcomerIds) {
-    assert.equal(
-      result.teams.some((t) => t.id === id),
-      false,
-    );
-    assert.equal(result.draftTeams.find((t) => t.id === id).predictionPoints, null);
-  }
-  assert.equal(result.draftTeams.filter((t) => t.predictionPoints === null).length, 17);
-});
-
 test('draft views reuse the historical baseline even when its reference team is no longer draftable', () => {
   const historical = buildTeamPredictions([team(1, 100), team(2, 50), team(3, 25)]);
   const current = buildTeamPredictions([team(2, 50), team(3, 25), team(4, null)], {
@@ -277,40 +199,6 @@ test('draft views reuse the historical baseline even when its reference team is 
     () => buildTeamPredictions([team(1, 100)], { baseline: { strength: 50, teamId: '2' } }),
     /baseline/,
   );
-});
-
-test('draft views share unnormalized event PP and ranks among eligible teams', async () => {
-  const result = await predictionSnapshot({});
-  const eligibleById = new Map(result.teams.map((team) => [team.id, team]));
-  assert.equal(result.baseline, undefined);
-  for (const row of result.draftTeams.filter((team) => team.predictionPoints !== null)) {
-    const expected = row.evidence.recentAverageOpr + 0.5 * (row.evidence.trendOprPerEvent ?? 0);
-    assert.equal(row.predictionPoints, Math.round((expected + Number.EPSILON) * 100) / 100);
-    assert.equal(row.predictionPoints, eligibleById.get(row.id).predictionPoints);
-    assert.equal(row.rank, eligibleById.get(row.id).rank);
-    assert.equal(row.draftEligible, true);
-  }
-  for (const [index, row] of result.teams.entries()) {
-    const previous = result.teams[index - 1];
-    assert.equal(
-      row.rank,
-      previous?.predictionPoints === row.predictionPoints ? previous.rank : index + 1,
-    );
-  }
-  assert.equal(result.draftTeams.find((t) => t.id === '18142').rank, 2);
-  assert.ok(
-    result.draftTeams.filter((t) => t.predictionPoints === null).every((t) => t.rank === null),
-  );
-});
-
-test('historical teams absent from the current draft cannot enter a predicted roster', async () => {
-  const result = await predictionSnapshot({});
-  assert.equal(predictRoster(['19743'], result.teams).status, 'invalid');
-  assert.equal(predictRoster(['19743'], result.draftTeams).status, 'invalid');
-  const unscored = result.draftTeams.find((team) => team.predictionPoints === null);
-  const currentRoster = predictRoster([unscored.id], result.draftTeams);
-  assert.equal(currentRoster.status, 'incomplete');
-  assert.equal(currentRoster.predictionPoints, null);
 });
 
 test('roster points equal the sum of the displayed team points, independent of pick order', () => {
@@ -341,9 +229,9 @@ test('invalid, duplicate, unknown, excessive, and over-budget picks cannot be ra
   }
 });
 
-test('prediction prices match the authoritative staging draft while production retains its prices', async () => {
-  const { draftTeams, pricing } = await predictionSnapshot({});
+test('draft board retains current Pollen prices while production retains its legacy prices', async () => {
   const legacyCatalog = getDraftPredictionCatalog();
+  const { catalog: draftTeams, pricing } = priceDraftCatalog(legacyCatalog);
   const response = await createStagingWorker(undefined, async () => ({
     uid: LEAGUE_OWNER_UID,
     emailVerified: true,
@@ -373,12 +261,12 @@ test('prediction prices match the authoritative staging draft while production r
     ['26013', '5131', '14968'],
     ['5131', '8380', '24664'],
   ]) {
-    const result = predictRoster(ids, draftTeams);
-    assert.equal(result.status, 'scored');
-    assert.equal(result.totalPollen, 15);
-    assert.ok(result.predictionPoints > 15, 'PP is performance, not the budget cost');
+    assert.equal(
+      ids.reduce((sum, id) => sum + draft.get(id).price, 0),
+      15,
+    );
   }
-  assert.equal(predictRoster(['10809', '22105'], draftTeams).status, 'invalid');
+  assert.ok(draft.get('10809').price + draft.get('22105').price > 15);
   const publicQuote = await (
     await production.fetch(new Request('https://league.example/api/draft'), {})
   ).json();
@@ -420,132 +308,4 @@ test('saved rosters rank scored ties, leave missing data unranked and handle dam
   );
   assert.equal(result.at(-1).status, 'invalid');
   assert.doesNotMatch(JSON.stringify(result), /must-not-leak/);
-});
-
-function fakeDb(rows = []) {
-  return {
-    prepare(sql) {
-      assert.match(sql, /^SELECT /);
-      assert.match(sql, /FROM account_rosters/);
-      return {
-        bind(season) {
-          assert.equal(season, '2026-2027');
-          return { all: async () => ({ results: rows, success: true }) };
-        },
-      };
-    },
-  };
-}
-const env = { STAGING_MODE: 'admin-only', RESPONSES_SHEET_ID: STAGING_SHEET };
-const cookie = { Cookie: '__Host-ftc-staging=valid.token.value' };
-const owner = { uid: LEAGUE_OWNER_UID, emailVerified: true, signInProvider: 'google.com' };
-const request = (path, headers = cookie, method = 'GET') =>
-  new Request('https://' + STAGING_HOST + path, { headers, method });
-
-test('snapshot distinguishes a failed database from an empty test league', async () => {
-  const unavailable = await predictionSnapshot({});
-  assert.equal(unavailable.rosterStatus, 'unavailable');
-  assert.equal(unavailable.teams.length, 70);
-  assert.equal(unavailable.draftTeams.length, 87);
-  assert.equal((await predictionSnapshot({ DB: fakeDb() })).rosterStatus, 'available');
-});
-
-test('prediction page, script and data require verified Google admin access', async () => {
-  for (const path of ['/admin/predictions', '/api/admin/predictions', '/assets/predictions.js']) {
-    const worker = createStagingWorker(undefined, async () => owner);
-    assert.equal(
-      (await worker.fetch(request(path, {}), env)).status,
-      path === '/admin/predictions' ? 302 : 401,
-    );
-    for (const user of [
-      { uid: 'another-admin', emailVerified: true },
-      { ...owner, emailVerified: false },
-    ]) {
-      const response = await createStagingWorker(undefined, async () => user).fetch(
-        request(path),
-        env,
-      );
-      assert.equal(response.status, path === '/admin/predictions' ? 302 : 403);
-      assert.doesNotMatch(await response.text(), /Crow Force|predictionPoints/);
-    }
-  }
-});
-
-test('prediction endpoints fail closed for production workbook and alternate hosts', async () => {
-  let reads = 0;
-  const DB = {
-    prepare() {
-      reads++;
-      throw new Error('should not read');
-    },
-  };
-  const worker = createStagingWorker(undefined, async () => owner);
-  for (const path of ['/admin/predictions', '/api/admin/predictions', '/assets/predictions.js']) {
-    assert.equal(
-      (await worker.fetch(request(path), { ...env, RESPONSES_SHEET_ID: 'production', DB })).status,
-      503,
-    );
-    assert.equal(
-      (
-        await worker.fetch(new Request('https://other.example' + path, { headers: cookie }), {
-          ...env,
-          DB,
-        })
-      ).status,
-      503,
-    );
-  }
-  assert.equal(reads, 0);
-});
-
-test('verified owner receives private data and escaped-by-client labels with only SELECT access', async () => {
-  const DB = fakeDb([
-    { display_name: '<img src=x onerror=alert(1)>', teams_json: '[{"id":"10809","price":11}]' },
-  ]);
-  const worker = createStagingWorker(undefined, async () => owner);
-  const response = await worker.fetch(request('/api/admin/predictions'), { ...env, DB });
-  assert.equal(response.status, 200);
-  assert.match(response.headers.get('cache-control'), /no-store, private/);
-  assert.match(response.headers.get('x-robots-tag'), /noindex/);
-  const result = await response.json();
-  assert.equal(
-    result.rosters[0].predictionPoints,
-    result.teams.find((t) => t.id === '10809').predictionPoints,
-  );
-  assert.equal(result.rosters[0].label, '<img src=x onerror=alert(1)>');
-  const page = await worker.fetch(request('/admin/predictions'), { ...env, DB });
-  assert.match(await page.text(), /Private staging[\s\S]*Prediction leaderboard/);
-});
-
-test('prediction routes reject mutations and wrong-origin requests without database writes', async () => {
-  const worker = createStagingWorker(undefined, async () => owner);
-  for (const path of ['/api/admin/predictions', '/admin/predictions', '/assets/predictions.js']) {
-    const result = await worker.fetch(
-      request(path, { ...cookie, Origin: 'https://' + STAGING_HOST }, 'POST'),
-      env,
-    );
-    assert.equal(result.status, 405);
-    assert.equal(result.headers.get('Allow'), 'GET');
-    assert.equal(
-      (
-        await worker.fetch(
-          request(path, { ...cookie, Origin: 'https://other.example' }, 'POST'),
-          env,
-        )
-      ).status,
-      403,
-    );
-  }
-});
-
-test('production build has no prediction routes or navigation', async () => {
-  for (const path of ['/admin/predictions', '/api/admin/predictions', '/assets/predictions.js'])
-    assert.equal((await production.fetch(request(path), {})).status, 404);
-  assert.doesNotMatch(
-    await (await production.fetch(request('/'), {})).text(),
-    /Prediction leaderboard/,
-  );
-  const client = fs.readFileSync(new URL('../staging/web/predictions.js', import.meta.url), 'utf8');
-  new vm.Script(client);
-  assert.doesNotMatch(client, /innerHTML|outerHTML|insertAdjacentHTML/);
 });

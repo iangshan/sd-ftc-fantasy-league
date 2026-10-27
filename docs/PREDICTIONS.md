@@ -1,6 +1,8 @@
-# Robot-game PP — private staging experiment
+# Historical PP model and current Pollen pricing
 
-The **Prediction** leaderboard is the private staging home page at `/`, replacing the draft board as the roster-entry page. The owner and the two approved admins can access it with verified Google accounts under the staging access rules. `/prediction` and `/admin/predictions` remain aliases. Its forecast data is served by `/api/admin/predictions`; draft settings and submissions use the existing `/api/draft` and `/api/submit` services. Production does not include the replacement page, forecast routes, or navigation. [Staging guide](../staging/README.md) documents access setup, the preserved original board, and the rollback switch.
+The prediction leaderboard, its forecast API, and scenario calculator have been removed. FTC players now use the **Draft board** at `/`. Old prediction-page bookmarks redirect home; the prediction API and browser asset are unavailable. League memberships, saved rosters, the 15-Pollen budget, and current prices are preserved.
+
+This document retains the public model and evidence used to derive those Pollen prices. The pricing-only integration lives in [staging/pricing.mjs](../staging/pricing.mjs). It does not expose team forecasts or rank saved rosters. [Staging guide](../staging/README.md) describes the current site.
 
 ## Scoring target
 
@@ -14,7 +16,7 @@ PP now uses **projected OPR per event**, rounded to two decimals, rather than th
 
 The metric is FTCScout qualification `opr.totalPointsNp`, excluding points awarded from opponents' penalties. Autonomous and driver-controlled OPR are retained as evidence, but never added again as bonuses to total OPR. Signed measured OPR is preserved. No individual-match OPR is invented.
 
-Only the current draft pool is returned in either API team list. All 70 eligible teams with recorded history have an estimate; the other 17 eligible teams remain unscored. Inactive historical teams can inform testing but cannot appear in a prediction leaderboard or roster. Missing history is not a synthetic zero. A frozen average is an explicitly labeled fallback if a team lacks detailed history; a team lacking both remains unscored.
+Only the current eligible draft pool is priced. All 70 eligible teams with recorded history have an estimate; the other 17 eligible teams remain unscored. Inactive historical teams can inform testing but cannot appear in a prediction leaderboard or roster. Missing history is not a synthetic zero. A frozen average is an explicitly labeled fallback if a team lacks detailed history; a team lacking both remains unscored.
 
 ## Forecast formula
 
@@ -33,7 +35,7 @@ $$
 
 When there is only one distinct completion date, the trend contribution is zero. No extra peak bonus, normalization, or arbitrary zero floor is applied. Decay 0.5 and trend damping 0.5 are fixed illustrative constants; they were not fitted on the later test block. Event counts, match counts, and historical spread explain the supporting evidence. Spread is not a confidence interval and does not automatically add or subtract PP.
 
-Six fixed candidates are compared: historical mean, latest event, prior peak, the old v2 formula in raw OPR units, recent weighted mean, and recent mean plus half the trend. The early chronological block chooses one candidate by mean absolute error (MAE). The selected candidate is used only if sufficient examples exist and its later-block error is below the historical-mean baseline; otherwise the mean is retained. This gate is an experimental safeguard, not proof of general accuracy. All historical processing is cached for the immutable snapshot; saved-roster reads remain request scoped.
+Six fixed candidates are compared: historical mean, latest event, prior peak, the old v2 formula in raw OPR units, recent weighted mean, and recent mean plus half the trend. The early chronological block chooses one candidate by mean absolute error (MAE). The selected candidate is used only if sufficient examples exist and its later-block error is below the historical-mean baseline; otherwise the mean is retained. This gate is an experimental safeguard, not proof of general accuracy. Historical processing is cached for the immutable pricing snapshot. Pricing does not read saved rosters.
 
 ## Chronological evaluation
 
@@ -69,7 +71,7 @@ U = \max\left(1,\left\lceil\frac{M}{11}\right\rceil\right),\qquad
 C_i = \min\left(11,\max\left(3,\left\lceil\frac{\mathrm{PP}_i}{U}\right\rceil\right)\right).
 $$
 
-A team with no PP receives a provisional cost of 3 Pollen; its PP stays missing, not zero. All prices are whole numbers between 3 and 11. The unit is computed and cached from the complete eligible pool, so searching, filtering, roster selections, and planned event counts cannot change prices. Prices never feed back into the PP model.
+A team with no PP receives a provisional cost of 3 Pollen; its PP stays missing, not zero. All prices are whole numbers between 3 and 11. The unit is computed and cached from the complete eligible pool, so searching, filtering, and roster selections cannot change prices. Prices never feed back into the PP model.
 
 For the current snapshot, $U=15$. Rust-eze Robotics (#24730), with 59.86 PP, costs 4 Pollen instead of its legacy 11. Crow Force (#10809) costs 11, Fusion (#18142) costs 9, and Runtime Terror (#22105) costs 8.
 
@@ -81,33 +83,15 @@ The 15-Pollen budget supports several roster structures in the current snapshot:
 | Bengal Bots + Pointers + Matador Mechanics | 7 + 5 + 3 = 15 |       219.58 |
 | Pointers + UC Robotics + RoBusted          | 5 + 5 + 5 = 15 |       213.78 |
 
-These illustrate affordable options with different team combinations; they do not guarantee equal performance or establish forecast accuracy. The table displays **Pollen cost** separately from PP. PP per Pollen is a value ratio, and the planner shows both spent and remaining Pollen.
+These illustrate affordable options with different team combinations; they do not guarantee equal performance or establish forecast accuracy. This documentation table records the model outputs behind the prices; the draft board does not display PP forecasts.
 
 The server applies this policy only in staging, after checking the raw frozen catalog against the Sheet. It derives the effective `priceVersion` from the current priced catalog. Both `/api/draft` and submission validation use that authoritative price quote; an older quote must refresh before a new submission. The browser cannot supply its own prices or change the pricing unit.
 
-Existing receipts, interrupted-save checkpoints, and archived rosters keep their originally paid prices. They are not repriced or reset. Saved-roster forecasts combine those paid costs for budget validation with current team PP, so a price change alone does not invalidate a previously affordable entry.
+Existing receipts, interrupted-save checkpoints, and archived rosters keep their originally paid prices. They are not repriced or reset.
 
-## Roster and season scenarios
+## Drafting and validation
 
-A new roster has one to three distinct eligible teams within 15 Pollen at the current quoted prices. Its per-event PP is the sum of displayed team PP, consistent with the table. Ties use competition ranks (1, 1, 3). Pollen determines affordability and PP per Pollen, never the strength estimate.
-
-The temporary calculator also accepts a planned event count for each selected team:
-
-$$
-\mathrm{ScenarioPP} = \sum_{i\in\mathrm{roster}} n_i\,\mathrm{PP}_i.
-$$
-
-Counts are explicit assumptions, initially blank, not inferred attendance or known schedules. The calculator supports zero through twelve events per team. It holds that team's current per-event estimate constant across those opportunities; it does not compound the trend or forecast named future events. A missing count or an unscored team with a positive count leaves the scenario incomplete. An explicit zero contributes zero. A scenario is not earned points, a saved entry, or a guarantee of participation.
-
-The leaderboard now supports actual staging roster submissions. All 87 draftable teams appear by default; missing PP never prevents drafting an otherwise eligible team. Current catalog prices, eligibility, open/closed state, preview mode, and `priceVersion` come from `/api/draft`. The page sends selected IDs and the required player details through the existing `leagueAccount.api('/api/submit', ...)`, using Firebase Bearer authentication. It does not submit PP, prices, predicted totals, or planned event counts as authoritative values.
-
-Verified accounts can save one roster per season. Preview mode, closed drafts, existing rosters, pending saves, stale/unavailable account state, invalid picks, and missing details block submission. A confirmed receipt displays the server's actual team IDs and total, including when an idempotent retry returns an earlier saved roster. Failed or ambiguous requests preserve the attempted picks and reconcile account state; My dashboard retains the existing interrupted-save recovery flow. Changing accounts clears contact details, selections, scenarios, and receipt state. No roster is saved merely by selecting a team.
-
-The submitted-roster leaderboard reads the isolated staging D1 database for season 2026–2027. Unknown, ineligible, duplicate, malformed, or oversized picks are unranked. Saved rosters are checked against the 15-Pollen budget using their recorded paid prices; a roster with missing measurements has incomplete PP and a known subtotal. No account IDs or contact details enter the prediction response. Database failure is shown as unavailable rather than falsely empty. A forecast-data outage still allows drafting from the authoritative catalog with PP marked unavailable; a draft-settings outage pauses submissions.
-
-## Validation and deployment
-
-Run from the repository root:
+FTC players can save one roster per season through the draft board and review their original paid picks in My dashboard. The draft API and submission service remain authoritative for current prices, eligibility, budget limits, and duplicate prevention. FRC drafting is disabled pending separate rules.
 
 ```sh
 npm ci
@@ -116,6 +100,6 @@ npm run check
 npm test
 ```
 
-Checks cover chronological leakage, invalid evidence, selection/holdout separation, signed and missing data, roster behavior, current eligibility, owner/admin Google authentication, role revocation, workbook isolation, homepage/alias/rollback routing, and absence of prediction routes in production. The original submission service is exercised with real local SQLite and a memory-only Sheets boundary, including duplicate prevention and interrupted-write recovery. Browser integration checks cover the actual client-to-submission-service payload and receipt flow, reloads, unscored picks, stale prices, draft closure, preview mode, forecast outages, event-scenario arithmetic, and mobile entry. External Firebase/Sheets authentication is not simulated as a claim of live verification; no existing remote roster is reset or overwritten during these checks.
+Checks retain model/pricing validation and cover league access, retired-route behavior, current draft eligibility and costs, duplicate prevention, and interrupted-write recovery. Browser checks exercise draft selection, whole-number price filters, submission receipts, account changes, mobile layouts, and the separate league-management flow. External Firebase and Sheets use local fixtures during browser tests; no existing remote roster is reset or overwritten.
 
 Push to `staging` to run **Deploy private staging**, which deploys only `staging/wrangler.jsonc`. Reviewed source can be merged into `main` without changing the public site. Public Worker deployment requires a separately authorized **Check and deploy** manual run on `main` with `deploy_production` enabled; it defaults to false. See [the release procedure](DEVELOPERS.md#branches-and-deployment).
