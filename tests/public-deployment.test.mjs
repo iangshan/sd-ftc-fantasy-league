@@ -4,7 +4,7 @@ import application from '../dist/worker.mjs';
 import { checkPublicDeployment } from '../scripts/check-public-deployment.mjs';
 
 async function deployedPage(url) {
-  const response = await application.fetch(new Request(url), {});
+  const response = await application.fetch(new Request(url), { LEAGUES_ENABLED: 'true' });
   if (new URL(url).pathname !== '/api/draft') return response;
   // Use the maintained catalog with a connected-service flag. No remote Sheets calls.
   return Response.json({ ...(await response.json()), preview: false });

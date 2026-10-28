@@ -64,7 +64,7 @@
     }
   }
   function render() {
-    document.title = data.league.name + ' · Private staging';
+    document.title = data.league.name + ' · Fantasy League';
     el('leagueName').textContent = data.league.name;
     el('leagueDetails').textContent =
       `${data.league.region} · ${data.league.program} · ${roleNames[data.viewer.role]}`;
@@ -75,7 +75,8 @@
       ? 'Draft up to three teams with 15 Pollen. View your saved entry in My dashboard.'
       : 'Members can join now. Drafting opens after the league rules and team pool are set.';
     el('draftLink').hidden = !enabled;
-    el('ownerLeagues').hidden = !data.viewer.owner;
+    el('ownerLeagues').hidden = !data.viewer.canSwitch;
+    el('createLeagueDetails').hidden = !data.viewer.owner;
     el('leagueSelect').replaceChildren(
       ...data.leagues.map((league) => {
         const option = node('option', league.name);
@@ -93,8 +94,10 @@
       : 'Create player invitations for this league. Only the owner can appoint staff or change roles.';
     inviteRequirements();
     el('roleDescription').textContent = data.viewer.owner
-      ? 'Administrators coordinate invitations and manage this league. Region moderators coordinate player invitations and see the member list. Only you can assign roles or revoke member access.'
-      : 'Your access applies only to this league. Contact the owner for role or membership changes.';
+      ? 'Administrators can manage every region and program. Region moderators invite players and see members in their own league. Only you can assign roles or revoke access.'
+      : data.viewer.canSwitch
+        ? 'You can manage every region and program. Only the owner can appoint staff or change roles.'
+        : 'Your access applies only to this league. Contact the owner for role or membership changes.';
     const members = el('memberList');
     members.replaceChildren();
     if (!data.members.length)
@@ -282,5 +285,7 @@
       say('Select and copy the invitation link.');
     }
   };
-  load().catch(() => {});
+  if (document.body.dataset.leaguePage === 'workspace')
+    document.addEventListener('league-session-ready', () => load().catch(() => {}));
+  else load().catch(() => {});
 })();

@@ -54,3 +54,9 @@ SELECT a.uid, 'san-diego-ftc', 'admin', 1, COALESCE(m.email, ''),
   COALESCE(m.display_name, ''), a.granted_at
 FROM league_admins a LEFT JOIN league_members m ON m.uid = a.uid
 WHERE a.uid != 'UuhcrWq7CHS4F7ay01I7JKbohEz2';
+
+-- All league administrators may now switch programs. Keep the legacy FTC role
+-- available for those administrators, including accounts assigned to FRC.
+INSERT OR IGNORE INTO league_admins (uid, granted_by, granted_at)
+SELECT uid, 'UuhcrWq7CHS4F7ay01I7JKbohEz2', joined_at FROM fantasy_memberships
+WHERE role = 'admin' AND active = 1;

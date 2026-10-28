@@ -237,14 +237,14 @@ h3 {
   margin: 0 0 12px;
 }
 .account-nav,
-.staging-main-nav {
+.league-main-nav {
   display: flex;
   flex-direction: column;
   gap: 6px;
   font-size: 12px;
 }
 .account-nav a,
-.staging-main-nav a {
+.league-main-nav a {
   display: flex;
   align-items: center;
   gap: 11px;
@@ -254,7 +254,7 @@ h3 {
   color: var(--muted);
 }
 .account-nav a::before,
-.staging-main-nav a::before {
+.league-main-nav a::before {
   content: '';
   flex: none;
   width: 15px;
@@ -264,28 +264,28 @@ h3 {
   opacity: 0.8;
 }
 .account-nav a[href*='dashboard']::before,
-.staging-main-nav a[href*='dashboard']::before {
+.league-main-nav a[href*='dashboard']::before {
   border-radius: 50%;
   border-bottom-width: 5px;
 }
 .account-nav a[href*='admin']::before,
-.staging-main-nav a[href*='admin']::before {
+.league-main-nav a[href*='admin']::before {
   border-radius: 3px 3px 8px 8px;
 }
 .account-nav a[href*='leagues']::before,
-.staging-main-nav a[href*='leagues']::before {
+.league-main-nav a[href*='leagues']::before {
   border-radius: 50%;
   box-shadow: inset 0 0 0 3px var(--paper);
   background: currentColor;
 }
 .account-nav a[aria-current='page'],
-.staging-main-nav a[aria-current='page'] {
+.league-main-nav a[aria-current='page'] {
   color: var(--accent-text);
   background: var(--accent-soft);
   font-weight: 600;
 }
 .account-nav a:hover,
-.staging-main-nav a:hover {
+.league-main-nav a:hover {
   color: var(--ink);
   background: var(--raised);
 }
@@ -374,18 +374,18 @@ h3 {
     display: none;
   }
   .account-nav,
-  .staging-main-nav {
+  .league-main-nav {
     flex-direction: row;
     flex-wrap: wrap;
     gap: 8px;
     padding: 10px 0;
   }
   .account-nav a,
-  .staging-main-nav a {
+  .league-main-nav a {
     padding: 9px 12px;
   }
   .account-nav a::before,
-  .staging-main-nav a::before {
+  .league-main-nav a::before {
     display: none;
   }
   .season {
@@ -419,12 +419,12 @@ h3 {
     display: none;
   }
   .account-nav,
-  .staging-main-nav {
+  .league-main-nav {
     font-size: 10px;
     gap: 2px;
   }
   .account-nav a,
-  .staging-main-nav a {
+  .league-main-nav a {
     padding: 9px 10px;
   }
   h1 {

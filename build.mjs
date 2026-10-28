@@ -108,7 +108,9 @@ export async function buildWorker({
     : 'default';
   await build({
     stdin: {
-      contents: `export { ${exports} } from './worker.mjs';`,
+      contents: staging
+        ? `export { ${exports} } from './worker.mjs'; export { createPublicWorker } from './src/public-worker.mjs';`
+        : "export { default } from './src/public-worker.mjs';",
       resolveDir: root,
       sourcefile: staging ? 'staging-entry.mjs' : 'production-entry.mjs',
     },

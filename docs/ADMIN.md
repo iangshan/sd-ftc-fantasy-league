@@ -8,13 +8,13 @@ The owner UID is pinned in `worker.mjs`. Only the owner can grant or revoke admi
 
 Admins may inspect participant entries, reset or restore rosters, link verified accounts to legacy entries, open or close the draft, and recover interrupted saves. They cannot appoint other admins. Each protected request rechecks the current role, so removing an admin takes effect on the next request.
 
-Roles are separate in production and staging. Private staging requires verified Google sign-in and an active league membership, with the pinned owner able to access every league. Use **Leagues & access** to invite administrators or region moderators and update existing members; [the staging role guide](../staging/LEAGUES.md) defines their limits. A later production role change is not automatically mirrored into staging. The `owner-only` restriction temporarily locks staging to the owner without deleting records.
+Roles are separate in production and staging. Both sites require verified Google sign-in and active league membership; the pinned owner and league administrators can switch into every region and program. Use **Leagues & access** to invite administrators or region moderators and update existing members; [the staging role guide](../staging/LEAGUES.md) defines their limits. A later production role change is not automatically mirrored into staging. The `owner-only` restriction temporarily locks staging to the owner without deleting records.
 
 Repository contributors do not automatically become league admins. People who can deploy code remain trusted because deployed code runs with the environment's bindings and secrets.
 
 ## Grant or remove an admin
 
-For the public league, have the person sign in and verify their email. The owner can then open **Admin access**, refresh the account directory, choose the account, and select **Add Admin** with a reason. The directory contains accounts that have visited the site, not a complete Firebase export.
+Use **Leagues & access → Invite your community** to invite a new player, region moderator, or administrator. Moderator links can be sent without collecting an email; administrator invitations require the recipient’s Google email. For an existing member, the owner can change the role under **League members**. The legacy FTC **Admin access** buttons use the same membership rules.
 
 **Remove Admin** leaves the person's player account and roster intact. In staging, demoting an administrator also retains their league membership. To remove staging access entirely, use **Leagues & access → League members → Revoke access**. Removing only a production role does not revoke staging membership.
 
@@ -36,6 +36,6 @@ The former Basic-auth organizer interface redirects to `/admin`; its API is disa
 
 ## Database operations
 
-The existing production database was initialized manually. `0003_admin_dashboard.sql` defines the member, admin, audit, and archive tables. The historical `0002_account_rosters.sql` is empty; `0004_account_rosters_schema.sql` supplies account-roster storage for new installations without replacing an existing table. Do not replay the original unguarded migrations against an existing database, and review its migration history before applying a later one. The staging workflow applies only its additive league schema; production migrations remain manual.
+The existing production database was initialized manually. `0003_admin_dashboard.sql` defines the member, admin, audit, and archive tables. The historical `0002_account_rosters.sql` is empty; `0004_account_rosters_schema.sql` supplies account-roster storage for new installations without replacing an existing table. Do not replay the original unguarded migrations against an existing database, and review its migration history before applying a later one. Public releases apply only `0005_regional_leagues.sql`, which preserves existing FTC accounts and rosters. Staging applies its separate additive league schema. Neither replays historical migrations.
 
 Use clearly labeled local or staging test entries for operational checks. Never reset another player's roster merely to test a change. The prediction experiment does not assign official earned standings or send email notifications.

@@ -23,9 +23,9 @@ await fs.writeFile(
     .join('\n') + '\n',
 );
 const [leagueTemplate, leagueStyles, leagueClient] = await Promise.all([
-  fs.readFile(new URL('./web/leagues.html', import.meta.url), 'utf8'),
-  fs.readFile(new URL('./web/leagues.css', import.meta.url), 'utf8'),
-  fs.readFile(new URL('./web/leagues.js', import.meta.url), 'utf8'),
+  fs.readFile(new URL('../web/leagues.html', import.meta.url), 'utf8'),
+  fs.readFile(new URL('../web/leagues.css', import.meta.url), 'utf8'),
+  fs.readFile(new URL('../web/leagues.js', import.meta.url), 'utf8'),
 ]);
 const leagueLogo =
   'data:image/jpeg;base64,' +

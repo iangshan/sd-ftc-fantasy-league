@@ -343,21 +343,23 @@
           ? 'Roster already submitted'
           : account.data?.pending
             ? 'Check your save in My dashboard'
-            : !account.data
-              ? 'Account is loading'
-              : state.submitting
-                ? 'Submitting your roster…'
-                : state.preview
-                  ? 'Preview only · submissions disabled'
-                  : state.loading
-                    ? 'Loading the draft…'
-                    : !state.open
-                      ? 'Draft closed'
-                      : !hasTeams
-                        ? 'Choose your teams to continue'
-                        : !fieldsReady
-                          ? 'Add your details to submit'
-                          : 'Submit roster · ' + pollen(total());
+            : account.error
+              ? 'Open My dashboard to continue'
+              : !account.data
+                ? 'Account is loading'
+                : state.submitting
+                  ? 'Submitting your roster…'
+                  : state.preview
+                    ? 'Preview only · submissions disabled'
+                    : state.loading
+                      ? 'Loading the draft…'
+                      : !state.open
+                        ? 'Draft closed'
+                        : !hasTeams
+                          ? 'Choose your teams to continue'
+                          : !fieldsReady
+                            ? 'Add your details to submit'
+                            : 'Submit roster · ' + pollen(total());
   }
   async function submit(event) {
     event.preventDefault();
@@ -545,13 +547,15 @@
     previousUid = user?.uid || null;
     el('draftAccountStatus').textContent = !user
       ? 'Sign in to save your roster to your account.'
-      : account.data?.roster
-        ? 'Your roster is already saved. View it in your dashboard.'
-        : account.data?.pending
-          ? 'Your entry is being confirmed. Check your dashboard.'
-          : !user.emailVerified
-            ? 'Verify your email in your dashboard before submitting.'
-            : 'Signed in as ' + (user.email || 'your league account');
+      : account.error
+        ? account.error
+        : account.data?.roster
+          ? 'Your roster is already saved. View it in your dashboard.'
+          : account.data?.pending
+            ? 'Your entry is being confirmed. Check your dashboard.'
+            : !user.emailVerified
+              ? 'Verify your email in your dashboard before submitting.'
+              : 'Signed in as ' + (user.email || 'your league account');
     el('draftAccountLink').textContent = user ? 'Open my dashboard' : 'Sign in / create account';
     renderAll();
   });

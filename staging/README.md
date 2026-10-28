@@ -2,7 +2,7 @@
 
 [Open the private staging site](https://sd-ftc-fantasy-staging.sdftcfantasyleague.workers.dev/).
 
-Staging uses verified Google sign-in and invitation-based league membership with `STAGING_LEAGUES_ENABLED="true"`. The owner can switch between San Diego FTC, San Diego FRC, and new regional/group leagues; other accounts stay in their assigned league. Previously approved admins retain FTC access. FRC drafting is disabled pending its rules. See [league setup, invitations, and roles](LEAGUES.md).
+Staging uses verified Google sign-in and invitation-based league membership with `STAGING_LEAGUES_ENABLED="true"`. The owner and league administrators can switch between every region and program; moderators and players stay in their assigned league. Previously approved admins retain FTC access. FRC drafting is disabled pending its rules. See [league setup, invitations, and roles](LEAGUES.md).
 
 This folder is public source for the private website. GitHub folder names do not create access restrictions; the deployed Worker enforces them.
 
@@ -12,7 +12,7 @@ This folder is public source for the private website. GitHub folder names do not
 | -------------------------------------------- | ------------------------------------------------------------------ |
 | `worker.mjs`, `access.mjs`, `navigation.mjs` | Staging entry point, Google/admin access checks, and navigation    |
 | `pricing.mjs`                                | Current Pollen pricing without a leaderboard API                   |
-| `leagues.mjs`, `migrations/`                 | League membership, invitations, role checks, and isolated schema   |
+| `leagues.mjs`, `migrations/`                 | Compatibility export of shared league service, and isolated schema |
 | `build.mjs`                                  | Build staging from the shared application and local browser assets |
 | `wrangler.jsonc`                             | Staging Worker, isolated bindings, and feature switches            |
 | `web/`                                       | Login, banner, and league-management assets                        |

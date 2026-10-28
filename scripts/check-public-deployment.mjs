@@ -35,8 +35,17 @@ export async function checkPublicDeployment(fetcher = fetch) {
     throw new Error('The public draft catalog or league settings are unavailable.');
   await get('/api/account', 401);
   await get('/api/admin', 401);
+  await get('/api/leagues', 401);
+  const workspace = await get('/leagues', 302);
+  if (!workspace.headers.get('Location')?.startsWith('/login?return='))
+    throw new Error('The league workspace must require sign-in.');
+  const join = await (await get('/join')).text();
+  if (!join.includes('id="joinCode"') || join.includes('__STAGING_'))
+    throw new Error('The public invitation form is unavailable.');
+  const config = await (await get('/api/auth/config')).json();
+  if (config.leagueSessions !== true) throw new Error('Public regional access is disabled.');
   console.log(
-    'Public deployment verified: approved pages and live draft catalog available; account and admin APIs require sign-in.',
+    'Public deployment verified: approved pages, live draft catalog, and invitation form available; account, admin, and league APIs require sign-in.',
   );
 }
 

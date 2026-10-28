@@ -57,7 +57,7 @@ test('owner sees league controls, switches via secure cookie, and receives disab
 test('FRC cannot reach any legacy FTC route, data, roster submission, or recovery', async (t) => {
   const person = user('frc-admin'),
     f = setup(t, person);
-  f.member(person.uid, FRC_LEAGUE, 'admin');
+  f.member(person.uid, FRC_LEAGUE, 'moderator');
   const cases = [
     ['/api/admin', 404],
     ['/api/admin/predictions', 404],
@@ -110,7 +110,7 @@ test('session accepts an invitation after Google verification, then enforces cur
   const person = user('joining'),
     f = setup(t, person);
   const invitation = await f.mutate(
-    { action: 'createInvite', role: 'admin', email: person.email },
+    { action: 'createInvite', role: 'moderator', email: person.email },
     owner,
     FRC_LEAGUE,
   );
@@ -121,7 +121,7 @@ test('session accepts an invitation after Google verification, then enforces cur
   assert.equal(result.status, 200);
   assert.match(result.headers.get('Set-Cookie'), /__Host-ftc-staging=fixture.token/);
   const info = await (await f.fetch('/api/leagues')).json();
-  assert.equal(info.viewer.role, 'admin');
+  assert.equal(info.viewer.role, 'moderator');
   assert.equal(info.viewer.owner, false);
   assert.equal(info.league.id, FRC_LEAGUE);
   await f.mutate(

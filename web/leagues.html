@@ -52,14 +52,14 @@
         <section id="ownerLeagues" class="panel" hidden>
           <h2>Your leagues</h2>
           <p>
-            Only your owner account can switch leagues. Everyone else stays in the league they
-            joined.
+            League administrators can switch between regions and programs. Moderators and players
+            stay in the league they joined.
           </p>
           <form id="switchLeagueForm" class="form-row">
             <label>Active league<select id="leagueSelect" required></select></label>
             <button type="submit">Switch league</button>
           </form>
-          <details>
+          <details id="createLeagueDetails">
             <summary>Add a region or group</summary>
             <form id="createLeagueForm" class="form-grid">
               <label

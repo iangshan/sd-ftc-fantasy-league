@@ -8,7 +8,7 @@ Google sign-in is enabled. Apple and GitHub integrations exist but remain disabl
 
 Every account API request verifies its ID token through Google's `accounts:lookup` service. The server checks the expected Firebase project, issuer, UID, timestamps, and revocation state. Disabled or deleted accounts are rejected. A verified email is required to submit a roster.
 
-The token's sign-in provider is trusted only after Google validates the token for the same UID. Private staging additionally requires a **Google sign-in**, a verified email, and either the pinned owner UID or an active invited league membership. [Staging leagues](../staging/LEAGUES.md) describes scoped roles, invitations, owner-only switching, and the emergency `owner-only` restriction. Linking a Google account does not make a session authenticated through a different provider eligible for staging.
+The token's sign-in provider is trusted only after Google validates the token for the same UID. Regional league access on both sites requires a **Google sign-in**, a verified email, and either the pinned owner UID or an active invited league membership. [Staging leagues](../staging/LEAGUES.md) describes scoped roles, invitations, administrator switching, and the emergency `owner-only` restriction. Linking a Google account does not make a session authenticated through a different provider eligible for regional league access.
 
 Client-provided names, email addresses, roles, UIDs, and submission tokens cannot choose a roster's owner. The submission service derives ownership and its idempotency token from the authenticated UID and season.
 
@@ -36,6 +36,6 @@ The production and staging hostnames must each be authorized in Firebase. Identi
 
 ## Database and testing
 
-Production account storage was initialized manually on 2026-10-20, and staging account storage was initialized separately. The historical `0002_account_rosters.sql` is empty and retained for migration history. `0004_account_rosters_schema.sql` creates the account table if missing, making the full migration sequence usable for a fresh database. Inspect the existing schema and migration history before changing an existing database; deployments do not automatically apply remote migrations.
+Production account storage was initialized manually on 2026-10-20, and staging account storage was initialized separately. The historical `0002_account_rosters.sql` is empty and retained for migration history. `0004_account_rosters_schema.sql` creates the account table if missing, making the full migration sequence usable for a fresh database. Inspect the existing schema and migration history before changing an existing database; public releases apply only the additive regional bootstrap `0005_regional_leagues.sql`; private deployments use their separate regional migration. Neither replays the historical production migrations.
 
 The repository includes tests for authentication boundaries, account isolation, idempotent submissions, invalid rosters, and interrupted-save recovery. Local submission tests use SQLite and a memory-only Sheets adapter. A passing local suite does not establish that another user's live Google sign-in has been performed; Google validates that user's session when they sign in.

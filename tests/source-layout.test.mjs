@@ -46,6 +46,7 @@ test('production exposes only the Worker entry while staging retains its shared 
     'LEAGUE_OWNER_UID',
     'authConfig',
     'catalogVersion',
+    'createPublicWorker',
     'default',
     'getDecodePredictionCatalog',
     'getDraftPredictionCatalog',

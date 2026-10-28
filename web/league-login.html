@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>Join your league · Fantasy League</title>
+    <style>
+      /* LEAGUE_STYLES */
+    </style>
+    <script>
+      /* THEME_INIT */
+    </script>
+  </head>
+  <body data-league-page="__PAGE__">
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="/">
+          <img
+            class="brand-icon"
+            src="__LEAGUE_LOGO__"
+            width="40"
+            height="40"
+            alt="San Diego FTC Fantasy League"
+          />
+          <div>
+            <div class="brand-region">Regional leagues</div>
+            <div class="brand-name">Fantasy League</div>
+          </div>
+        </a>
+      </div>
+    </header>
+    <main class="league-shell league-login">
+      <section class="panel">
+        <p class="eyebrow">Your community. Your league.</p>
+        <h1>__TITLE__</h1>
+        <p>__DESCRIPTION__</p>
+        <form id="leagueLoginForm" class="form-grid">
+          <label __CODE_HIDDEN__
+            >Invitation code<input
+              id="joinCode"
+              autocomplete="off"
+              maxlength="32"
+              spellcheck="false"
+          /></label>
+          <button id="leagueLogin" type="submit" disabled>Continue with Google</button>
+        </form>
+        <p id="accountMessage" role="status" aria-live="polite">Loading sign-in…</p>
+        <p><a href="/join">Have an invitation?</a> · <a href="/login">Already a member?</a></p>
+        <p class="muted">
+          New to the league? Ask your regional coordinator for an invitation link.
+        </p>
+      </section>
+    </main>
+    <script src="/assets/accounts.js" defer></script>
+  </body>
+</html>

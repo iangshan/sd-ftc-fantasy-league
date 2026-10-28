@@ -54,10 +54,10 @@ test('migration seeds two isolated leagues, retains FTC admins, and is safe to r
   );
 });
 
-test('owner can switch, but every other role stays in its assigned league despite forged cookies', async (t) => {
+test('owner can switch while players and moderators ignore forged league cookies', async (t) => {
   const f = setup(t);
   assert.equal((await f.context(owner, FRC_LEAGUE)).league.id, FRC_LEAGUE);
-  for (const role of ['player', 'moderator', 'admin']) {
+  for (const role of ['player', 'moderator']) {
     const person = f.member(role, FTC_LEAGUE, role);
     const context = await f.context(person, FRC_LEAGUE);
     assert.equal(context.league.id, FTC_LEAGUE);
@@ -102,7 +102,8 @@ test('coordinators only create player invitations for their own league; members 
       403,
     );
     await reject(() => invite(f, { role: 'moderator' }, FRC_LEAGUE, person), 403);
-    await reject(() => invite(f, {}, FTC_LEAGUE, person), 409);
+    if (person === moderator) await reject(() => invite(f, {}, FTC_LEAGUE, person), 409);
+    else await invite(f, {}, FTC_LEAGUE, person);
     const result = await invite(f, {}, FRC_LEAGUE, person);
     assert.match(result.code, /^[a-f0-9]{32}$/);
   }
@@ -181,7 +182,7 @@ test('expired and revoked invitations reject without writing membership or legac
   assert.equal(f.sql.prepare('SELECT COUNT(*) AS n FROM league_admins').get().n, 0);
 });
 
-test('administrator invitations require the named Google email and never grant cross-league FTC access', async (t) => {
+test('administrator invitations require the named Google email and grant access across programs', async (t) => {
   const f = setup(t);
   await reject(() => invite(f, { role: 'admin' }), 400);
   const result = await invite(f, { role: 'admin', email: 'Staff@Example.Invalid', maxUses: 99 });
@@ -189,10 +190,13 @@ test('administrator invitations require the named Google email and never grant c
   await accept(f, user('staff'), result.code);
   assert.equal((await f.context(user('staff'))).role, 'admin');
   assert.equal(f.sql.prepare('SELECT max_uses FROM fantasy_invites').get().max_uses, 1);
-  assert.equal(f.sql.prepare('SELECT COUNT(*) AS n FROM league_admins').get().n, 0);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) AS n FROM league_admins').get().n, 1);
   const ftc = await invite(f, { role: 'admin', email: 'ftc-staff@example.invalid' }, FTC_LEAGUE);
   await accept(f, user('ftc-staff'), ftc.code);
-  assert.equal(f.sql.prepare('SELECT uid FROM league_admins').get().uid, 'ftc-staff');
+  assert.equal(
+    f.sql.prepare("SELECT uid FROM league_admins WHERE uid = 'ftc-staff'").get().uid,
+    'ftc-staff',
+  );
 });
 
 test('moderator links accept an unspecified Google account once and grant only scoped moderator access', async (t) => {

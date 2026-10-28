@@ -23,7 +23,10 @@ Use `npm run format` to apply the shared Prettier configuration before committin
 
 | Location                            | Purpose                                                                     |
 | ----------------------------------- | --------------------------------------------------------------------------- |
-| `worker.mjs`                        | Production HTTP handlers, authentication, submissions, and administration   |
+| `worker.mjs`                        | Legacy FTC handlers, authentication, submissions, and administration        |
+| `src/public-worker.mjs`             | Public sessions, regional routing, and access boundary                      |
+| `src/leagues.mjs`                   | Shared memberships, invitations, and role checks                            |
+| `src/league-navigation.mjs`         | Shared navigation from the verified league context                          |
 | `web/`                              | Shared browser JavaScript, CSS, page templates, and logo                    |
 | `src/pages.mjs`                     | Page assembly from maintained browser assets                                |
 | `src/predictions/`                  | PP model, historical evaluation, and staging pricing policy                 |
@@ -70,7 +73,7 @@ Pull requests and pushes to `main` run checks only. The deployment targets are e
 
 Start staging work from `staging`, review it there, and open a pull request to the intended branch. Merge reviewed source into `main` to keep the default GitHub branch current. Merging or pushing to `main` does not deploy the public website; the running site may remain on an earlier release. A push to `staging` continues to deploy private testing automatically. Use pull-request review and repository branch rules for both branches.
 
-CI installs the lockfile with `npm ci` and uses the repository checks. The existing `CLOUDFLARE_API_TOKEN` GitHub secret authorizes deployment; Worker secrets remain in Cloudflare. A failed build does not replace the active deployment. No workflow automatically runs production database migrations.
+CI installs the lockfile with `npm ci` and uses the repository checks. The existing `CLOUDFLARE_API_TOKEN` GitHub secret authorizes deployment; Worker secrets remain in Cloudflare. A failed build does not replace the active deployment. An authorized public release applies only the additive `migrations/0005_regional_leagues.sql` bootstrap before deployment; it does not replay earlier migrations.
 
 To make an authorized public release through GitHub:
 
@@ -90,7 +93,7 @@ npm run build:staging
 npx wrangler deploy --config staging/wrangler.jsonc
 ```
 
-Staging uses verified Google accounts with scoped league memberships and owner-only league switching. Its deployment applies the idempotent league schema with the Actions token's D1 Edit permission, then verifies the invitation landing page and anonymous access protections. See [Staging leagues](../staging/LEAGUES.md) for permissions and storage boundaries, and [Staging guide](../staging/README.md) for owner-only access and original-board rollback switches.
+Staging uses verified Google accounts with scoped league memberships and administrator switching across all regions and programs. Its deployment applies the idempotent league schema with the Actions token's D1 Edit permission, then verifies the invitation landing page and anonymous access protections. See [Staging leagues](../staging/LEAGUES.md) for permissions and storage boundaries, and [Staging guide](../staging/README.md) for owner-only access and original-board rollback switches.
 
 ## Database setup
 
@@ -100,7 +103,7 @@ To initialize a fresh local development database without touching Cloudflare's r
 npx wrangler d1 migrations apply DB --local --config wrangler.jsonc
 ```
 
-The empty historical `0002_account_rosters.sql` is retained for migration history; `0004_account_rosters_schema.sql` supplies the missing account table for fresh installations. Production and staging were initialized manually before this repair. Inspect their schema and migration history before any remote migration; do not replay the original unguarded migrations against an existing database. The only automatic remote schema operation is staging's additive `staging/migrations/0001_leagues.sql`; production is excluded. To test league features locally, initialize the existing application schema first, then execute that staging SQL against the same local database.
+The empty historical `0002_account_rosters.sql` is retained for migration history; `0004_account_rosters_schema.sql` supplies the missing account table for fresh installations. Production and staging were initialized manually before this repair. Inspect their schema and migration history before any remote migration; do not replay the original unguarded migrations against an existing database. Authorized public releases apply only `migrations/0005_regional_leagues.sql`; private deployments apply `staging/migrations/0001_leagues.sql`. The public bootstrap preserves existing FTC accounts and rosters. The staging bootstrap admits only approved staff and invited members. See [regional leagues](LEAGUES.md) for the shared architecture and access model.
 
 ## Review a change
 

@@ -68,3 +68,5 @@ The existing production database was initialized manually. Do not replay migrati
 ## License and attribution
 
 Project code is available under the [MIT License](LICENSE). FTCScout and FIRST supply third-party competition data; see the [data-source documentation](data/predictions/README.md) for attribution and provenance. The project license does not assert ownership of or relicense third-party data, names, or trademarks.
+
+Regional leagues, invitations, and staff access are available on both deployments. See [Leagues and invitations](docs/LEAGUES.md). Administrators may switch into every region and program; moderators and players stay in their assigned league. FRC and new-region drafting remain disabled pending their rules.

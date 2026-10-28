@@ -8,6 +8,23 @@
     return n;
   };
   const dashboard = Boolean(el('authPanel'));
+  const leaguePage = document.body.dataset.leaguePage;
+  const joining = leaguePage === 'join';
+  let leagueSessions = false;
+  let sessionWrites = Promise.resolve();
+  function writeSession(action) {
+    // Finish cookie writes in account-change order, including sign-out.
+    const pending = sessionWrites.then(action);
+    sessionWrites = pending.catch(() => {});
+    return pending;
+  }
+  const clearLeagueSession = () =>
+    writeSession(() => fetch('/api/session/logout', { method: 'POST' }));
+  if (joining) {
+    el('joinCode').value = new URLSearchParams(location.hash.slice(1)).get('invite') || '';
+    history.replaceState(null, '', '/join');
+    el('joinCode').required = true;
+  }
   let auth,
     sdk,
     busy = false,
@@ -40,9 +57,10 @@
     document.dispatchEvent(new Event('league-account-change'));
   }
   function message(text) {
-    if (el('accountMessage')) {
-      el('accountMessage').textContent = text;
-      el('accountMessage').hidden = !text;
+    const target = el('accountMessage') || el('leagueMessage');
+    if (target) {
+      target.textContent = text;
+      target.hidden = !text;
     }
   }
   function errorText(error) {
@@ -115,6 +133,16 @@
       }
       admin.hidden = false;
     } else if (admin) admin.hidden = true;
+    if (leagueSessions && session.data?.league) {
+      const navigation = document.querySelector('.account-nav');
+      const leagueLink = navigation?.querySelector('a[href="/leagues"]');
+      if (leagueLink)
+        leagueLink.textContent = ['owner', 'admin'].includes(session.data.role)
+          ? 'Leagues & access'
+          : session.data.role === 'moderator'
+            ? 'Manage league'
+            : 'My league';
+    }
   }
   function emptyRoster(text) {
     const content = el('savedRosterContent');
@@ -230,6 +258,35 @@
     notify();
     renderDashboard();
   }
+  async function syncLeague(user, inviteCode) {
+    return writeSession(async () => {
+      const token = await user.getIdToken();
+      if (session.user?.uid !== user.uid)
+        throw new Error('Your account changed. Please try again.');
+      const response = await fetch('/api/session', {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(inviteCode ? { inviteCode } : {}),
+        cache: 'no-store',
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Please sign in again.');
+      return result;
+    });
+  }
+  function returnToLeague() {
+    const target = new URLSearchParams(location.search).get('return') || '/';
+    // Resolve first so encoded separators cannot turn a local return path into a different origin.
+    const destination = new URL(target, location.origin);
+    location.replace(
+      destination.origin === location.origin && !['/login', '/join'].includes(destination.pathname)
+        ? destination.pathname + destination.search
+        : '/',
+    );
+  }
   async function init() {
     try {
       const response = await fetch('/api/auth/config', { cache: 'no-store' }),
@@ -239,11 +296,44 @@
         import('https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js'),
         import('https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js'),
       ]);
-      const { providers: allowed = {}, error: _ignored, ...firebaseConfig } = config;
+      const {
+        providers: allowed = {},
+        error: _ignored,
+        leagueSessions: useLeagues = false,
+        ...firebaseConfig
+      } = config;
+      leagueSessions = useLeagues;
       offered = Object.keys(providers).filter((id) => allowed[id.replace(/Login$/, '')] !== false);
       sdk = authModule;
       auth = sdk.getAuth(app.initializeApp(firebaseConfig));
       auth.useDeviceLanguage();
+      if (leagueSessions && el('leagueSignOut'))
+        el('leagueSignOut').onclick = async () => {
+          await clearLeagueSession();
+          await sdk.signOut(auth);
+        };
+      if (leagueSessions && el('leagueLoginForm')) {
+        el('leagueLogin').disabled = false;
+        el('leagueLoginForm').onsubmit = async (event) => {
+          event.preventDefault();
+          if (busy) return;
+          busy = true;
+          el('leagueLogin').disabled = true;
+          message('Opening Google sign-in…');
+          try {
+            const signedIn = await sdk.signInWithPopup(auth, providers.googleLogin());
+            if (joining) {
+              await syncLeague(signedIn.user, el('joinCode').value.trim());
+              location.replace('/');
+            }
+          } catch (error) {
+            message(errorText(error));
+          } finally {
+            busy = false;
+            el('leagueLogin').disabled = false;
+          }
+        };
+      }
       if (dashboard) {
         for (const [id, build] of Object.entries(providers)) {
           const button = el(id);
@@ -278,19 +368,64 @@
           });
         el('signOut').onclick = () =>
           perform(async () => {
+            if (leagueSessions) await clearLeagueSession();
             await sdk.signOut(auth);
             message('You’re signed out.');
           });
       }
-      sdk.onAuthStateChanged(auth, async (user) => {
-        revision++;
+      const observe = leagueSessions ? sdk.onIdTokenChanged : sdk.onAuthStateChanged;
+      observe(auth, async (user) => {
+        const current = ++revision;
         session.user = user;
         session.data = null;
         session.error = null;
-        session.ready = true;
+        session.ready = !leagueSessions;
         nav();
         notify();
         renderDashboard();
+        if (leagueSessions) {
+          try {
+            if (joining) {
+              message('Enter your invitation code, then continue with Google to join.');
+              return;
+            }
+            if (user) {
+              const result = await syncLeague(user);
+              if (session.user !== user) return;
+              if (leaguePage === 'login') {
+                returnToLeague();
+                return;
+              }
+              if (!leaguePage && result.league.id !== 'san-diego-ftc') {
+                location.replace('/leagues');
+                return;
+              }
+            } else {
+              await clearLeagueSession();
+              if (current !== revision) return;
+              if (leaguePage === 'workspace') {
+                location.replace('/login');
+                return;
+              }
+              message(leaguePage === 'login' ? 'Continue with Google to open your league.' : '');
+            }
+          } catch (error) {
+            if (current !== revision) return;
+            session.error = errorText(error);
+            message(session.error);
+            session.ready = true;
+            notify();
+            renderDashboard();
+            return;
+          }
+          session.ready = true;
+          notify();
+          renderDashboard();
+          if (leaguePage) {
+            document.dispatchEvent(new Event('league-session-ready'));
+            return;
+          }
+        }
         if (user) await loadDashboard();
       });
     } catch (error) {

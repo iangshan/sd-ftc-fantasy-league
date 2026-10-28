@@ -79,7 +79,7 @@ export function fixture() {
         'INSERT INTO fantasy_memberships (uid,league_id,role,active,email,display_name,joined_at) VALUES (?,?,?,?,?,?,?)',
       )
       .run(uid, league, role, active, person.email, person.displayName, new Date().toISOString());
-    if (league === FTC_LEAGUE && role === 'admin' && active)
+    if (role === 'admin' && active)
       sql
         .prepare('INSERT INTO league_admins VALUES (?,?,?)')
         .run(uid, LEAGUE_OWNER_UID, new Date().toISOString());

@@ -75,3 +75,28 @@ export function adminPage() {
     )
     .replace('</body>', '<script src="/assets/admin.js" defer></script></body>');
 }
+
+// The regional workspace is shared by public and private deployments.
+import leagueTemplate from '../web/leagues.html';
+import workspaceStyles from '../web/leagues.css';
+export { default as leagueClient } from '../web/leagues.js';
+export const leaguePage = leagueTemplate
+  .replace('__LEAGUE_LOGO__', () => leagueLogo)
+  .replace('/* LEAGUE_WORKSPACE_STYLES */', () => leagueStyles + '\n' + workspaceStyles);
+
+import loginTemplate from '../web/league-login.html';
+export function leagueLoginPage(joining) {
+  return loginTemplate
+    .replace('__LEAGUE_LOGO__', () => leagueLogo)
+    .replace('/* LEAGUE_STYLES */', () => leagueStyles + '\n' + workspaceStyles)
+    .replace('/* THEME_INIT */', () => themeInit)
+    .replace('__PAGE__', joining ? 'join' : 'login')
+    .replace('__TITLE__', joining ? 'Join your fantasy league' : 'Welcome back')
+    .replace(
+      '__DESCRIPTION__',
+      joining
+        ? 'Use your coordinator’s invitation to join with your Google account.'
+        : 'Sign in with Google to open your league.',
+    )
+    .replace('__CODE_HIDDEN__', joining ? '' : 'hidden');
+}
