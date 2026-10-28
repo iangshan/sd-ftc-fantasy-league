@@ -1,22 +1,6 @@
 (function () {
   'use strict';
   const el = (id) => document.getElementById(id);
-  const themeButtons = document.querySelectorAll('[data-theme-choice]');
-  function setTheme(theme, persist) {
-    document.documentElement.dataset.theme = theme;
-    themeButtons.forEach((button) =>
-      button.setAttribute('aria-pressed', String(button.dataset.themeChoice === theme)),
-    );
-    if (persist) {
-      try {
-        localStorage.setItem('ftc-theme', theme);
-      } catch (error) {}
-    }
-  }
-  themeButtons.forEach((button) =>
-    button.addEventListener('click', () => setTheme(button.dataset.themeChoice, true)),
-  );
-  setTheme(document.documentElement.dataset.theme, false);
   const state = {
     catalog: [],
     selected: [],
@@ -118,8 +102,7 @@
         state.catalog.some((t) => t.id === id && t.available),
       );
       el('errorNotice').hidden = true;
-      el('introCopy').textContent =
-        'Compare the teams, make your picks, and enter your roster. Everyone in the San Diego FTC community is welcome.';
+      el('introCopy').textContent = 'Pick your teams. Stay within budget. Make the season yours.';
       el('heroBudget').textContent = String(state.budget);
       el('heroTeams').textContent = '1–' + state.maxTeams;
       el('heroPool').textContent = state.catalog.length;
@@ -215,6 +198,12 @@
         ),
       );
       card.append(top, node('h3', 'card-title', team.name));
+      const stat = node('div', 'team-opr');
+      stat.append(
+        node('span', 'stat-label', 'DECODE avg. OPR'),
+        node('strong', '', opr(team.averageOpr)),
+      );
+      card.appendChild(stat);
       const bottom = node('div', 'card-bottom');
       const button = node('button', 'add-team');
       button.type = 'button';

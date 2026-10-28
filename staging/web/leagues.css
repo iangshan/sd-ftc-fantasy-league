@@ -1,118 +1,125 @@
-:root {
-  color-scheme: light;
-  --ink: #233d35;
-  --muted: #66756c;
-  --line: #dbe2d9;
-}
-* {
-  box-sizing: border-box;
-}
-body {
-  margin: 0;
-  background: #f6f7ef;
-  color: var(--ink);
-  font:
-    15px/1.6 system-ui,
-    sans-serif;
-}
+/* League management uses the shared palette and site navigation. */
 .league-shell {
-  max-width: 1060px;
-  margin: auto;
-  padding: 24px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 28px 40px;
 }
-h1 {
-  font-size: clamp(28px, 5vw, 46px);
-  line-height: 1.15;
-  letter-spacing: -0.035em;
-  margin: 12px 0;
+.league-shell > nav,
+.league-heading,
+#leagueMessage,
+#auditPanel {
+  grid-column: 1 / -1;
 }
-h2 {
-  font-size: 23px;
-  margin: 0 0 12px;
+.league-shell > nav {
+  margin-bottom: 0;
 }
-h3 {
-  font-size: 17px;
+.league-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  padding: 14px 0 8px;
 }
-.eyebrow {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: #53725d;
-  font-weight: 700;
-  margin-top: 30px;
+.league-heading h1 {
+  font-size: clamp(30px, 3.2vw, 42px);
+  max-width: 780px;
 }
-.intro {
-  font-size: 18px;
+.league-details {
   color: var(--muted);
+  font: 12px var(--numbers);
+  margin: 16px 0 0;
 }
 .panel {
-  background: #fffef9;
   border: 1px solid var(--line);
-  border-radius: 18px;
-  padding: 26px;
-  margin-top: 24px;
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 24px;
+  min-width: 0;
 }
-label {
+.panel h2 {
+  margin: 0 0 12px;
+  font-size: 21px;
+}
+.panel h3 {
+  margin: 24px 0 16px;
+}
+.panel > p {
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 540px;
+}
+#leagueOverview {
+  background: var(--raised);
+  padding: 24px;
+  border-color: var(--line);
+}
+#invitePanel {
+  background: var(--surface);
+  padding: 24px;
+  border: 1px solid var(--line);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+#ownerLeagues > p {
+  margin-top: 0;
+}
+.league-shell label {
   display: grid;
-  gap: 6px;
+  gap: 7px;
+  font-size: 12px;
   font-weight: 600;
   min-width: 0;
 }
-input,
-select,
-button,
-.button {
-  font: inherit;
-  border: 1px solid #a8b7aa;
-  border-radius: 8px;
-  padding: 10px 13px;
-}
-input,
-select {
-  color: var(--ink);
-  background: white;
+.league-shell input,
+.league-shell select {
   width: 100%;
-  min-width: 0;
 }
-button,
+.league-shell button,
 .button {
-  cursor: pointer;
-  background: #e9efdf;
+  display: inline-block;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 14px;
+  min-height: 44px;
+  background: var(--surface);
   color: var(--ink);
   text-decoration: none;
-  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
 }
-button:hover,
+.league-shell button:hover,
 .button:hover {
-  background: #dce9d0;
+  background: var(--raised);
 }
-button:disabled {
-  opacity: 0.55;
-  cursor: wait;
+.league-shell .primary,
+#createInviteForm button,
+#copyInvite {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
 }
-:focus-visible {
-  outline: 3px solid #8fa663;
-  outline-offset: 3px;
-}
-.primary {
-  background: #315f49;
-  color: white;
+.league-shell .primary:hover,
+#createInviteForm button:hover,
+#copyInvite:hover {
+  background: var(--accent-hover);
 }
 .form-row {
   display: flex;
-  gap: 14px;
-  align-items: end;
+  gap: 12px;
+  align-items: flex-end;
   flex-wrap: wrap;
 }
 .form-row label {
   flex: 1;
-  min-width: min(240px, 100%);
+  min-width: min(220px, 100%);
 }
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: end;
   gap: 18px;
-  margin: 18px 0;
+  margin: 22px 0;
 }
 .form-grid button {
   justify-self: start;
@@ -122,69 +129,94 @@ button:disabled {
 label span,
 .meta {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 400;
 }
 details {
-  margin-top: 22px;
+  margin-top: 24px;
   border-top: 1px solid var(--line);
   padding-top: 18px;
 }
 summary {
-  cursor: pointer;
   font-weight: 600;
+  font-size: 13px;
 }
 .rows {
   display: grid;
-  gap: 12px;
 }
 .league-row {
   border-top: 1px solid var(--line);
-  padding-top: 14px;
+  padding: 20px 0;
   overflow-wrap: anywhere;
 }
 .league-row p {
-  margin: 4px 0 10px;
+  margin: 7px 0 12px;
 }
 .league-row .form-row {
-  margin: 12px 0;
+  margin-top: 16px;
 }
 .league-row select {
   max-width: 220px;
 }
 .badge {
-  font-size: 12px;
-  background: #e8efdf;
-  border-radius: 30px;
-  padding: 3px 10px;
+  display: inline-block;
+  color: var(--accent-text);
+  background: var(--accent-soft);
+  font: 10px var(--numbers);
+  border-radius: 5px;
+  padding: 5px 8px;
   margin-left: 10px;
   white-space: nowrap;
 }
 .invite-result {
   padding: 18px;
-  background: #f1f5e9;
-  border: 1px solid #cad8b9;
-  border-radius: 12px;
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+}
+.invite-result h3 {
+  margin-top: 0;
+}
+.invite-result p {
+  font-size: 12px;
 }
 .invite-result label {
   margin: 12px 0;
 }
+#leagueMessage {
+  margin: 0;
+}
+#leagueMessage:empty {
+  display: none;
+}
 #leagueMessage:not(:empty) {
   padding: 12px 16px;
-  border-left: 4px solid #56724d;
-  background: #e9efdf;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  font-size: 13px;
 }
-[hidden] {
-  display: none !important;
-}
-@media (max-width: 620px) {
+@media (max-width: 850px) {
   .league-shell {
-    padding: 16px;
+    grid-template-columns: 1fr;
+    gap: 24px;
   }
-  .panel {
-    padding: 18px;
+  .league-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
   }
+}
+@media (max-width: 520px) {
   .form-grid {
     grid-template-columns: 1fr;
+  }
+  .panel,
+  #leagueOverview,
+  #invitePanel {
+    padding: 20px;
+  }
+  #ownerLeagues,
+  #memberPanel,
+  #auditPanel {
+    padding-inline: 0;
   }
 }

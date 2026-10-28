@@ -1,0 +1,28 @@
+.staging-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  padding: 10px max(18px, calc((100% - 1280px) / 2));
+  background: var(--raised, #eeeae0);
+  color: var(--ink, #172d42);
+  border-bottom: 1px solid var(--line, #d5d5ca);
+  font:
+    11px/1.6 Arial,
+    sans-serif;
+}
+.staging-banner a {
+  color: inherit;
+  margin-left: 12px;
+  text-underline-offset: 3px;
+}
+.staging-banner button {
+  background: transparent;
+  color: inherit;
+  border: 1px solid var(--line, #d5d5ca);
+  border-radius: 3px;
+  padding: 6px 10px;
+  font: inherit;
+  cursor: pointer;
+}

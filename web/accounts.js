@@ -8,25 +8,6 @@
     return n;
   };
   const dashboard = Boolean(el('authPanel'));
-  if (dashboard) {
-    const buttons = document.querySelectorAll('[data-theme-choice]');
-    const setTheme = (theme) => {
-      document.documentElement.dataset.theme = theme;
-      buttons.forEach((b) =>
-        b.setAttribute('aria-pressed', String(b.dataset.themeChoice === theme)),
-      );
-    };
-    setTheme(document.documentElement.dataset.theme);
-    buttons.forEach(
-      (b) =>
-        (b.onclick = () => {
-          setTheme(b.dataset.themeChoice);
-          try {
-            localStorage.setItem('ftc-theme', b.dataset.themeChoice);
-          } catch {}
-        }),
-    );
-  }
   let auth,
     sdk,
     busy = false,
@@ -205,7 +186,7 @@
       const row = node('article', 'dashboard-team'),
         info = node('div', '');
       info.append(node('small', '', 'TEAM ' + team.number), node('h3', '', team.name));
-      const link = node('a', '', 'View team on FTCScout ↗');
+      const link = node('a', '', 'FTCScout team profile');
       link.href = 'https://ftcscout.org/teams/' + encodeURIComponent(team.number);
       link.target = '_blank';
       link.rel = 'noopener noreferrer';

@@ -42,6 +42,10 @@ Use `npm run format` to apply the shared Prettier configuration before committin
 
 The staging folder is public source for an access-controlled website; moving files there does not make them private. Both environments build from the same application source. Production exports only the Worker entry point; the staging bundle also exposes the helpers used by its authentication wrapper and tests. Do not edit generated bundles or make regular changes in Cloudflare's quick editor: the next Git deployment replaces them.
 
+### Website styles
+
+`web/league.css` defines the shared colors, typography, navigation, and basic controls. `web/draft.css`, `web/accounts.css`, and `web/admin.css` define their respective screens; `src/pages.mjs` assembles these readable sources. The staging login and league workspace reuse the shared styles alongside their own layout files. Change the relevant rule in its source file instead of appending a second set of overrides. Theme selection is handled once in `web/theme-init.js`.
+
 ## Names and eligibility
 
 To rename a team, edit only its value in `team-names.json`, retaining the team-number key. The file holds 102 names: 87 historical teams and 15 additions for BioBuzz 2026–27. The build rejects missing or unknown numbers and invalid names. Names do not control eligibility, prices, or statistics.
