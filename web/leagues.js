@@ -248,11 +248,13 @@
     el('inviteEmail').required = role === 'admin';
     el('inviteEmailHint').textContent = role === 'admin' ? '(required)' : '(optional)';
     el('inviteAccessHint').textContent =
-      role === 'admin' || emailBound
-        ? 'Only the specified Google account can use this invitation.'
-        : role === 'moderator'
-          ? 'The first new member to sign in with Google using this link becomes a region moderator for this league. Create a separate link for each person.'
-          : 'Anyone with this link can join this league as a player using Google.';
+      role === 'admin'
+        ? 'The specified Google account will become an administrator with access to every region and program.'
+        : emailBound
+          ? 'Only the specified Google account can use this invitation.'
+          : role === 'moderator'
+            ? 'The first new member to sign in with Google using this link becomes a region moderator for this league. Create a separate link for each person.'
+            : 'Anyone with this link can join this league as a player using Google.';
     el('inviteUses').disabled = single;
     if (single) el('inviteUses').value = '1';
   }
