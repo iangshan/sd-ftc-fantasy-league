@@ -2,6 +2,7 @@ name: Check and deploy
 on:
   push:
     branches: [main]
+    tags: ['production-*']
   pull_request:
   workflow_dispatch:
     inputs:
@@ -13,7 +14,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: ftc-${{ github.workflow }}-${{ github.ref }}
+  group: ftc-${{ github.workflow }}-${{ ((github.event_name == 'workflow_dispatch' && inputs.deploy_production == true) || startsWith(github.ref, 'refs/tags/production-')) && 'production' || github.ref }}
   cancel-in-progress: false
 jobs:
   check-and-deploy:
@@ -32,9 +33,17 @@ jobs:
       - run: node --check staging/worker.mjs
       - run: node --check web/draft.js
       - run: node --test
+      - name: Require production tags to reference main history
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/production-')
+        run: |
+          git fetch --no-tags origin main:refs/remotes/origin/main
+          git merge-base --is-ancestor "$GITHUB_SHA" refs/remotes/origin/main
       - name: Deploy production
-        if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.deploy_production == true
+        if: (github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.deploy_production == true) || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/production-'))
         run: npx wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: '59d4d2dd49ba336fb1240d43f1535207'
+      - name: Verify public deployment
+        if: (github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.deploy_production == true) || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/production-'))
+        run: node scripts/check-public-deployment.mjs

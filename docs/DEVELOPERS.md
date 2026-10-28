@@ -63,10 +63,10 @@ Name and eligibility changes update the catalog version, so an open draft tab ma
 
 Pull requests and pushes to `main` run checks only. The deployment targets are explicit:
 
-| Branch    | Workflow                   | Configuration            | Result                                                    |
-| --------- | -------------------------- | ------------------------ | --------------------------------------------------------- |
-| `staging` | **Deploy private staging** | `staging/wrangler.jsonc` | Automatic private deployment on push                      |
-| `main`    | **Check and deploy**       | `wrangler.jsonc`         | Public deployment only through an explicit manual release |
+| Branch    | Workflow                   | Configuration            | Result                                                              |
+| --------- | -------------------------- | ------------------------ | ------------------------------------------------------------------- |
+| `staging` | **Deploy private staging** | `staging/wrangler.jsonc` | Automatic private deployment on push                                |
+| `main`    | **Check and deploy**       | `wrangler.jsonc`         | Public deployment through explicit dispatch or a `production-*` tag |
 
 Start staging work from `staging`, review it there, and open a pull request to the intended branch. Merge reviewed source into `main` to keep the default GitHub branch current. Merging or pushing to `main` does not deploy the public website; the running site may remain on an earlier release. A push to `staging` continues to deploy private testing automatically. Use pull-request review and repository branch rules for both branches.
 
@@ -77,9 +77,11 @@ To make an authorized public release through GitHub:
 1. Open **Actions → Check and deploy → Run workflow**.
 2. Select the `main` branch.
 3. Enable the `deploy_production` checkbox, which defaults to false, and run the workflow.
-4. Confirm that the checks and **Deploy production** step succeed.
+4. Confirm that checks, **Deploy production**, and **Verify public deployment** succeed.
 
-A manual run with the checkbox unchecked runs checks only. The deployment step requires a `workflow_dispatch` event on `main` with `deploy_production: true`; pull requests, pushes, and dispatches on other branches do not deploy production.
+A manual run with the checkbox unchecked runs checks only. A dispatch must target `main` with `deploy_production: true` to deploy production.
+
+For an authorized release over Git, create an annotated tag named `production-YYYY-MM-DD-SHORTSHA` on the reviewed commit and push that tag explicitly. The workflow verifies that the tagged commit is in `main` history before deploying. This also supports releases when the GitHub API is unavailable. Public deployments share a concurrency group so tag and dispatch releases cannot overlap. Ordinary branch pushes, pull requests, other tags, and dispatches on other branches do not deploy production.
 
 Prefer that release workflow for a recorded public deployment. The CLI command `npm run deploy` directly targets production and requires separate, explicit release authorization. For an authorized manual staging deployment after checks pass, use:
 

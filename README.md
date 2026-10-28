@@ -51,7 +51,7 @@ See [the developer guide](docs/DEVELOPERS.md) for setup, checks, source editing,
 
 Pull requests and pushes to `main` run checks without deploying the public Worker. Reviewed source can be merged into the default `main` branch while the public site continues running its previous release. Pushes to `staging` still deploy the private Worker through `staging/wrangler.jsonc`.
 
-A public release is a separate action: open **Actions → Check and deploy → Run workflow**, select `main`, and enable `deploy_production`. This checkbox defaults to false; leaving it unchecked runs checks only. An explicitly requested release deploys `wrangler.jsonc` after the checks pass. See [DEVELOPERS.md](docs/DEVELOPERS.md#branches-and-deployment).
+A public release is a separate action: open **Actions → Check and deploy → Run workflow**, select `main`, and enable `deploy_production`. This checkbox defaults to false; leaving it unchecked runs checks only. An authorized release can also be started by pushing a `production-*` tag that points to a commit in `main` history. Both routes run checks, deploy `wrangler.jsonc`, and verify the public pages and anonymous API protections. Ordinary branch pushes do not deploy production. See [DEVELOPERS.md](docs/DEVELOPERS.md#branches-and-deployment).
 
 The two sites use separate D1 databases, workbooks, and Sheets service accounts. Runtime credentials belong in Cloudflare or GitHub secrets, never in repository files. The Firebase web configuration is a public app identifier, not a private credential.
 
