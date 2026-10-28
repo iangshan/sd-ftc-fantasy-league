@@ -75,7 +75,7 @@
             </select></label
           >
           <label
-            >Google account email <span id="inviteEmailHint">(optional for players)</span
+            >Google account email <span id="inviteEmailHint">(optional)</span
             ><input id="inviteEmail" type="email" maxlength="254" autocomplete="off"
           /></label>
           <label
@@ -98,6 +98,7 @@
           /></label>
           <button type="submit">Create invitation</button>
         </form>
+        <p id="inviteAccessHint" class="muted" aria-live="polite"></p>
         <div id="newInvite" class="invite-result" hidden>
           <h3>Your invitation is ready</h3>
           <p>Copy this now. The code will not be shown again.</p>

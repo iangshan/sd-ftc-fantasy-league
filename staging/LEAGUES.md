@@ -10,9 +10,13 @@ San Diego FTC retains its draft board, 15-Pollen budget, three-team limit, paid 
 2. Create a player invitation, optionally restricted to a Google email. Choose an expiration of 1–30 days and up to 100 joins.
 3. Copy the link or code when it is shown. A recipient opens `/join`, enters the code if needed, and continues with their verified Google account.
 
-Administrators and region moderators can create and revoke player invitations for their own league. Only the owner can create staff invitations. Staff invitations require the recipient's Google email and allow one join. To promote someone who already belongs to the league, change their role under **League members** instead of sending another invitation.
+Administrators and region moderators can create and revoke player invitations for their own league. Only the owner can create staff invitations, which always allow one join.
 
-Invitations contain 128 random bits; only their SHA-256 hash is stored. Links carry the code in the URL fragment, which the browser removes after loading it into the join form. GET requests never redeem invitations. Redemption requires a same-origin POST and live Google verification; forwarded staff links cannot authorize a different Google email. Admission, capacity use, the FTC admin grant when applicable, and audit entries commit together in a D1 transaction. Retries do not consume another invitation.
+To invite a new region moderator without collecting their email, select **Region moderator**, leave **Google account email** blank, and click **Create invitation → Copy link**. The first new member to redeem the link with a verified Google account becomes a moderator for the selected league. Create a separate link for each person. Optionally enter an email to restrict the link to that account. Administrator invitations still require the recipient's Google email.
+
+To promote someone who already belongs to the league, change their role under **League members** instead of sending another invitation.
+
+Invitations contain 128 random bits; only their SHA-256 hash is stored. Links carry the code in the URL fragment, which the browser removes after loading it into the join form. GET requests never redeem invitations. Redemption requires a same-origin POST and live Google verification; invitations restricted to an email cannot authorize a different Google email. Admission, capacity use, the FTC admin grant when applicable, and audit entries commit together in a D1 transaction. Retries do not consume another invitation.
 
 An account already assigned to a league cannot use an invitation to switch leagues or restore revoked access. This release does not provide account transfers; the owner can view every league without joining it. Revoking an invitation stops future joins but does not remove existing members.
 

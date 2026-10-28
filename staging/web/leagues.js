@@ -89,8 +89,9 @@
     el('inviteRoleLabel').hidden = !data.viewer.owner;
     if (!data.viewer.owner) el('inviteRole').value = 'player';
     el('inviteDescription').textContent = data.viewer.owner
-      ? 'Send player invitations to your community, or invite an administrator or region moderator using their Google email. Staff invitations can be used once.'
+      ? 'Invite players, region moderators, or administrators to this league. Region moderator links can be created without an email. Staff invitations can be used once.'
       : 'Create player invitations for this league. Only the owner can appoint staff or change roles.';
+    inviteRequirements();
     el('roleDescription').textContent = data.viewer.owner
       ? 'Administrators coordinate invitations and manage this league. Region moderators coordinate player invitations and see the member list. Only you can assign roles or revoke member access.'
       : 'Your access applies only to this league. Contact the owner for role or membership changes.';
@@ -238,8 +239,17 @@
     );
   };
   function inviteRequirements() {
-    const single = el('inviteRole').value !== 'player' || Boolean(el('inviteEmail').value.trim());
-    el('inviteEmail').required = el('inviteRole').value !== 'player';
+    const role = el('inviteRole').value;
+    const emailBound = Boolean(el('inviteEmail').value.trim());
+    const single = role !== 'player' || emailBound;
+    el('inviteEmail').required = role === 'admin';
+    el('inviteEmailHint').textContent = role === 'admin' ? '(required)' : '(optional)';
+    el('inviteAccessHint').textContent =
+      role === 'admin' || emailBound
+        ? 'Only the specified Google account can use this invitation.'
+        : role === 'moderator'
+          ? 'The first new member to sign in with Google using this link becomes a region moderator for this league. Create a separate link for each person.'
+          : 'Anyone with this link can join this league as a player using Google.';
     el('inviteUses').disabled = single;
     if (single) el('inviteUses').value = '1';
   }

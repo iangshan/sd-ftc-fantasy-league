@@ -41,7 +41,7 @@ The policy runs on the server after the raw legacy Sheet catalog passes validati
 
 ## Admin access
 
-Use **Leagues & access → League members** to manage current staging access, or an email-bound staff invitation to add someone new. Only the owner can assign administrators and region moderators. This applies while the league feature is enabled. [LEAGUES.md](LEAGUES.md) documents the role boundaries and revocation behavior.
+Use **Leagues & access → League members** to manage current staging access, or create a staff invitation to add someone new. Region moderators can join through a single-use link without supplying their email in advance; administrator invitations require their Google email. Only the owner can assign administrators and region moderators. This applies while the league feature is enabled. [LEAGUES.md](LEAGUES.md) documents invitations, role boundaries, and revocation behavior.
 
 The older two-admin synchronization below is retained for historical provisioning. It is not the normal way to add staff now, and its expected-count checks stop it when new FTC administrators exist. The following legacy access behavior applies only with `STAGING_LEAGUES_ENABLED="false"`.
 

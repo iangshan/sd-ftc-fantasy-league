@@ -142,7 +142,7 @@ test('invite redemption is denied for unverified/non-Google users and owner-only
     user('joining', { signInProvider: 'password' }),
   ]) {
     const f = setup(t, person),
-      invitation = await f.mutate({ action: 'createInvite' }, owner, FRC_LEAGUE);
+      invitation = await f.mutate({ action: 'createInvite', role: 'moderator' }, owner, FRC_LEAGUE);
     assert.equal(
       (await f.fetch('/__staging/session', { body: { inviteCode: invitation.code } })).status,
       403,
@@ -151,12 +151,65 @@ test('invite redemption is denied for unverified/non-Google users and owner-only
   }
   const f = setup(t, user('joining'));
   f.env.STAGING_MODE = 'owner-only';
-  const invitation = await f.mutate({ action: 'createInvite' }, owner, FRC_LEAGUE);
+  const invitation = await f.mutate(
+    { action: 'createInvite', role: 'moderator' },
+    owner,
+    FRC_LEAGUE,
+  );
   assert.equal(
     (await f.fetch('/__staging/session', { body: { inviteCode: invitation.code } })).status,
     403,
   );
   assert.equal(f.sql.prepare('SELECT uses FROM fantasy_invites').get().uses, 0);
+});
+
+test('owner creates a moderator link without an email and redemption ignores requested role or league', async (t) => {
+  const f = setup(t);
+  const created = await f.fetch('/api/leagues', {
+    league: FRC_LEAGUE,
+    body: {
+      action: 'createInvite',
+      contextLeagueId: FRC_LEAGUE,
+      role: 'moderator',
+      email: '',
+      maxUses: 100,
+    },
+  });
+  assert.equal(created.status, 200);
+  const invitation = await created.json();
+  const joining = createStagingWorker(f.application, async () => user('new-mod'));
+  const result = await joining.fetch(
+    request('/__staging/session', {
+      body: { inviteCode: invitation.code, role: 'admin', leagueId: FTC_LEAGUE },
+    }),
+    f.env,
+  );
+  assert.equal(result.status, 200);
+  const snapshot = await (await joining.fetch(request('/api/leagues'), f.env)).json();
+  assert.equal(snapshot.viewer.role, 'moderator');
+  assert.equal(snapshot.league.id, FRC_LEAGUE);
+  assert.deepEqual(f.hits, []);
+  assert.equal(
+    (
+      await joining.fetch(
+        request('/api/leagues', {
+          body: { action: 'createInvite', contextLeagueId: FRC_LEAGUE, role: 'moderator' },
+        }),
+        f.env,
+      )
+    ).status,
+    403,
+  );
+  const second = createStagingWorker(f.application, async () => user('second-mod'));
+  assert.equal(
+    (
+      await second.fetch(
+        request('/__staging/session', { body: { inviteCode: invitation.code } }),
+        f.env,
+      )
+    ).status,
+    409,
+  );
 });
 
 test('same-origin checks protect joins, role changes, and switches even with valid session cookies', async (t) => {

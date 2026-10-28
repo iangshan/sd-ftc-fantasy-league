@@ -101,6 +101,7 @@ test('coordinators only create player invitations for their own league; members 
       () => invite(f, { role: 'moderator', email: 'staff@example.invalid' }, FRC_LEAGUE, person),
       403,
     );
+    await reject(() => invite(f, { role: 'moderator' }, FRC_LEAGUE, person), 403);
     await reject(() => invite(f, {}, FTC_LEAGUE, person), 409);
     const result = await invite(f, {}, FRC_LEAGUE, person);
     assert.match(result.code, /^[a-f0-9]{32}$/);
@@ -145,7 +146,7 @@ test('joining is idempotent and single-use capacity admits only one account', as
 
 test('two admissions that validate before the last spot is claimed still respect capacity', async (t) => {
   const f = setup(t),
-    result = await invite(f, { maxUses: 1 });
+    result = await invite(f, { role: 'moderator', maxUses: 99 });
   // Serialize transactions as D1 does, while permitting both initial reads to race.
   let queue = Promise.resolve();
   const batch = f.db.batch;
@@ -160,20 +161,27 @@ test('two admissions that validate before the last spot is claimed still respect
   ]);
   assert.equal(outcomes.filter((entry) => entry.status === 'fulfilled').length, 1);
   assert.equal(f.sql.prepare('SELECT uses FROM fantasy_invites').get().uses, 1);
+  assert.equal(f.sql.prepare('SELECT COUNT(*) AS n FROM fantasy_memberships').get().n, 1);
+  assert.equal(f.sql.prepare('SELECT role FROM fantasy_memberships').get().role, 'moderator');
 });
 
 test('expired and revoked invitations reject without writing membership or legacy roles', async (t) => {
   const f = setup(t);
   for (const mode of ['expires_at = 0', 'revoked = 1']) {
-    const result = await invite(f, { role: 'admin', email: 'staff@example.invalid' });
-    f.sql.exec(`UPDATE fantasy_invites SET ${mode}`);
-    await reject(() => accept(f, user('staff'), result.code), 409);
+    for (const fields of [
+      { role: 'admin', email: 'staff@example.invalid' },
+      { role: 'moderator' },
+    ]) {
+      const result = await invite(f, fields);
+      f.sql.exec(`UPDATE fantasy_invites SET ${mode}`);
+      await reject(() => accept(f, user('staff'), result.code), 409);
+    }
   }
   assert.equal(f.sql.prepare('SELECT COUNT(*) AS n FROM fantasy_memberships').get().n, 0);
   assert.equal(f.sql.prepare('SELECT COUNT(*) AS n FROM league_admins').get().n, 0);
 });
 
-test('staff invitations require the named Google email and never grant cross-league FTC access', async (t) => {
+test('administrator invitations require the named Google email and never grant cross-league FTC access', async (t) => {
   const f = setup(t);
   await reject(() => invite(f, { role: 'admin' }), 400);
   const result = await invite(f, { role: 'admin', email: 'Staff@Example.Invalid', maxUses: 99 });
@@ -187,6 +195,38 @@ test('staff invitations require the named Google email and never grant cross-lea
   assert.equal(f.sql.prepare('SELECT uid FROM league_admins').get().uid, 'ftc-staff');
 });
 
+test('moderator links accept an unspecified Google account once and grant only scoped moderator access', async (t) => {
+  const f = setup(t);
+  for (const league of [FTC_LEAGUE, FRC_LEAGUE]) {
+    const result = await invite(f, { role: 'moderator', email: '', maxUses: 99 }, league);
+    const person = user(league + '-mod');
+    const stored = f.sql.prepare('SELECT * FROM fantasy_invites WHERE league_id = ?').get(league);
+    assert.equal(stored.target_email, null);
+    assert.equal(stored.max_uses, 1);
+    await accept(f, person, result.code);
+    await accept(f, person, result.code);
+    await reject(() => accept(f, user(league + '-second'), result.code), 409);
+    const context = await f.context(person);
+    assert.equal(context.role, 'moderator');
+    assert.equal(context.owner, false);
+    assert.equal(context.league.id, league);
+    assert.equal(
+      f.sql.prepare('SELECT uses FROM fantasy_invites WHERE id = ?').get(stored.id).uses,
+      1,
+    );
+  }
+  assert.equal(f.sql.prepare('SELECT COUNT(*) AS n FROM league_admins').get().n, 0);
+});
+
+test('moderator links still enforce an optional Google email restriction', async (t) => {
+  const f = setup(t);
+  const result = await invite(f, { role: 'moderator', email: 'Staff@Example.Invalid' });
+  await reject(() => accept(f, user('other'), result.code), 403);
+  assert.equal(f.sql.prepare('SELECT uses FROM fantasy_invites').get().uses, 0);
+  await accept(f, user('staff'), result.code);
+  assert.equal((await f.context(user('staff'))).role, 'moderator');
+});
+
 test('existing membership cannot change league or elevate a role by accepting another invitation', async (t) => {
   const f = setup(t),
     player = f.member('player', FRC_LEAGUE);
@@ -194,6 +234,8 @@ test('existing membership cannot change league or elevate a role by accepting an
   await reject(() => accept(f, player, other.code), 409);
   const elevated = await invite(f, { role: 'admin', email: player.email });
   await reject(() => accept(f, player, elevated.code), 409);
+  const moderator = await invite(f, { role: 'moderator' });
+  await reject(() => accept(f, player, moderator.code), 409);
   assert.equal((await f.context(player)).role, 'player');
   f.sql.exec("UPDATE fantasy_memberships SET active=0 WHERE uid='player'");
   const again = await invite(f);

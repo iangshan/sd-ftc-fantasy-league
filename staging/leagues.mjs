@@ -174,8 +174,8 @@ export async function leagueMutation(db, context, input, ownerUid) {
     if (!roles.includes(role)) throw new LeagueError('Choose a valid role.');
     if (role !== 'player') ownerOnly(context);
     const targetEmail = input.email ? emailAddress(input.email) : null;
-    if (role !== 'player' && !targetEmail)
-      throw new LeagueError('Staff invitations must name the recipient’s Google email.');
+    if (role === 'admin' && !targetEmail)
+      throw new LeagueError('Administrator invitations must name the recipient’s Google email.');
     const days = input.days ?? 7,
       maxUses = role !== 'player' || targetEmail ? 1 : (input.maxUses ?? 25);
     if (
