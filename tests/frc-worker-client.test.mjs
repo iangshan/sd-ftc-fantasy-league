@@ -31,7 +31,9 @@ test('the TBA client works in workerd and rejects redirects without forwarding i
   let runtimeOutput = '';
   const runtime = new Miniflare({
     modules: true,
-    compatibilityDate: '2026-10-20',
+    // Stay within the workerd version shipped by the lockfile. The redirect
+    // behavior under test is shared with the deployed Workers runtime.
+    compatibilityDate: '2026-05-15',
     script: bundle.outputFiles[0].text,
     handleRuntimeStdio(stdout, stderr) {
       for (const stream of [stdout, stderr]) {
