@@ -7,9 +7,10 @@ const worker = 'sd-ftc-fantasy-staging';
 const keyName = 'TBA_AUTH_KEY';
 const similarName = (name) => name.replace(/[^a-z]/gi, '').toUpperCase() === 'TBAAUTHKEY';
 class ApiError extends Error {
-  constructor(status) {
+  constructor(status, codes = []) {
     super('Cloudflare operation failed.');
     this.status = status;
+    this.codes = codes;
   }
 }
 
@@ -30,9 +31,12 @@ export async function repairTbaSecret({ account, token, fetcher = fetch }) {
         signal: AbortSignal.timeout(20000),
       },
     );
-    if (!response.ok) throw new ApiError(response.status);
-    const result = await response.json();
-    if (!result.success) throw new ApiError(response.status);
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.success)
+      throw new ApiError(
+        response.status,
+        (result.errors || []).map((error) => error.code).filter(Number.isSafeInteger),
+      );
     return result.result;
   }
   const done = (summary, connected = false) => ({ summary, connected });
@@ -105,6 +109,9 @@ export async function repairTbaSecret({ account, token, fetcher = fetch }) {
     text: key,
     type: 'secret_text',
   });
+  const confirmed = await api(`/workers/scripts/${worker}/secrets`);
+  if (!confirmed.some((binding) => binding.name === keyName && binding.type === 'secret_text'))
+    return done('Staging secret update was sent but could not be verified');
   return done('Saved TBA key validated and installed as the staging runtime secret', true);
 }
 
@@ -115,9 +122,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       account: process.env.CLOUDFLARE_ACCOUNT_ID,
       token: process.env.CLOUDFLARE_API_TOKEN,
     });
-  } catch {
+  } catch (error) {
     result = {
-      summary: 'Automatic TBA repair could not complete; no credential values were logged',
+      summary:
+        error instanceof ApiError
+          ? `Cloudflare denied or rejected the repair: HTTP ${error.status}; codes ${error.codes.join(',') || 'unavailable'}`
+          : 'Automatic TBA repair could not complete; no credential values were logged',
       connected: false,
     };
   }

@@ -6,7 +6,13 @@ const key = 'test-only-key-never-a-real-credential';
 const tag = 'a'.repeat(32),
   account = 'b'.repeat(32),
   trigger = 'c'.repeat(32);
-function fixture({ denied = false, encrypted = false, accepted = true, installed = false } = {}) {
+function fixture({
+  denied = false,
+  encrypted = false,
+  accepted = true,
+  installed = false,
+  runtime = false,
+} = {}) {
   const writes = [];
   const fetcher = async (url, options) => {
     if (url === 'https://www.thebluealliance.com/api/v3/status') {
@@ -23,8 +29,11 @@ function fixture({ denied = false, encrypted = false, accepted = true, installed
     }
     let result;
     if (path.endsWith('/secrets'))
-      result = installed ? [{ name: 'TBA_AUTH_KEY', type: 'secret_text' }] : [];
-    else if (path.endsWith('/settings')) result = { bindings: [] };
+      result = installed || writes.length ? [{ name: 'TBA_AUTH_KEY', type: 'secret_text' }] : [];
+    else if (path.endsWith('/settings'))
+      result = {
+        bindings: runtime ? [{ name: 'TBA_AUTH_KEY', type: 'plain_text', text: `  ${key}  ` }] : [],
+      };
     else if (path === '/workers/scripts') result = [{ id: 'sd-ftc-fantasy-staging', tag }];
     else if (path === `/builds/workers/${tag}/triggers`) {
       if (denied) return Response.json({}, { status: 403 });
@@ -45,6 +54,13 @@ test('a readable build key is validated and transferred only to the staging runt
   assert.equal(result.connected, true);
   assert.doesNotMatch(JSON.stringify(result), new RegExp(key));
   assert.deepEqual(f.writes, [{ name: 'TBA_AUTH_KEY', text: key, type: 'secret_text' }]);
+});
+test('a runtime text variable is trimmed and encrypted without build-settings access', async () => {
+  const f = fixture({ runtime: true, denied: true });
+  const result = await f.run();
+  assert.equal(result.connected, true);
+  assert.deepEqual(f.writes, [{ name: 'TBA_AUTH_KEY', text: key, type: 'secret_text' }]);
+  assert.doesNotMatch(JSON.stringify(result), new RegExp(key));
 });
 test('encrypted, inaccessible, rejected, or already-installed keys never trigger a write', async () => {
   for (const options of [
