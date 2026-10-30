@@ -43,7 +43,29 @@ if (
   !Array.isArray(secrets) ||
   !secrets.some((secret) => secret.name === 'TBA_AUTH_KEY' && secret.type === 'secret_text')
 ) {
-  await report('FRC: TBA_AUTH_KEY secret is missing on staging');
+  const settings = await api(`/workers/scripts/${worker}/settings`);
+  const bindings = Array.isArray(settings.bindings) ? settings.bindings : [];
+  const similarName = (value) =>
+    typeof value === 'string' && value.replace(/[^a-z]/gi, '').toUpperCase() === 'TBAAUTHKEY';
+  let diagnosis;
+  if (bindings.some((binding) => binding.name === 'TBA_AUTH_KEY'))
+    diagnosis = 'FRC: TBA_AUTH_KEY exists on staging but is not an encrypted runtime secret';
+  else if (
+    [...bindings, ...(Array.isArray(secrets) ? secrets : [])].some((binding) =>
+      similarName(binding.name),
+    )
+  )
+    diagnosis =
+      'FRC: staging key name has different spelling, case, or separators; use TBA_AUTH_KEY';
+  else {
+    // Inspect names only on the other first-party Worker; never read its data or credentials.
+    const publicSecrets = await api('/workers/scripts/sd-ftc-fantasy-league/secrets');
+    diagnosis =
+      Array.isArray(publicSecrets) && publicSecrets.some((secret) => similarName(secret.name))
+        ? 'FRC: TBA key is on the public Worker; add TBA_AUTH_KEY to staging runtime secrets'
+        : 'FRC: no TBA runtime secret on either Worker; use staging Settings > Variables and Secrets, not Build variables';
+  }
+  await report(diagnosis);
   process.exitCode = 1;
 } else {
   console.log(
