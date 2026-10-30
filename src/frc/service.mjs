@@ -1,6 +1,13 @@
 import { LeagueError } from '../leagues.mjs';
 import { OPR_METHOD, priceFrcTeams } from './opr.mjs';
-import { tbaClient, loadEvent, normalizeTeams, eventKey, hash } from './tba.mjs';
+import {
+  tbaClient,
+  loadEvent,
+  normalizeTeams,
+  eventKey,
+  hash,
+  resolveSanDiegoEvent,
+} from './tba.mjs';
 
 export const FRC_LEAGUE = 'san-diego-frc';
 export const frcEnabled = (env, context) =>
@@ -168,13 +175,26 @@ export async function syncFrcLeague(
     throw new LeagueError('A refresh is already running. Try again shortly.', 409);
   try {
     const config = await settings(db, leagueId);
-    const historyKeys = JSON.parse(config.history_events_json).map((key) =>
+    let historyKeys = JSON.parse(config.history_events_json).map((key) =>
       eventKey(key, config.source_season),
     );
-    const scoringKeys = JSON.parse(config.scoring_events_json).map((key) =>
+    let scoringKeys = JSON.parse(config.scoring_events_json).map((key) =>
       eventKey(key, config.season),
     );
-    const target = eventKey(config.event_key, config.season);
+    let target = eventKey(config.event_key, config.season);
+    const count = await db
+      .prepare('SELECT COUNT(*) AS n FROM frc_rosters WHERE league_id = ? AND season = ?')
+      .bind(leagueId, config.season)
+      .first();
+    if (!count.n) {
+      const originalTarget = target;
+      target = await resolveSanDiegoEvent(get, target, config.season);
+      scoringKeys = scoringKeys.map((key) => (key === originalTarget ? target : key));
+      const resolved = [];
+      for (const key of historyKeys)
+        resolved.push(await resolveSanDiegoEvent(get, key, config.source_season, true));
+      historyKeys = resolved;
+    }
     let pool = await get(`/event/${target}/teams/simple`, true),
       poolEvent = target,
       poolStatus = 'confirmed';
@@ -222,10 +242,6 @@ export async function syncFrcLeague(
           409,
         );
     }
-    const count = await db
-      .prepare('SELECT COUNT(*) AS n FROM frc_rosters WHERE league_id = ? AND season = ?')
-      .bind(leagueId, config.season)
-      .first();
     const previous = JSON.parse(config.catalog_json);
     const ids = (list) =>
       list
@@ -297,7 +313,7 @@ export async function syncFrcLeague(
     statements.push(
       db
         .prepare(
-          'UPDATE frc_settings SET catalog_json = ?,catalog_version = ?,pool_status = ?,pool_event = ?,last_sync_at = ?,sync_error = NULL,sync_nonce = NULL,sync_until = 0,draft_open = CASE WHEN ? THEN 0 ELSE draft_open END WHERE league_id = ? AND sync_nonce = ? AND sync_until > ?',
+          'UPDATE frc_settings SET catalog_json = ?,catalog_version = ?,pool_status = ?,pool_event = ?,last_sync_at = ?,event_key = ?,history_events_json = ?,scoring_events_json = ?,sync_error = NULL,sync_nonce = NULL,sync_until = 0,draft_open = CASE WHEN ? THEN 0 ELSE draft_open END WHERE league_id = ? AND sync_nonce = ? AND sync_until > ?',
         )
         .bind(
           JSON.stringify(catalog),
@@ -305,6 +321,9 @@ export async function syncFrcLeague(
           poolStatus,
           poolEvent,
           syncedAt,
+          target,
+          JSON.stringify(historyKeys),
+          JSON.stringify(scoringKeys),
           started ? 1 : 0,
           leagueId,
           nonce,

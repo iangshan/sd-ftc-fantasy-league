@@ -14,7 +14,7 @@ Never commit the key, put it in a browser script, or include it in an invitation
 
 ## Seasons and participant lists
 
-The league is labeled **2027**. The target participant event and default scoring event are `2027casd`. The default historical pricing event is `2026casd`, the 2026 San Diego Regional during REBUILT. Event keys, dates, official event type, match identities, and team identities are validated against TBA responses.
+The league is labeled **2027**. The initial target participant/scoring key is `2027casd`, and the initial historical pricing key is `2026casd`. If an initial key is absent, the importer checks TBA's published event list for a unique San Diego Regional in that year and saves its actual key before drafting. Missing or ambiguous historical events stop the import; custom event choices and leagues with saved rosters are not silently reassigned. Event keys, dates, official event type, match identities, and team identities are validated against TBA responses.
 
 If the provider has not published the 2027 registrations, staging uses the 2026 participant list as a clearly marked **provisional preview**. It does not assert that those teams will attend in 2027. A published 2027 field replaces the preview before any roster is saved. Once rosters exist, a changed participant set requires review; the import preserves the current pool instead of dropping drafted teams.
 

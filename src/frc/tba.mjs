@@ -62,6 +62,44 @@ export function validateEvent(event, key, season) {
     );
   return event;
 }
+
+// Event codes can change between seasons. Resolve the initial San Diego
+// default by its published regional identity, without replacing custom choices.
+export async function resolveSanDiegoEvent(get, configured, season, required = false) {
+  if (configured !== `${season}casd`) return configured;
+  const existing = await get(`/event/${configured}/simple`, true);
+  if (existing) {
+    validateEvent(existing, configured, season);
+    return configured;
+  }
+  const events = await get(`/events/${season}/simple`, true);
+  if (events !== null && !Array.isArray(events))
+    throw new LeagueError('TBA returned an invalid season event list.', 502);
+  const matches = (events || []).filter(
+    (event) =>
+      event.year === season &&
+      event.event_type === 0 &&
+      typeof event.name === 'string' &&
+      /\bsan diego\b/i.test(event.name) &&
+      /\bregional\b/i.test(event.name),
+  );
+  if (matches.length > 1)
+    throw new LeagueError(
+      `TBA lists multiple ${season} San Diego Regionals. Choose the intended event in FRC admin.`,
+      409,
+    );
+  if (!matches.length) {
+    if (required)
+      throw new LeagueError(
+        `TBA has not listed a ${season} San Diego Regional. Historical pricing data is not available yet.`,
+        409,
+      );
+    return configured;
+  }
+  const key = eventKey(matches[0].key, season);
+  validateEvent(matches[0], key, season);
+  return key;
+}
 export async function loadEvent(get, key, season, now = Date.now(), optional = false) {
   const event = await get(`/event/${eventKey(key, season)}/simple`, optional);
   if (!event) return null;

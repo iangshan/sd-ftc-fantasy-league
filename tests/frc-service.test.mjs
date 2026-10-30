@@ -91,6 +91,47 @@ test('published target registrations replace the provisional field before drafti
   assert.equal(data.catalog.at(-1).opr, null);
   assert.equal(data.catalog.at(-1).price, 3);
 });
+
+test('the initial regional source resolves a changed official event code without inventing a field', async (t) => {
+  const f = setup(t);
+  const event = {
+    ...f.responses.get('/event/2026casd/simple'),
+    key: '2026casandiego',
+    name: 'San Diego Regional',
+  };
+  f.responses.delete('/event/2026casd/simple');
+  f.responses.set('/events/2026/simple', [event]);
+  f.responses.set('/event/2026casandiego/simple', event);
+  f.responses.set('/event/2026casandiego/teams/simple', f.teams);
+  f.responses.set('/event/2026casandiego/matches', matches('2026casandiego'));
+  await sync(f);
+  const data = await snapshot(f);
+  assert.equal(data.poolEvent, '2026casandiego');
+  assert.deepEqual(data.historyEvents, ['2026casandiego']);
+  assert.equal(data.catalog.length, 6);
+});
+
+test('missing or ambiguous regional identities do not seed a fabricated participant list', async (t) => {
+  const f = setup(t);
+  f.responses.delete('/event/2026casd/simple');
+  f.responses.set('/events/2026/simple', []);
+  await fail(() => sync(f), 409);
+  assert.deepEqual((await snapshot(f)).catalog, []);
+  const event = {
+    key: '2026casd1',
+    year: 2026,
+    name: 'San Diego Regional 1',
+    event_type: 0,
+    start_date: '2026-03-20',
+    end_date: '2026-03-22',
+  };
+  f.responses.set('/events/2026/simple', [
+    event,
+    { ...event, key: '2026casd2', name: 'San Diego Regional 2' },
+  ]);
+  await fail(() => sync(f), 409);
+  assert.deepEqual((await snapshot(f)).catalog, []);
+});
 test('server enforces budget, size, eligibility, league, season, prices, and owner identity', async (t) => {
   const f = setup(t);
   await sync(f);
