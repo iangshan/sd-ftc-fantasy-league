@@ -23,11 +23,21 @@ export function tbaClient(key, fetcher = fetch) {
     );
   return async function get(path, optional = false) {
     // Only internally constructed, validated paths reach this client.
-    const response = await fetcher(TBA_ORIGIN + path, {
-      headers: { 'X-TBA-Auth-Key': key.trim() },
-      redirect: 'error',
-      signal: AbortSignal.timeout(15000),
-    });
+    let response;
+    try {
+      response = await fetcher(TBA_ORIGIN + path, {
+        headers: { 'X-TBA-Auth-Key': key.trim() },
+        // Workers supports manual/follow, not the browser's "error" mode.
+        // Reject 3xx below without forwarding the credential to another host.
+        redirect: 'manual',
+        signal: AbortSignal.timeout(15000),
+      });
+    } catch (error) {
+      const reason = ['AbortError', 'TimeoutError'].includes(error?.name)
+        ? 'timed out'
+        : 'failed before a response';
+      throw new LeagueError(`TBA request ${reason} for ${path}. Existing data was retained.`, 503);
+    }
     if (optional && response.status === 404) return null;
     if (response.status === 401 || response.status === 403)
       throw new LeagueError('TBA rejected the configured read key. Check TBA_AUTH_KEY.', 503);
@@ -36,7 +46,14 @@ export function tbaClient(key, fetcher = fetch) {
         `TBA returned HTTP ${response.status} for ${path}. Existing data was retained.`,
         503,
       );
-    return response.json();
+    try {
+      return await response.json();
+    } catch {
+      throw new LeagueError(
+        `TBA returned unreadable JSON for ${path}. Existing data was retained.`,
+        502,
+      );
+    }
   };
 }
 export function validateEvent(event, key, season, { allowOffseason = false } = {}) {

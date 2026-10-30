@@ -122,7 +122,7 @@ test('the provider client trims the key, forbids redirects, and never relays res
   const get = tbaClient(`  ${credential}  `, async (url, options) => {
     assert.equal(url, TBA_ORIGIN + `/event/${bonusKey}/simple`);
     assert.equal(options.headers['X-TBA-Auth-Key'], credential);
-    assert.equal(options.redirect, 'error');
+    assert.equal(options.redirect, 'manual');
     return Response.json({ message: credential }, { status: 429 });
   });
   await assert.rejects(
@@ -134,4 +134,37 @@ test('the provider client trims the key, forbids redirects, and never relays res
       return true;
     },
   );
+});
+
+test('redirects, network failures, and malformed JSON identify the request without exposing credentials', async () => {
+  const credential = 'fixture-private-key';
+  const path = `/event/${bonusKey}/simple`;
+  const redirects = tbaClient(
+    credential,
+    async () =>
+      new Response(null, {
+        status: 302,
+        headers: { Location: 'https://example.com/' + credential },
+      }),
+  );
+  await assert.rejects(() => redirects(path), /HTTP 302/);
+  for (const fetcher of [
+    async () => {
+      throw new TypeError(credential);
+    },
+    async () => {
+      throw new DOMException(credential, 'TimeoutError');
+    },
+    async () => new Response('<html>' + credential),
+  ]) {
+    await assert.rejects(
+      () => tbaClient(credential, fetcher)(path),
+      (error) => {
+        assert.ok(error instanceof LeagueError);
+        assert.ok(error.message.includes(path));
+        assert.ok(!error.message.includes(credential));
+        return true;
+      },
+    );
+  }
 });

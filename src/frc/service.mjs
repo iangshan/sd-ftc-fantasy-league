@@ -170,6 +170,7 @@ export async function syncFrcLeague(
     .run();
   if (!claim.meta?.changes)
     throw new LeagueError('A refresh is already running. Try again shortly.', 409);
+  let phase = 'settings validation';
   try {
     const config = await settings(db, leagueId);
     const count = await db
@@ -189,6 +190,7 @@ export async function syncFrcLeague(
       bonusEvent = legacy ? undefined : historyKeys[1];
     const scoringKeys = eventList(JSON.parse(config.scoring_events_json), config.season);
     const target = eventKey(config.event_key, config.season);
+    phase = 'participant import';
     let pool = await get(`/event/${target}/teams/simple`, true),
       poolEvent = target,
       poolStatus = 'confirmed';
@@ -205,6 +207,7 @@ export async function syncFrcLeague(
       );
     const imported = [];
     for (const key of [...new Set([...historyKeys, ...scoringKeys, target])]) {
+      phase = `event ${key}`;
       const year = Number(key.slice(0, 4));
       const event = await loadEvent(
         get,
@@ -233,6 +236,7 @@ export async function syncFrcLeague(
         'Completed 2026 REBUILT qualification results from the baseline event are required before pricing teams.',
         409,
       );
+    phase = 'stored event validation';
     const oldEvents = await all(
       db,
       'SELECT event_key,status FROM frc_events WHERE league_id = ?',
@@ -260,6 +264,7 @@ export async function syncFrcLeague(
         409,
       );
     // Once a roster exists, retain every quoted price and its historical evidence.
+    phase = 'catalog pricing';
     const catalog = count.n
       ? previous
       : priceFrcTeams(teams, history, { baselineEvent, bonusEvent });
@@ -342,6 +347,7 @@ export async function syncFrcLeague(
           publishNow,
         ),
     );
+    phase = 'database publication';
     const results = await db.batch(statements);
     if (!results.at(-1).meta?.changes)
       throw new LeagueError(
@@ -356,7 +362,7 @@ export async function syncFrcLeague(
     const message =
       error instanceof LeagueError
         ? error.message
-        : 'TBA refresh failed. Existing data was retained.';
+        : `FRC refresh failed during ${phase}. Existing data was retained.`;
     await db
       .prepare(
         'UPDATE frc_settings SET sync_error = ?,sync_nonce = NULL,sync_until = 0 WHERE league_id = ? AND sync_nonce = ?',
