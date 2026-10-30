@@ -32,7 +32,8 @@ jobs:
       - run: npm run build:staging
       - run: node --check staging/worker.mjs
       - run: node --check web/draft.js
-      - run: node --test
+      - name: Run tests
+        run: node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./scripts/ci-test-reporter.mjs --test-reporter-destination=stdout
       - name: Require production tags to reference main history
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/production-')
         run: |
