@@ -28,10 +28,19 @@ test('the TBA client works in workerd and rejects redirects without forwarding i
     write: false,
   });
   const requests = [];
+  let runtimeOutput = '';
   const runtime = new Miniflare({
     modules: true,
     compatibilityDate: '2026-10-20',
     script: bundle.outputFiles[0].text,
+    handleRuntimeStdio(stdout, stderr) {
+      for (const stream of [stdout, stderr]) {
+        stream.setEncoding('utf8');
+        stream.on('data', (chunk) => {
+          runtimeOutput = (runtimeOutput + chunk).slice(0, 8192);
+        });
+      }
+    },
     // All outbound requests terminate here; no real TBA or external network is used.
     outboundService(request) {
       requests.push(request.url);
@@ -46,7 +55,15 @@ test('the TBA client works in workerd and rejects redirects without forwarding i
   });
   t.after(() => runtime.dispose());
 
-  const success = await runtime.dispatchFetch('http://fixture.test/event/2026fixture/simple');
+  let success;
+  try {
+    success = await runtime.dispatchFetch('http://fixture.test/event/2026fixture/simple');
+  } catch {
+    const diagnostic = runtimeOutput
+      .replaceAll('fixture-read-key', '[redacted fixture key]')
+      .trim();
+    throw new Error(`Workerd startup: ${diagnostic || 'No runtime output was captured.'}`);
+  }
   assert.equal(success.status, 200);
   assert.deepEqual(await success.json(), { fixture: 'qualification data' });
 
