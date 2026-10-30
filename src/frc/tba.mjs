@@ -31,7 +31,10 @@ export function tbaClient(key, fetcher = fetch) {
     if (response.status === 401 || response.status === 403)
       throw new LeagueError('TBA rejected the configured read key. Check TBA_AUTH_KEY.', 503);
     if (!response.ok)
-      throw new LeagueError('TBA is unavailable. The last successful data has been retained.', 503);
+      throw new LeagueError(
+        `TBA returned HTTP ${response.status} for ${path}. Existing data was retained.`,
+        503,
+      );
     return response.json();
   };
 }
