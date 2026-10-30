@@ -45,8 +45,8 @@ export async function repairTbaSecret({ account, token, fetcher = fetch }) {
     return done('Staging TBA secret is already installed', true);
 
   const settings = await api(`/workers/scripts/${worker}/settings`);
-  const candidates = new Set(
-    (settings.bindings || [])
+  const readableKeys = (bindings = []) =>
+    bindings
       .filter(
         (binding) =>
           binding.type === 'plain_text' &&
@@ -54,8 +54,27 @@ export async function repairTbaSecret({ account, token, fetcher = fetch }) {
           typeof binding.text === 'string' &&
           binding.text.trim(),
       )
-      .map((binding) => binding.text.trim()),
-  );
+      .map((binding) => binding.text.trim());
+  const candidates = new Set(readableKeys(settings.bindings));
+  // A deployment can replace dashboard text variables. Recover only this
+  // named credential from a recent version of this same staging Worker.
+  if (!candidates.size) {
+    const versions = await api(`/workers/scripts/${worker}/versions?per_page=10`);
+    for (const version of (versions.items || []).slice(0, 10)) {
+      if (
+        !/^[a-f0-9-]{36}$/.test(version.id || '') ||
+        Date.parse(version.metadata?.created_on) < Date.now() - 86400000
+      )
+        continue;
+      if (!Number.isFinite(Date.parse(version.metadata?.created_on))) continue;
+      const detail = await api(`/workers/scripts/${worker}/versions/${version.id}`);
+      const keys = readableKeys(detail.resources?.bindings);
+      if (keys.length) {
+        for (const key of keys) candidates.add(key);
+        break;
+      }
+    }
+  }
   let encryptedBuildKey = false;
   if (!candidates.size) {
     const scripts = await api('/workers/scripts');

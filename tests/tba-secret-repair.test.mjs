@@ -12,6 +12,7 @@ function fixture({
   accepted = true,
   installed = false,
   runtime = false,
+  recentVersion = false,
 } = {}) {
   const writes = [];
   const fetcher = async (url, options) => {
@@ -33,6 +34,21 @@ function fixture({
     else if (path.endsWith('/settings'))
       result = {
         bindings: runtime ? [{ name: 'TBA_AUTH_KEY', type: 'plain_text', text: `  ${key}  ` }] : [],
+      };
+    else if (path.endsWith('/versions?per_page=10'))
+      result = {
+        items: recentVersion
+          ? [
+              {
+                id: '11111111-1111-1111-1111-111111111111',
+                metadata: { created_on: new Date().toISOString() },
+              },
+            ]
+          : [],
+      };
+    else if (path.endsWith('/versions/11111111-1111-1111-1111-111111111111'))
+      result = {
+        resources: { bindings: [{ name: 'TBA_AUTH_KEY', type: 'plain_text', text: key }] },
       };
     else if (path === '/workers/scripts') result = [{ id: 'sd-ftc-fantasy-staging', tag }];
     else if (path === `/builds/workers/${tag}/triggers`) {
@@ -61,6 +77,11 @@ test('a runtime text variable is trimmed and encrypted without build-settings ac
   assert.equal(result.connected, true);
   assert.deepEqual(f.writes, [{ name: 'TBA_AUTH_KEY', text: key, type: 'secret_text' }]);
   assert.doesNotMatch(JSON.stringify(result), new RegExp(key));
+});
+test('a recent staging variable overwritten by a deployment can be recovered without rolling back code', async () => {
+  const f = fixture({ recentVersion: true, denied: true });
+  assert.equal((await f.run()).connected, true);
+  assert.deepEqual(f.writes, [{ name: 'TBA_AUTH_KEY', text: key, type: 'secret_text' }]);
 });
 test('encrypted, inaccessible, rejected, or already-installed keys never trigger a write', async () => {
   for (const options of [
