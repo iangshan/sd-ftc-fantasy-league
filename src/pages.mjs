@@ -9,6 +9,8 @@ import accountStyles from '../web/accounts.css';
 import adminStyles from '../web/admin.css';
 import organizerStyles from '../web/legacy-organizer.css';
 import themeInit from '../web/theme-init.js';
+import frcTemplate from '../web/frc.html';
+import frcStyles from '../web/frc.css';
 import draftClient from '../web/draft.js';
 import organizerClient from '../web/legacy-organizer.js';
 
@@ -79,6 +81,11 @@ export function adminPage() {
 // The regional workspace is shared by public and private deployments.
 import leagueTemplate from '../web/leagues.html';
 import workspaceStyles from '../web/leagues.css';
+export { default as frcClient } from '../web/frc.js';
+export const frcPage = frcTemplate
+  .replace('__LEAGUE_LOGO__', () => leagueLogo)
+  .replace('/* FRC_STYLES */', () => [leagueStyles, workspaceStyles, frcStyles].join('\n'))
+  .replace('/* THEME_INIT */', () => themeInit);
 export { default as leagueClient } from '../web/leagues.js';
 export const leaguePage = leagueTemplate
   .replace('__LEAGUE_LOGO__', () => leagueLogo)

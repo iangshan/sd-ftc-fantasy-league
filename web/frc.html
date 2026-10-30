@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>San Diego FRC · 2027 · FIRST Fantasy League</title>
+    <style>
+      /* FRC_STYLES */
+    </style>
+    <script>
+      /* THEME_INIT */
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="/">
+          <img
+            class="brand-icon"
+            src="__LEAGUE_LOGO__"
+            width="40"
+            height="40"
+            alt="Fantasy League"
+          />
+          <div>
+            <div class="brand-region">San Diego FRC</div>
+            <div class="brand-name">FIRST Fantasy League</div>
+          </div>
+        </a>
+        <span class="season">2027 season</span>
+      </div>
+    </header>
+    <div class="app-frame">
+      <aside class="app-rail">
+        <p class="rail-label">Workspace</p>
+        <nav aria-label="League navigation"></nav>
+      </aside>
+      <main class="page frc-page">
+        <header class="frc-heading">
+          <div>
+            <p class="eyebrow">San Diego Regional · FRC</p>
+            <h1 id="frcTitle">Build your 2027 roster.</h1>
+          </div>
+          <button id="frcRefresh" type="button">Refresh</button>
+        </header>
+        <section class="panel frc-intro">
+          <p>
+            <strong>2027 season. Priced using 2026 REBUILT.</strong> Draft one to three teams from
+            the San Diego Regional field with 15 Pollen. Pollen is a free game resource.
+          </p>
+          <p>
+            Initial prices use each team’s average foul-adjusted qualification OPR across the
+            selected 2026 REBUILT events. Those historical results set the prices; they do not count
+            as 2027 points.
+          </p>
+          <details>
+            <summary>How scoring and prices work</summary>
+            <p>
+              For each counted 2027 event, we estimate a team’s scoring contribution from
+              qualification matches after subtracting points awarded for opponents’ fouls. Your
+              roster earns the sum of its teams’ finalized event OPRs. Awards, wins, and advancement
+              add no separate points.
+            </p>
+            <p>
+              All six robots in each match are included when calculating OPR, including teams
+              outside the draft pool. OPR is an estimate of contribution, not a directly measured
+              individual score.
+            </p>
+            <p>
+              Prices are whole numbers from 3 to 11 Pollen, proportional to historical OPR. Teams
+              without measured history receive a provisional price of 3. Prices are frozen when the
+              first roster is saved.
+            </p>
+            <p>
+              FRC games change each year. A 2026 OPR is not a prediction of the number of points a
+              robot will score in 2027.
+            </p>
+          </details>
+        </section>
+        <p id="frcMessage" class="frc-notice" role="status" tabindex="-1">Loading your league…</p>
+        <div id="frcContent" hidden>
+          <section class="frc-summary" aria-label="League status">
+            <div><span>Participant list</span><strong id="frcPoolStatus"></strong></div>
+            <div><span>Drafting</span><strong id="frcDraftStatus"></strong></div>
+            <div><span>Last data update</span><strong id="frcUpdated"></strong></div>
+          </section>
+          <p id="frcPoolNote" class="muted"></p>
+          <p id="frcEventNote" class="muted"></p>
+          <section id="frcDraftView" hidden>
+            <div class="frc-draft-layout">
+              <section>
+                <div class="frc-filters">
+                  <label
+                    >Find a team<input
+                      id="frcSearch"
+                      type="search"
+                      placeholder="Team number or name"
+                  /></label>
+                  <label
+                    >Sort teams<select id="frcSort">
+                      <option value="price">Pollen: highest first</option>
+                      <option value="number">Team number</option>
+                      <option value="opr">2026 OPR</option>
+                    </select></label
+                  >
+                </div>
+                <div id="frcTeams" class="frc-team-grid"></div>
+              </section>
+              <aside class="panel frc-picks">
+                <h2>Your test roster</h2>
+                <p class="muted">Private staging · one to three teams</p>
+                <div class="frc-budget">
+                  <strong id="frcRemaining">15</strong><span>Pollen remaining</span>
+                </div>
+                <div id="frcPicks"></div>
+                <form id="frcDraftForm">
+                  <label
+                    >League display name<input
+                      id="frcDisplayName"
+                      maxlength="60"
+                      autocomplete="nickname"
+                      required
+                  /></label>
+                  <p class="muted">This name appears in your league’s standings.</p>
+                  <button id="frcSubmit" class="primary" type="submit" disabled>
+                    Save test roster
+                  </button>
+                </form>
+                <a href="/dashboard">View your saved roster</a>
+              </aside>
+            </div>
+          </section>
+          <section id="frcRosterView" hidden>
+            <section class="panel">
+              <h2>Your saved roster</h2>
+              <div id="frcSavedRoster"></div>
+            </section>
+            <section class="panel">
+              <h2>2027 standings</h2>
+              <p class="muted">
+                Earned robot-game points from completed, counted events. Historical pricing data
+                never adds points.
+              </p>
+              <div id="frcStandings"></div>
+            </section>
+          </section>
+          <section id="frcAdminView" hidden>
+            <section class="panel">
+              <h2>Competition data</h2>
+              <p id="frcConnection"></p>
+              <p id="frcSyncError" class="frc-notice" hidden></p>
+              <button id="frcSync" type="button" class="primary">Import / refresh TBA data</button>
+              <details id="frcConnectHelp">
+                <summary>Connect The Blue Alliance</summary>
+                <ol>
+                  <li>
+                    Create a free read API key in your
+                    <a
+                      href="https://www.thebluealliance.com/account"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >TBA account</a
+                    >.
+                  </li>
+                  <li>
+                    In Cloudflare, open
+                    <strong>sd-ftc-fantasy-staging → Settings → Variables and Secrets</strong>.
+                  </li>
+                  <li>
+                    Add a <strong>Secret</strong> named <code>TBA_AUTH_KEY</code>, paste the key
+                    there, and deploy the settings change.
+                  </li>
+                  <li>Return here, refresh the page, and import the data.</li>
+                </ol>
+                <p>
+                  The key stays on the server. Do not put it in GitHub files or invitation links.
+                </p>
+              </details>
+              <p class="muted">
+                Automatic refresh runs every five minutes when a key is connected. A failed refresh
+                retains the last successful data.
+              </p>
+            </section>
+            <section class="panel">
+              <h2>Test drafting</h2>
+              <p id="frcOpenHelp"></p>
+              <button id="frcSetOpen" type="button">Open test drafting</button>
+              <p class="muted">
+                Staging rosters are separate from public league entries. Test drafting closes when a
+                counted event starts.
+              </p>
+            </section>
+            <section class="panel">
+              <h2>Event choices</h2>
+              <form id="frcSettingsForm" class="frc-settings">
+                <label
+                  >2027 participant event<input
+                    id="frcTargetEvent"
+                    required
+                    pattern="2027[a-z0-9]{2,24}"
+                /></label>
+                <label
+                  >2026 REBUILT pricing events<input id="frcHistoryEvents" required /><small
+                    >Up to five TBA event keys, separated by commas. The first is also the
+                    provisional participant source.</small
+                  ></label
+                >
+                <label
+                  >2027 events that earn points<input id="frcScoringEvents" required /><small
+                    >Every listed event counts once. Choose the same scoring scope for everyone
+                    before drafting.</small
+                  ></label
+                >
+                <p class="muted">
+                  Event choices lock once any roster is saved. Changing them beforehand closes test
+                  drafting and requires a fresh import.
+                </p>
+                <button type="submit">Save event choices</button>
+              </form>
+            </section>
+          </section>
+        </div>
+        <footer class="frc-source">
+          Competition data:
+          <a href="https://www.thebluealliance.com/" target="_blank" rel="noopener noreferrer"
+            >The Blue Alliance</a
+          >. Foul-adjusted OPR is calculated by FIRST Fantasy League and may differ from TBA’s
+          published OPR. Independent community project; not an official FIRST program.
+        </footer>
+      </main>
+    </div>
+    <script src="/assets/frc.js" defer></script>
+  </body>
+</html>

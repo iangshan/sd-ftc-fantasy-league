@@ -1,19 +1,29 @@
-# San Diego FTC Fantasy League
+# FIRST Fantasy League
 
-A community fantasy league for San Diego FTC teams. Players draft one to three teams within a **15-Pollen budget**; joining and drafting are free.
+A community fantasy league for FIRST robotics, with regional FTC and FRC leagues on one website. Players draft robots and earn points from their competition results. Joining and drafting are free; Pollen is a game resource with no monetary value.
 
 | Environment                                                                       | Branch    | Experience                                       |
 | --------------------------------------------------------------------------------- | --------- | ------------------------------------------------ |
 | [Public league](https://sd-ftc-fantasy-league.sdftcfantasyleague.workers.dev/)    | `main`    | Released draft board and participant dashboard   |
 | [Private staging](https://sd-ftc-fantasy-staging.sdftcfantasyleague.workers.dev/) | `staging` | Draft board, regional leagues, and admin testing |
 
-The repository is public. Staging uses verified Google accounts and invitation-based membership for separate FTC/FRC regional leagues. Only the owner can switch leagues or appoint staff; existing admins retain FTC access. San Diego FRC drafting remains disabled until its rules are decided. See [leagues, invitations, and roles](staging/LEAGUES.md). The `staging/` folder contains public source for the private testing site; GitHub does not support private folders inside a public repository.
+Members join with an invitation and a verified Google account. The owner and league administrators can switch between every region and program; moderators and players stay in their assigned league. Only the owner appoints staff or creates leagues. See [leagues, invitations, and roles](docs/LEAGUES.md).
 
-## Drafting and pricing
+The repository is public, including the source for private staging. Access to the running staging site is controlled separately; GitHub does not support private folders inside a public repository.
+
+## San Diego FRC · 2027
+
+Private staging includes an FRC draft board, saved test rosters, earned standings, and administrator data controls. The proposed rules are **15 Pollen, one to three teams, and whole-number prices from 3–11**.
+
+The pool is all San Diego Regional participants. Initial prices use foul-adjusted qualification OPR from selected **2026 REBUILT** events. Until the provider publishes the 2027 participant list, the board explicitly labels the 2026 field as provisional. Historical results set prices and never count as earned 2027 points.
+
+The Blue Alliance supplies registrations and match scores through a server-side read key. Missing data stays unmeasured. See [FRC setup, formulas, and data validation](docs/FRC.md). FRC drafting on the public website remains disabled during staging review.
+
+## San Diego FTC
 
 The current pool contains 87 eligible teams registered for BioBuzz 2026–27. Each verified account may submit one roster per season. Public-site prices retain the legacy tiers of 3, 4, 5, 6, and 11 Pollen. Private staging instead derives whole-number prices from PP, within 3–11 Pollen, while retaining the 15-Pollen roster budget. Teams without PP cost a provisional 3 Pollen and remain unscored.
 
-The scoring rule adds each drafted team's robot-game OPR after every event. Awards, wins, and advancement do not add separate points. Official earned standings are not implemented yet.
+The scoring rule adds each drafted team's robot-game OPR after every event. Awards, wins, and advancement do not add separate points. Official FTC earned standings are not implemented yet.
 
 The prediction leaderboard has been removed. Staging keeps the established Pollen costs, derived from the historical DECODE model, while FTC roster entry uses the draft board. The pricing formula, constants, source evidence, and limitations remain public:
 
@@ -27,14 +37,14 @@ The current snapshot contains 388 team/event results from 20 completed events. S
 
 ## Architecture
 
-Cloudflare Workers serve the website and API. Google Sheets stores the frozen catalog and active entries. Cloudflare D1 stores account ownership, admin roles, archives, audit events, and recoverable write checkpoints. Firebase Authentication provides Google sign-in; Apple and GitHub integrations remain disabled until configured.
+Cloudflare Workers serve the website and API. Google Sheets stores the FTC catalog and active entries. Cloudflare D1 stores memberships, roles, archives, audit events, and recoverable write checkpoints. FRC settings, event results, and rosters use separate D1 tables. Firebase Authentication provides Google sign-in.
 
 ## Repository layout
 
 | Location                                 | Contents                                                                    |
 | ---------------------------------------- | --------------------------------------------------------------------------- |
 | [staging/](staging/README.md)            | Private-site Worker, configuration, browser assets, admin tools, and tests  |
-| [src/](src/)                             | Shared page assembly and the public PP model in `src/predictions/`          |
+| [src/](src/)                             | League access, page assembly, FTC pricing, and FRC calculations             |
 | [web/](web/)                             | Shared website templates, JavaScript, styles, and logo                      |
 | [data/](data/)                           | Catalog, eligibility lists, and prediction evidence with source attribution |
 | [docs/](docs/DEVELOPERS.md)              | Developer workflow, accounts, administration, and PP formula                |
@@ -63,10 +73,8 @@ The two sites use separate D1 databases, workbooks, and Sheets service accounts.
 
 Submissions and admin mutations share a D1 lock. An uncertain write keeps a checkpoint so recovery can complete the original operation without creating a duplicate. Do not edit, sort, insert, or delete response rows while a write is pending.
 
-The existing production database was initialized manually. Do not replay migrations against it without checking its schema and migration history. The historical `0002_account_rosters.sql` file is empty; `0004_account_rosters_schema.sql` supplies the account table for new installations and leaves an existing table intact. Staging deployment applies only its additive league schema; production migrations remain manual. Local submission tests use isolated SQLite and do not modify remote resources.
+The existing databases were initialized manually. Do not replay all historical migrations against them. Staging deployment applies its additive league schema and `0006_frc_drafting.sql`; public releases apply only the regional league bootstrap. See [database setup](docs/DEVELOPERS.md#database-setup). Local submission tests use isolated SQLite and do not modify remote resources.
 
 ## License and attribution
 
-Project code is available under the [MIT License](LICENSE). FTCScout and FIRST supply third-party competition data; see the [data-source documentation](data/predictions/README.md) for attribution and provenance. The project license does not assert ownership of or relicense third-party data, names, or trademarks.
-
-Regional leagues, invitations, and staff access are available on both deployments. See [Leagues and invitations](docs/LEAGUES.md). Administrators may switch into every region and program; moderators and players stay in their assigned league. FRC and new-region drafting remain disabled pending their rules.
+Project code is available under the [MIT License](LICENSE). Competition data comes from FTCScout, FIRST, and The Blue Alliance; see the [FTC data sources](data/predictions/README.md) and [FRC guide](docs/FRC.md). The license does not assert ownership of or relicense third-party data, names, or trademarks. This is an independent community project, not an official FIRST program.

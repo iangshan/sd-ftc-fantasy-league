@@ -69,11 +69,18 @@
     el('leagueDetails').textContent =
       `${data.league.region} · ${data.league.program} · ${roleNames[data.viewer.role]}`;
     el('leagueOverview').hidden = false;
-    const enabled = data.drafting === 'existing-ftc';
-    el('draftHeading').textContent = enabled ? 'Your FTC league' : 'Drafting is not open yet';
-    el('draftDescription').textContent = enabled
-      ? 'Draft up to three teams with 15 Pollen. View your saved entry in My dashboard.'
-      : 'Members can join now. Drafting opens after the league rules and team pool are set.';
+    const frc = data.drafting === 'frc-staging';
+    const enabled = data.drafting === 'existing-ftc' || frc;
+    el('draftHeading').textContent = frc
+      ? 'San Diego FRC · 2027'
+      : enabled
+        ? 'Your FTC league'
+        : 'Drafting is not open yet';
+    el('draftDescription').textContent = frc
+      ? 'Review the 2027 FRC draft board. Initial Pollen prices use 2026 REBUILT qualification OPR; the page explains participant status and test drafting.'
+      : enabled
+        ? 'Draft up to three teams with 15 Pollen. View your saved entry in My dashboard.'
+        : 'Members can join now. Drafting opens after the league rules and team pool are set.';
     el('draftLink').hidden = !enabled;
     el('ownerLeagues').hidden = !data.viewer.canSwitch;
     el('createLeagueDetails').hidden = !data.viewer.owner;

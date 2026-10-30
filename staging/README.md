@@ -2,7 +2,7 @@
 
 [Open the private staging site](https://sd-ftc-fantasy-staging.sdftcfantasyleague.workers.dev/).
 
-Staging uses verified Google sign-in and invitation-based league membership with `STAGING_LEAGUES_ENABLED="true"`. The owner and league administrators can switch between every region and program; moderators and players stay in their assigned league. Previously approved admins retain FTC access. FRC drafting is disabled pending its rules. See [league setup, invitations, and roles](LEAGUES.md).
+Staging uses verified Google sign-in and invitation-based league membership with `STAGING_LEAGUES_ENABLED="true"`. The owner and league administrators can switch between every region and program; moderators and players stay in their assigned league. Previously approved admins retain FTC access. San Diego FRC provides a 2027 test draft priced from 2026 REBUILT, enabled by `STAGING_FRC_ENABLED="true"`. See [FRC setup and the TBA connection](../docs/FRC.md) and [league setup, invitations, and roles](LEAGUES.md).
 
 This folder is public source for the private website. GitHub folder names do not create access restrictions; the deployed Worker enforces them.
 
@@ -88,7 +88,7 @@ The FTC board uses the maintained page in `web/legacy-draft.html`, styles in `we
 
 The Sheets service account has no project roles and Editor access only to the test workbook. Its key belongs in the staging Worker's `GOOGLE_SERVICE_ACCOUNT_JSON` secret. Firebase identity is shared, while rosters, admin records, write locks, and audit events use staging's separate D1 and Sheet. The explicit admin synchronization copies only the account metadata needed for access and the admin directory.
 
-Staging was initialized on 2026-10-22 using the existing application schema, including `account_rosters`. The empty historical migration `0002` remains in the repository; migration `0004` supplies that table for fresh installations. The staging workflow now applies only `staging/migrations/0001_leagues.sql` before deployment. Other application migrations and all production migrations remain manual. Inspect existing schema and migration history before applying them.
+Staging was initialized on 2026-10-22 using the existing application schema, including `account_rosters`. The empty historical migration `0002` remains in the repository; migration `0004` supplies that table for fresh installations. The staging workflow applies `staging/migrations/0001_leagues.sql` and the additive `migrations/0006_frc_drafting.sql` before deployment. Other historical application migrations remain manual. Inspect existing schema and migration history before applying them.
 
 ## Build and safeguards
 
@@ -103,4 +103,4 @@ The test command builds both environments. Local submission tests use SQLite and
 
 Both builds share the same application source; production excludes the staging authentication and league-management wrappers. Version preview URLs are disabled, alternate hostnames fail closed, staging responses are private/no-store and noindex, and the server rejects an unexpected workbook ID.
 
-The staging session uses a host-only, Secure, HttpOnly cookie. Google token validation and current league membership checks run on each protected request. Only the owner can choose the league-selection cookie; other users' league is derived from the membership table. Sessions expire after roughly an hour and renew while signed in. Use **Leave staging** to sign out.
+The staging session uses a host-only, Secure, HttpOnly cookie. Google token validation and current league membership checks run on each protected request. The owner and league administrators can choose the league-selection cookie; other users' league is derived from the membership table. Sessions expire after roughly an hour and renew while signed in. Use **Leave staging** to sign out.

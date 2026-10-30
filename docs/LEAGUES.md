@@ -2,7 +2,7 @@
 
 Open **Leagues & access** from the navigation. The owner and league administrators can switch into every region and program, including San Diego FTC and San Diego FRC. Only the owner can create regional/group leagues and appoint staff. Moderators and players remain in their assigned league, including through direct API calls or altered cookies.
 
-San Diego FTC retains its draft board, 15-Pollen budget, three-team limit, paid rosters, and existing workbook. **San Diego FRC drafting is disabled** until its rules and team pool are decided. New regional leagues also start with drafting disabled. No FTC team data, PP model, Pollen costs, or saved roster is presented as FRC data.
+San Diego FTC retains its draft board, 15-Pollen budget, three-team limit, paid rosters, and existing workbook. **San Diego FRC drafting is available for private staging review** with proposed rules of 15 Pollen and up to three teams, using 2026 REBUILT results to price the 2027 season. It remains disabled on the public website. See [FRC setup](FRC.md). New regional leagues start with drafting disabled. No FTC team data, PP model, Pollen costs, or saved roster is presented as FRC data.
 
 ## Invite people
 
@@ -41,7 +41,7 @@ The staging workflow applies [its separate migration](../staging/migrations/0001
 
 Each UID has one home league. Administrators can view other leagues without changing that membership. Admin grants and revocations update the legacy FTC admin table atomically with membership, regardless of the home league. Moderator grants never add a legacy admin role. Access checks read current membership on every request.
 
-The legacy FTC engine can only be called from the San Diego FTC context. New-league/FRC APIs serve league-specific setup data or reject the request; they cannot fall through to FTC roster, admin, or recovery handlers. FRC and new regional drafting remain disabled until a separate release configures rules and team pools.
+The legacy FTC engine can only be called from the San Diego FTC context. San Diego FRC uses its own staging APIs and D1 tables; other unconfigured leagues serve setup data or reject draft requests. They cannot fall through to FTC roster, admin, or recovery handlers. FRC administrators manage data and test drafting; region moderators cannot use these administration controls.
 
 Public visitors can browse the FTC board and open `/join`. New accounts need an invitation to join a league; existing public accounts retain access. Google sign-in establishes a short-lived, host-only, Secure, HttpOnly session cookie. Firebase refreshes it while signed in. All membership mutations require a same-origin POST, and bearer tokens are verified before membership or roster access. Sign-out clears the cookie. Private staging retains its own login guard and emergency `STAGING_MODE="owner-only"` switch.
 

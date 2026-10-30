@@ -6,6 +6,9 @@ export async function checkDeployment(fetcher = fetch) {
     ['/leagues', 302],
     ['/api/leagues', 401],
     ['/api/draft', 401],
+    ['/api/frc', 401],
+    ['/api/frc/admin', 401],
+    ['/assets/frc.js', 401],
     ['/assets/leagues.js', 401],
     ['/join', 200],
   ];

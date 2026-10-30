@@ -6,7 +6,14 @@ export function leagueNavigation(path, { leagueContext } = {}) {
   ];
   if (leagueContext) {
     const coordinator = ['owner', 'admin', 'moderator'].includes(leagueContext.role);
-    if (leagueContext.league.engine !== 'legacy-ftc') {
+    if (leagueContext.frc) {
+      sections = [
+        ['/', 'Draft board'],
+        ['/dashboard', 'My roster'],
+        ['/leagues', coordinator ? 'Leagues & access' : 'My league'],
+      ];
+      if (['owner', 'admin'].includes(leagueContext.role)) sections.push(['/admin', 'FRC admin']);
+    } else if (leagueContext.league.engine !== 'legacy-ftc') {
       sections = [
         ['/', 'League home'],
         ['/leagues', coordinator ? 'Manage league' : 'My league'],

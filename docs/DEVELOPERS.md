@@ -30,6 +30,7 @@ Use `npm run format` to apply the shared Prettier configuration before committin
 | `web/`                              | Shared browser JavaScript, CSS, page templates, and logo                    |
 | `src/pages.mjs`                     | Page assembly from maintained browser assets                                |
 | `src/predictions/`                  | PP model, historical evaluation, and staging pricing policy                 |
+| `src/frc/`                          | FRC event imports, OPR, prices, test rosters, and earned standings          |
 | `data/decode-catalog.json`          | Frozen 87-team DECODE source catalog                                        |
 | `data/not-returning.json`           | Historical teams excluded from this season, with reasons                    |
 | `data/rookie-teams.json`            | Registered teams missing from the frozen catalog                            |
@@ -103,7 +104,7 @@ To initialize a fresh local development database without touching Cloudflare's r
 npx wrangler d1 migrations apply DB --local --config wrangler.jsonc
 ```
 
-The empty historical `0002_account_rosters.sql` is retained for migration history; `0004_account_rosters_schema.sql` supplies the missing account table for fresh installations. Production and staging were initialized manually before this repair. Inspect their schema and migration history before any remote migration; do not replay the original unguarded migrations against an existing database. Authorized public releases apply only `migrations/0005_regional_leagues.sql`; private deployments apply `staging/migrations/0001_leagues.sql`. The public bootstrap preserves existing FTC accounts and rosters. The staging bootstrap admits only approved staff and invited members. See [regional leagues](LEAGUES.md) for the shared architecture and access model.
+The empty historical `0002_account_rosters.sql` is retained for migration history; `0004_account_rosters_schema.sql` supplies the missing account table for fresh installations. Production and staging were initialized manually before this repair. Inspect their schema and migration history before any remote migration; do not replay the original unguarded migrations against an existing database. Authorized public releases apply only `migrations/0005_regional_leagues.sql`; private deployments apply `staging/migrations/0001_leagues.sql` and `migrations/0006_frc_drafting.sql`. The FRC schema is isolated from FTC storage; see [FRC setup](FRC.md). The public bootstrap preserves existing FTC accounts and rosters. The staging bootstrap admits only approved staff and invited members. See [regional leagues](LEAGUES.md) for the shared architecture and access model.
 
 ## Review a change
 

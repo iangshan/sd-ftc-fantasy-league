@@ -109,7 +109,7 @@ export async function buildWorker({
   await build({
     stdin: {
       contents: staging
-        ? `export { ${exports} } from './worker.mjs'; export { createPublicWorker } from './src/public-worker.mjs';`
+        ? `export { ${exports} } from './worker.mjs'; export { createPublicWorker } from './src/public-worker.mjs'; export { frcPage, frcClient } from './src/pages.mjs';`
         : "export { default } from './src/public-worker.mjs';",
       resolveDir: root,
       sourcefile: staging ? 'staging-entry.mjs' : 'production-entry.mjs',

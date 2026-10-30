@@ -5,6 +5,7 @@
   "compatibility_date": "2026-10-20",
   "workers_dev": true,
   "preview_urls": false,
+  "triggers": { "crons": ["*/5 * * * *"] },
   "d1_databases": [
     {
       "binding": "DB",
@@ -16,6 +17,7 @@
   "vars": {
     "STAGING_MODE": "admin-only",
     "STAGING_LEAGUES_ENABLED": "true",
+    "STAGING_FRC_ENABLED": "true",
     "SUBMISSIONS_ENABLED": "true",
     "RESPONSES_SHEET_ID": "1Md_Ys5uf9x4kka_ltkTPM5SkHnJZAv9VUGkhnheBRJE"
   },

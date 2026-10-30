@@ -48,6 +48,8 @@ test('production exposes only the Worker entry while staging retains its shared 
     'catalogVersion',
     'createPublicWorker',
     'default',
+    'frcClient',
+    'frcPage',
     'getDecodePredictionCatalog',
     'getDraftPredictionCatalog',
     'parseState',

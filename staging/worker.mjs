@@ -1,4 +1,18 @@
-import app, { requireAccount, authConfig, LEAGUE_OWNER_UID } from '../dist/staging-app.mjs';
+import app, {
+  requireAccount,
+  authConfig,
+  LEAGUE_OWNER_UID,
+  frcPage,
+  frcClient,
+} from '../dist/staging-app.mjs';
+import {
+  frcEnabled,
+  frcSnapshot,
+  frcAdminMutation,
+  submitFrcRoster,
+  resetOwnTestRoster,
+  syncFrcLeague,
+} from '../src/frc/service.mjs';
 import { priceDraftCatalog } from './pricing.mjs';
 import { withStagingNavigation } from './navigation.mjs';
 import { requireStagingAdmin } from './access.mjs';
@@ -71,8 +85,12 @@ function leagueFailure(error) {
 }
 const client = loginClient.replace('__STAGING_AUTH_CONFIG__', () => JSON.stringify(authConfig()));
 
-// Dependency injection is for local authentication boundary tests only.
-export function createStagingWorker(application = app, verify = requireAccount) {
+// Inject identities and provider responses only in local integration tests.
+export function createStagingWorker(
+  application = app,
+  verify = requireAccount,
+  providerFetch = fetch,
+) {
   return {
     async fetch(request, env) {
       const url = new URL(request.url),
@@ -127,6 +145,7 @@ export function createStagingWorker(application = app, verify = requireAccount) 
                 await acceptInvite(env.DB, user, input.inviteCode, LEAGUE_OWNER_UID);
             }
             context = await leagueContext(env.DB, user, LEAGUE_OWNER_UID, request);
+            context.frc = frcEnabled(env, context);
           } catch (error) {
             if (error instanceof LeagueError) throw error;
             throw { status: 503 };
@@ -173,7 +192,11 @@ export function createStagingWorker(application = app, verify = requireAccount) 
       if (context) {
         try {
           if (path === '/api/leagues') {
-            if (request.method === 'GET') return json(await leagueSnapshot(env.DB, context));
+            if (request.method === 'GET')
+              return json({
+                ...(await leagueSnapshot(env.DB, context)),
+                ...(context.frc ? { drafting: 'frc-staging' } : {}),
+              });
             if (request.method !== 'POST')
               return json({ error: 'Method not allowed.' }, 405, { Allow: 'GET, POST' });
             const result = await leagueMutation(
@@ -192,6 +215,26 @@ export function createStagingWorker(application = app, verify = requireAccount) 
             return response(leagueClient, 200, {
               'Content-Type': 'text/javascript; charset=utf-8',
             });
+          if (context.frc) {
+            if (path === '/assets/frc.js' && request.method === 'GET')
+              return response(frcClient, 200, { 'Content-Type': 'text/javascript; charset=utf-8' });
+            if (path === '/api/frc' && request.method === 'GET')
+              return json(await frcSnapshot(env.DB, env, context));
+            if (path.startsWith('/api/frc/')) {
+              if (request.method !== 'POST')
+                return json({ error: 'Method not allowed.' }, 405, { Allow: 'POST' });
+              const input = await readLeagueInput(request);
+              if (path === '/api/frc/admin')
+                return json(await frcAdminMutation(env.DB, env, context, input, providerFetch));
+              if (path === '/api/frc/submit')
+                return json(await submitFrcRoster(env.DB, context, input));
+              if (path === '/api/frc/reset')
+                return json(await resetOwnTestRoster(env.DB, context, input));
+              return json({ error: 'Not found.' }, 404);
+            }
+            if (path === '/admin' && !['owner', 'admin'].includes(context.role))
+              throw new LeagueError('League administrator access is required.', 403);
+          }
           if (path === '/api/admin' && context.league.id === FTC_LEAGUE) {
             if (!['owner', 'admin'].includes(context.role))
               throw new LeagueError('League administrator access is required.', 403);
@@ -255,7 +298,11 @@ export function createStagingWorker(application = app, verify = requireAccount) 
         context &&
         (path === '/leagues' ||
           (context.league.id !== FTC_LEAGUE && ['/', '/dashboard', '/admin'].includes(path)));
-      if (leagueWorkspace) {
+      if (context?.frc && ['/', '/dashboard', '/admin'].includes(path)) {
+        if (request.method !== 'GET')
+          return json({ error: 'Method not allowed.' }, 405, { Allow: 'GET' });
+        result = response(frcPage, 200, { 'Content-Type': 'text/html; charset=utf-8' });
+      } else if (leagueWorkspace) {
         if (request.method !== 'GET')
           return json({ error: 'Method not allowed.' }, 405, { Allow: 'GET' });
         result = response(leaguePage, 200, { 'Content-Type': 'text/html; charset=utf-8' });
@@ -300,4 +347,19 @@ export function createStagingWorker(application = app, verify = requireAccount) 
     },
   };
 }
-export default createStagingWorker();
+export default {
+  ...createStagingWorker(),
+  scheduled(_controller, env, execution) {
+    if (
+      env.STAGING_FRC_ENABLED !== 'true' ||
+      !env.TBA_AUTH_KEY ||
+      env.RESPONSES_SHEET_ID !== STAGING_SHEET
+    )
+      return;
+    execution.waitUntil(
+      syncFrcLeague(env.DB, env).catch(() =>
+        console.warn('FRC refresh did not complete; inspect FRC admin for the data status.'),
+      ),
+    );
+  },
+};
