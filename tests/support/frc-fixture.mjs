@@ -63,7 +63,8 @@ export function frcFixture() {
   responses.set('/event/2026casd/teams/simple', teams);
   responses.set('/event/2026casd/matches', matches());
   const fetcher = async (url, options) => {
-    if (!url.startsWith(TBA_ORIGIN + '/event/')) throw new Error('Unexpected external URL.');
+    if (!url.startsWith(TBA_ORIGIN + '/event/') && !url.startsWith(TBA_ORIGIN + '/events/'))
+      throw new Error('Unexpected external URL.');
     const path = url.slice(TBA_ORIGIN.length);
     calls.push({ path, headers: options.headers });
     const data = responses.get(path);
