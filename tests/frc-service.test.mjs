@@ -92,46 +92,116 @@ test('published target registrations replace the provisional field before drafti
   assert.equal(data.catalog.at(-1).price, 3);
 });
 
-test('the initial regional source resolves a changed official event code without inventing a field', async (t) => {
-  const f = setup(t);
-  const event = {
+function configureBonus(f, bonusMatches = matches('2026casan1', [140, 80, 30, 40, 30, 10])) {
+  // The owner supplied exact keys; the official provider label need not say Regional.
+  f.responses.set('/event/2026casnd/simple', {
     ...f.responses.get('/event/2026casd/simple'),
-    key: '2026casandiego',
-    name: 'San Diego Regional',
-  };
-  f.responses.delete('/event/2026casd/simple');
-  f.responses.set('/events/2026/simple', [event]);
-  f.responses.set('/event/2026casandiego/simple', event);
-  f.responses.set('/event/2026casandiego/teams/simple', f.teams);
-  f.responses.set('/event/2026casandiego/matches', matches('2026casandiego'));
+    key: '2026casnd',
+    event_type: 1,
+    name: 'TEST San Diego District Event',
+  });
+  f.responses.set('/event/2026casnd/teams/simple', f.teams);
+  f.responses.set('/event/2026casnd/matches', matches('2026casnd'));
+  f.responses.set('/event/2026casan1/simple', {
+    key: '2026casan1',
+    year: 2026,
+    name: 'TEST Stay Classy Classic',
+    event_type: 99,
+    start_date: '2026-10-10',
+    end_date: '2026-10-11',
+  });
+  f.responses.set('/event/2026casan1/matches', bonusMatches);
+  return admin(f, {
+    action: 'configure',
+    eventKey: '2027casnd',
+    historyEvents: ['2026casnd', '2026casan1'],
+    scoringEvents: ['2027casnd'],
+  });
+}
+
+test('exact configured sources add only positive off-season improvements and retain the Regional pool', async (t) => {
+  const f = setup(t);
   await sync(f);
-  const data = await snapshot(f);
-  assert.equal(data.poolEvent, '2026casandiego');
-  assert.deepEqual(data.historyEvents, ['2026casandiego']);
+  const before = await snapshot(f);
+  const bonusMatches = matches('2026casan1', [140, 80, 30, 40, 30, 10]);
+  // Team 106 only attends Stay Classy; team 103 skips it entirely.
+  for (const match of bonusMatches)
+    for (const alliance of Object.values(match.alliances))
+      alliance.team_keys = alliance.team_keys.map((key) => (key === 'frc103' ? 'frc106' : key));
+  await configureBonus(f, bonusMatches);
+  await sync(f);
+  const data = await snapshot(f),
+    byNumber = new Map(data.catalog.map((team) => [team.number, team]));
+  assert.equal(data.poolEvent, '2026casnd');
+  assert.deepEqual(data.historyEvents, ['2026casnd', '2026casan1']);
   assert.equal(data.catalog.length, 6);
+  assert.equal(byNumber.has(106), false);
+  assert.ok(Math.abs(byNumber.get(101).bonus - 5) < 1e-8);
+  assert.equal(byNumber.get(101).price, 8);
+  assert.equal(byNumber.get(102).bonus, 0);
+  assert.equal(byNumber.get(103).offseasonOpr, null);
+  assert.equal(byNumber.get(103).price, before.catalog.find((team) => team.number === 103).price);
+  assert.ok(f.calls.every((call) => !call.path.startsWith('/events/')));
+  await admin(f, { action: 'setOpen', open: true });
+  await submitFrcRoster(f.db, await f.context(), await input(f));
+  assert.equal((await snapshot(f)).roster.points, 0);
 });
 
-test('missing or ambiguous regional identities do not seed a fabricated participant list', async (t) => {
+test('missing or incomplete off-season data leaves baseline pricing available', async (t) => {
   const f = setup(t);
-  f.responses.delete('/event/2026casd/simple');
-  f.responses.set('/events/2026/simple', []);
+  await configureBonus(f, []);
+  f.responses.delete('/event/2026casan1/simple');
+  await sync(f);
+  const previous = await snapshot(f);
+  assert.equal(previous.catalog[0].bonus, 0);
+  assert.equal(previous.catalog[0].offseasonOpr, null);
+  await configureBonus(f, []);
+  await sync(f);
+  assert.deepEqual((await snapshot(f)).catalog, previous.catalog);
+  f.responses.set('/event/2026casan1/matches', matches('2026casan1'));
+  f.responses.set('/event/2026casnd/matches', []);
   await fail(() => sync(f), 409);
-  assert.deepEqual((await snapshot(f)).catalog, []);
-  const event = {
-    key: '2026casd1',
-    year: 2026,
-    name: 'San Diego Regional 1',
-    event_type: 0,
-    start_date: '2026-03-20',
-    end_date: '2026-03-22',
-  };
-  f.responses.set('/events/2026/simple', [
-    event,
-    { ...event, key: '2026casd2', name: 'San Diego Regional 2' },
-  ]);
-  await fail(() => sync(f), 409);
-  assert.deepEqual((await snapshot(f)).catalog, []);
+  assert.deepEqual((await snapshot(f)).catalog, previous.catalog);
 });
+
+test('a completed bonus cannot silently regress, and off-season events cannot become the baseline or earned points', async (t) => {
+  const f = setup(t);
+  await configureBonus(f);
+  await sync(f);
+  const previous = await snapshot(f);
+  f.responses.set('/event/2026casan1/matches', []);
+  await fail(() => sync(f), 409);
+  assert.deepEqual((await snapshot(f)).catalog, previous.catalog);
+  f.responses.get('/event/2026casnd/simple').event_type = 99;
+  await fail(() => sync(f), 502);
+  assert.deepEqual((await snapshot(f)).catalog, previous.catalog);
+  for (const historyEvents of [
+    [],
+    ['2026casnd', '2026casnd'],
+    ['2026casnd', '2026casan1', '2026extra'],
+  ])
+    await fail(
+      () =>
+        admin(f, {
+          action: 'configure',
+          eventKey: '2027casnd',
+          historyEvents,
+          scoringEvents: ['2027casnd'],
+        }),
+      400,
+    );
+  await fail(
+    () =>
+      admin(f, {
+        action: 'configure',
+        eventKey: '2027casnd',
+        historyEvents: ['2026casnd'],
+        scoringEvents: ['2026casan1'],
+      }),
+    400,
+  );
+});
+
 test('server enforces budget, size, eligibility, league, season, prices, and owner identity', async (t) => {
   const f = setup(t);
   await sync(f);
@@ -196,6 +266,39 @@ test('submission retries and concurrent saves retain one original roster; sync f
     409,
   );
 });
+test('a saved legacy catalog keeps its original prices, version, and historical evidence', async (t) => {
+  const f = setup(t);
+  await sync(f);
+  const legacy = (await snapshot(f)).catalog.map(({ number, name, price, opr }) => ({
+    number,
+    name,
+    price,
+    opr,
+  }));
+  f.sql
+    .prepare('UPDATE frc_settings SET catalog_json = ?, catalog_version = ?')
+    .run(JSON.stringify(legacy), 'legacy-average-pricing');
+  await admin(f, { action: 'setOpen', open: true });
+  await submitFrcRoster(f.db, await f.context(), await input(f));
+  f.sql
+    .prepare('UPDATE frc_settings SET history_events_json = ?')
+    .run('["2026casd","2026oldtwo","2026oldthree"]');
+  for (const key of ['2026oldtwo', '2026oldthree']) {
+    f.responses.set(`/event/${key}/simple`, { ...f.responses.get('/event/2026casd/simple'), key });
+    f.responses.set(`/event/${key}/matches`, matches(key));
+  }
+  await sync(f);
+  const data = await snapshot(f);
+  assert.deepEqual(data.catalog, legacy);
+  assert.equal(data.catalogVersion, 'legacy-average-pricing');
+  assert.equal(data.pricingMethod, null);
+  assert.equal(data.roster.total, 15);
+  // Old history retains the official-event gate, even in its second position.
+  f.responses.get('/event/2026oldtwo/simple').event_type = 99;
+  await fail(() => sync(f), 502);
+  assert.deepEqual((await snapshot(f)).catalog, legacy);
+});
+
 test('failed providers, missing results, and concurrent refresh preserve the last good data', async (t) => {
   const f = setup(t);
   await sync(f);

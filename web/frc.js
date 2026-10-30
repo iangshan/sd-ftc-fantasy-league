@@ -16,7 +16,8 @@
   let data,
     busy = false,
     selected = new Set();
-  const number = (value) => (value === null ? 'Not measured' : value.toFixed(1));
+  const number = (value) => (Number.isFinite(value) ? value.toFixed(1) : 'Not measured');
+  const rating = (team) => (team.rating === undefined ? team.opr : team.rating);
   const say = (text) => {
     el('frcMessage').textContent = text;
   };
@@ -66,8 +67,8 @@
     teams.sort(
       el('frcSort').value === 'number'
         ? (a, b) => a.number - b.number
-        : el('frcSort').value === 'opr'
-          ? (a, b) => (b.opr ?? -Infinity) - (a.opr ?? -Infinity) || a.number - b.number
+        : el('frcSort').value === 'rating'
+          ? (a, b) => (rating(b) ?? -Infinity) - (rating(a) ?? -Infinity) || a.number - b.number
           : (a, b) => b.price - a.price || a.number - b.number,
     );
     const total = data.catalog
@@ -78,16 +79,38 @@
     for (const team of teams) {
       const chosen = selected.has(team.number);
       const card = node('article', undefined, 'frc-team' + (chosen ? ' selected' : ''));
+      const legacy = team.baselineOpr === undefined;
+      const baseline = legacy ? team.opr : team.baselineOpr;
+      const bonus = team.bonus ?? 0;
+      const evidence = node('dl', undefined, 'frc-evidence');
+      const stats = [
+        [legacy ? 'Saved historical OPR' : 'Regional OPR', number(baseline)],
+        [
+          data.historyEvents[1] === '2026casan1' ? 'Stay Classy OPR' : 'Off-season OPR',
+          legacy ? 'Not recorded' : number(team.offseasonOpr),
+        ],
+        ['Improvement bonus', legacy ? 'Not recorded' : `+${number(bonus)}`],
+        ['Pricing rating', number(rating(team))],
+      ];
+      for (const [label, value] of stats) {
+        const row = node('div');
+        row.append(node('dt', label), node('dd', value));
+        evidence.append(row);
+      }
       card.append(
         node('small', `TEAM ${team.number}`),
         node('h3', team.name),
         node('strong', `${team.price} Pollen`, 'frc-price'),
-        node('p', `2026 REBUILT OPR: ${number(team.opr)}`),
+        evidence,
         node(
           'p',
-          team.measuredEvents
-            ? `Foul-adjusted · ${team.measuredEvents} measured event${team.measuredEvents === 1 ? '' : 's'}`
-            : 'Provisional price · no measured history',
+          legacy
+            ? 'Saved historical OPR · bonus breakdown unavailable'
+            : !Number.isFinite(baseline)
+              ? 'Provisional price · baseline not measured'
+              : bonus > 0
+                ? 'Foul-adjusted OPR · off-season improvement included'
+                : 'Foul-adjusted OPR · baseline retained',
         ),
       );
       const link = node('a', 'Team on The Blue Alliance');
@@ -221,7 +244,8 @@
     el('frcOpenHelp').textContent =
       `${data.admin.rosterCount} saved staging roster${data.admin.rosterCount === 1 ? '' : 's'}. ${data.poolStatus === 'provisional' ? 'This uses a provisional 2026 field, pending the 2027 participant list.' : 'Review the participant list and event choices before opening.'}`;
     el('frcTargetEvent').value = data.targetEvent;
-    el('frcHistoryEvents').value = data.historyEvents.join(', ');
+    el('frcHistoryEvents').value = data.historyEvents[0] || '';
+    el('frcBonusEvent').value = data.historyEvents[1] || '';
     el('frcScoringEvents').value = data.scoringEvents.join(', ');
     el('frcSettingsForm')
       .querySelectorAll('input,button')
@@ -256,8 +280,11 @@
         : data.poolStatus === 'confirmed'
           ? `All ${data.catalog.length} teams listed for ${data.targetEvent}. The field may change before the event.`
           : 'Teams will appear after your league administrator connects competition data.';
-    el('frcEventNote').textContent =
-      `2026 pricing events: ${data.historyEvents.join(', ')}. Counted 2027 events: ${data.scoringEvents.join(', ')}.`;
+    const legacy = data.pricingMethod === null;
+    el('frcLegacyPricing').hidden = !legacy;
+    el('frcEventNote').textContent = legacy
+      ? `Saved historical sources: ${data.historyEvents.join(', ')}. Counted 2027 events: ${data.scoringEvents.join(', ')}.`
+      : `2026 baseline: ${data.historyEvents[0]}. Optional off-season bonus: ${data.historyEvents[1] || 'none'}. Counted 2027 events: ${data.scoringEvents.join(', ')}.`;
     if (view === 'draft') renderDraft();
     if (view === 'roster') renderRoster();
     if (view === 'admin') renderAdmin();
@@ -284,6 +311,7 @@
     perform('/api/frc/admin', { action: 'setOpen', open: !data.admin.draftOpen });
   el('frcSettingsForm').onsubmit = (event) => {
     event.preventDefault();
+    if (!el('frcSettingsForm').reportValidity()) return;
     const list = (id) =>
       el(id)
         .value.split(',')
@@ -292,7 +320,9 @@
     perform('/api/frc/admin', {
       action: 'configure',
       eventKey: el('frcTargetEvent').value.trim(),
-      historyEvents: list('frcHistoryEvents'),
+      historyEvents: [el('frcHistoryEvents').value.trim(), el('frcBonusEvent').value.trim()].filter(
+        Boolean,
+      ),
       scoringEvents: list('frcScoringEvents'),
     });
   };

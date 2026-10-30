@@ -15,7 +15,7 @@ The repository is public, including the source for private staging. Access to th
 
 Private staging includes an FRC draft board, saved test rosters, earned standings, and administrator data controls. The proposed rules are **15 Pollen, one to three teams, and whole-number prices from 3–11**.
 
-The pool is all San Diego Regional participants. Initial prices use foul-adjusted qualification OPR from selected **2026 REBUILT** events. Until the provider publishes the 2027 participant list, the board explicitly labels the 2026 field as provisional. Historical results set prices and never count as earned 2027 points.
+The pool is all San Diego Regional participants. Initial prices use foul-adjusted qualification OPR from the **2026 REBUILT** San Diego event, plus half of any positive OPR improvement at Stay Classy Classic. Missing or lower off-season results do not reduce the baseline rating, and the price scale stays anchored to Regional results. Until the provider publishes the 2027 participant list, the board explicitly labels the 2026 field as provisional. Historical results set prices and never count as earned 2027 points.
 
 The Blue Alliance supplies registrations and match scores through a server-side read key. Missing data stays unmeasured. See [FRC setup, formulas, and data validation](docs/FRC.md). FRC drafting on the public website remains disabled during staging review.
 
@@ -73,7 +73,7 @@ The two sites use separate D1 databases, workbooks, and Sheets service accounts.
 
 Submissions and admin mutations share a D1 lock. An uncertain write keeps a checkpoint so recovery can complete the original operation without creating a duplicate. Do not edit, sort, insert, or delete response rows while a write is pending.
 
-The existing databases were initialized manually. Do not replay all historical migrations against them. Staging deployment applies its additive league schema and `0006_frc_drafting.sql`; public releases apply only the regional league bootstrap. See [database setup](docs/DEVELOPERS.md#database-setup). Local submission tests use isolated SQLite and do not modify remote resources.
+The existing databases were initialized manually. Do not replay all historical migrations against them. Staging deployment applies its additive league schema, `0006_frc_drafting.sql`, and the guarded event configuration in `0007_frc_pricing_events.sql`; public releases apply only the regional league bootstrap. See [database setup](docs/DEVELOPERS.md#database-setup). Local submission tests use isolated SQLite and do not modify remote resources.
 
 ## License and attribution
 

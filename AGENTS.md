@@ -6,6 +6,7 @@ Read this file before making changes. Use `README.md` and `docs/DEVELOPERS.md` f
 
 - Prepare San Diego FRC on private staging for the **2027 season**. The intended pool is all San Diego Regional participants.
 - Use **2026 REBUILT qualification results** for initial OPR-based Pollen prices. Historical prices are not earned 2027 points.
+- Use the owner-confirmed San Diego event `2026casnd` as the baseline and Stay Classy Classic `2026casan1` as an optional improvement bonus. Missing or lower off-season results must not reduce baseline ratings or alter absentee prices. Do not infer event keys from names.
 - Clearly distinguish the confirmed 2027 participant list from a provisional 2026 field. Do not invent teams, registrations, match scores, or OPR values.
 - FRC drafting proposes 15 Pollen, one to three teams, and whole-number costs. Keep FTC data, rosters, prices, and deployment settings isolated.
 - Explain the season, pricing source, scoring rule, and data status on the FRC page.

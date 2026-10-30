@@ -5,7 +5,7 @@ export const TBA_ORIGIN = 'https://www.thebluealliance.com/api/v3';
 const officialTypes = new Set([0, 1, 2, 3, 4, 5]);
 export function eventKey(value, season) {
   if (typeof value !== 'string' || !new RegExp(`^${season}[a-z0-9]{2,24}$`).test(value))
-    throw new LeagueError(`Use a ${season} TBA event key, such as ${season}casd.`);
+    throw new LeagueError(`Use a ${season} TBA event key, such as ${season}casnd.`);
   return value;
 }
 export async function hash(value) {
@@ -24,7 +24,8 @@ export function tbaClient(key, fetcher = fetch) {
   return async function get(path, optional = false) {
     // Only internally constructed, validated paths reach this client.
     const response = await fetcher(TBA_ORIGIN + path, {
-      headers: { 'X-TBA-Auth-Key': key },
+      headers: { 'X-TBA-Auth-Key': key.trim() },
+      redirect: 'error',
       signal: AbortSignal.timeout(15000),
     });
     if (optional && response.status === 404) return null;
@@ -38,7 +39,7 @@ export function tbaClient(key, fetcher = fetch) {
     return response.json();
   };
 }
-export function validateEvent(event, key, season) {
+export function validateEvent(event, key, season, { allowOffseason = false } = {}) {
   const validDate = (value) => {
     if (typeof value !== 'string' || !new RegExp(`^${season}-\\d{2}-\\d{2}$`).test(value))
       return false;
@@ -49,7 +50,10 @@ export function validateEvent(event, key, season) {
     !event ||
     event.key !== key ||
     event.year !== season ||
-    !officialTypes.has(event.event_type) ||
+    !(
+      officialTypes.has(event.event_type) ||
+      (allowOffseason === true && event.event_type === 99)
+    ) ||
     typeof event.name !== 'string' ||
     !event.name.trim() ||
     !validDate(event.start_date) ||
@@ -57,61 +61,33 @@ export function validateEvent(event, key, season) {
     event.end_date < event.start_date
   )
     throw new LeagueError(
-      'TBA returned an invalid event or an unofficial event. No data was replaced.',
+      'TBA returned an invalid event or an event type that is not allowed for this source. No data was replaced.',
       502,
     );
   return event;
 }
 
-// Event codes can change between seasons. Resolve the initial San Diego
-// default by its published regional identity, without replacing custom choices.
-export async function resolveSanDiegoEvent(get, configured, season, required = false) {
-  if (configured !== `${season}casd`) return configured;
-  const existing = await get(`/event/${configured}/simple`, true);
-  if (existing) {
-    validateEvent(existing, configured, season);
-    return configured;
-  }
-  const events = await get(`/events/${season}/simple`, true);
-  if (events !== null && !Array.isArray(events))
-    throw new LeagueError('TBA returned an invalid season event list.', 502);
-  const matches = (events || []).filter(
-    (event) =>
-      event.year === season &&
-      event.event_type === 0 &&
-      typeof event.name === 'string' &&
-      /\bsan diego\b/i.test(event.name) &&
-      /\bregional\b/i.test(event.name),
-  );
-  if (matches.length > 1)
-    throw new LeagueError(
-      `TBA lists multiple ${season} San Diego Regionals. Choose the intended event in FRC admin.`,
-      409,
-    );
-  if (!matches.length) {
-    if (required)
-      throw new LeagueError(
-        `TBA has not listed a ${season} San Diego Regional. Historical pricing data is not available yet.`,
-        409,
-      );
-    return configured;
-  }
-  const key = eventKey(matches[0].key, season);
-  validateEvent(matches[0], key, season);
-  return key;
-}
-export async function loadEvent(get, key, season, now = Date.now(), optional = false) {
+export async function loadEvent(
+  get,
+  key,
+  season,
+  now = Date.now(),
+  optional = false,
+  options = {},
+) {
   const event = await get(`/event/${eventKey(key, season)}/simple`, optional);
   if (!event) return null;
-  validateEvent(event, key, season);
+  // Only the caller's explicitly selected pricing-bonus source may opt into
+  // off-season events. Baseline and earned scoring imports keep the official gate.
+  validateEvent(event, key, season, options);
   const matches = await get(`/event/${key}/matches`);
   if (
     !Array.isArray(matches) ||
     matches.length > 1000 ||
     matches.some(
       (match) =>
-        match.event_key !== key ||
-        typeof match.key !== 'string' ||
+        match?.event_key !== key ||
+        typeof match?.key !== 'string' ||
         !match.key.startsWith(key + '_'),
     )
   )

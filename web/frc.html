@@ -50,9 +50,14 @@
             the San Diego Regional field with 15 Pollen. Pollen is a free game resource.
           </p>
           <p>
-            Initial prices use each team’s average foul-adjusted qualification OPR across the
-            selected 2026 REBUILT events. Those historical results set the prices; they do not count
-            as 2027 points.
+            Prices start with each team’s foul-adjusted qualification OPR at the 2026 San Diego
+            Regional. A stronger performance at Stay Classy Classic can increase its pricing rating.
+            Skipping the off-season event, or scoring lower there, leaves its baseline unchanged.
+            These results set prices; they do not earn 2027 points.
+          </p>
+          <p id="frcLegacyPricing" hidden>
+            This saved catalog retains its earlier historical OPR prices. The off-season formula
+            below applies to new catalogs; it does not reprice existing rosters.
           </p>
           <details>
             <summary>How scoring and prices work</summary>
@@ -68,9 +73,22 @@
               individual score.
             </p>
             <p>
-              Prices are whole numbers from 3 to 11 Pollen, proportional to historical OPR. Teams
-              without measured history receive a provisional price of 3. Prices are frozen when the
-              first roster is saved.
+              The pricing rating is the Regional OPR plus half of any improvement at Stay Classy
+              Classic: <code>rating = baseline + 0.5 × max(0, off-season − baseline)</code>. A
+              baseline of 100 and an off-season OPR of 140 give a rating of 120. With no off-season
+              result, or an OPR of 80 there, the rating stays 100.
+            </p>
+            <p>
+              Prices are whole numbers from 3 to 11 Pollen:
+              <code>price = clamp(ceil(11 × max(0, rating) / M), 3, 11)</code>, where
+              <code>M</code> is the highest positive Regional OPR in the eligible pool. Off-season
+              bonuses do not change that scale, so they do not change absent teams’ prices. Teams
+              without a measured baseline receive a provisional price of 3, even if they attended
+              the off-season event. Prices are frozen when the first roster is saved.
+            </p>
+            <p>
+              Stay Classy Classic only supplies an optional pricing bonus. It does not add teams to
+              the San Diego Regional draft pool or contribute earned points.
             </p>
             <p>
               FRC games change each year. A 2026 OPR is not a prediction of the number of points a
@@ -101,7 +119,7 @@
                     >Sort teams<select id="frcSort">
                       <option value="price">Pollen: highest first</option>
                       <option value="number">Team number</option>
-                      <option value="opr">2026 OPR</option>
+                      <option value="rating">Pricing rating: highest first</option>
                     </select></label
                   >
                 </div>
@@ -201,9 +219,24 @@
                     pattern="2027[a-z0-9]{2,24}"
                 /></label>
                 <label
-                  >2026 REBUILT pricing events<input id="frcHistoryEvents" required /><small
-                    >Up to five TBA event keys, separated by commas. The first is also the
-                    provisional participant source.</small
+                  >2026 baseline event<input
+                    id="frcHistoryEvents"
+                    required
+                    pattern="2026[a-z0-9]{2,24}"
+                    placeholder="2026casnd"
+                  /><small
+                    >One TBA event key. The San Diego Regional sets the baseline OPR and supplies
+                    the provisional participant list.</small
+                  ></label
+                >
+                <label
+                  >2026 off-season bonus event (optional)<input
+                    id="frcBonusEvent"
+                    pattern="2026[a-z0-9]{2,24}"
+                    placeholder="2026casan1"
+                  /><small
+                    >Stay Classy Classic adds half of any OPR improvement. Missing or lower results
+                    cause no deduction. Leave blank to use only the baseline.</small
                   ></label
                 >
                 <label

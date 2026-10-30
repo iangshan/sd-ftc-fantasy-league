@@ -1,13 +1,6 @@
 import { LeagueError } from '../leagues.mjs';
-import { OPR_METHOD, priceFrcTeams } from './opr.mjs';
-import {
-  tbaClient,
-  loadEvent,
-  normalizeTeams,
-  eventKey,
-  hash,
-  resolveSanDiegoEvent,
-} from './tba.mjs';
+import { OPR_METHOD, FRC_PRICING_METHOD, FRC_OFFSEASON_WEIGHT, priceFrcTeams } from './opr.mjs';
+import { tbaClient, loadEvent, normalizeTeams, eventKey, hash } from './tba.mjs';
 
 export const FRC_LEAGUE = 'san-diego-frc';
 export const frcEnabled = (env, context) =>
@@ -111,6 +104,10 @@ export async function frcSnapshot(db, env, context) {
     sourceSeason: config.source_season,
     sourceGame: 'REBUILT',
     method: OPR_METHOD,
+    pricingMethod: catalog.some((team) => !Object.hasOwn(team, 'baselineOpr'))
+      ? null
+      : FRC_PRICING_METHOD,
+    bonusWeight: FRC_OFFSEASON_WEIGHT,
     budget: config.budget,
     maxTeams: config.max_teams,
     open:
@@ -175,31 +172,28 @@ export async function syncFrcLeague(
     throw new LeagueError('A refresh is already running. Try again shortly.', 409);
   try {
     const config = await settings(db, leagueId);
-    let historyKeys = JSON.parse(config.history_events_json).map((key) =>
-      eventKey(key, config.source_season),
-    );
-    let scoringKeys = JSON.parse(config.scoring_events_json).map((key) =>
-      eventKey(key, config.season),
-    );
-    let target = eventKey(config.event_key, config.season);
     const count = await db
       .prepare('SELECT COUNT(*) AS n FROM frc_rosters WHERE league_id = ? AND season = ?')
       .bind(leagueId, config.season)
       .first();
-    if (!count.n) {
-      const originalTarget = target;
-      target = await resolveSanDiegoEvent(get, target, config.season);
-      scoringKeys = scoringKeys.map((key) => (key === originalTarget ? target : key));
-      const resolved = [];
-      for (const key of historyKeys)
-        resolved.push(await resolveSanDiegoEvent(get, key, config.source_season, true));
-      historyKeys = resolved;
-    }
+    const previous = JSON.parse(config.catalog_json);
+    const legacy = count.n > 0 && previous.some((team) => !Object.hasOwn(team, 'baselineOpr'));
+    // Frozen catalogs created by the older averaging policy keep their original
+    // official event list; its second event must not become an off-season bonus.
+    const historyKeys = eventList(
+      JSON.parse(config.history_events_json),
+      config.source_season,
+      legacy ? 5 : 2,
+    );
+    const baselineEvent = historyKeys[0],
+      bonusEvent = legacy ? undefined : historyKeys[1];
+    const scoringKeys = eventList(JSON.parse(config.scoring_events_json), config.season);
+    const target = eventKey(config.event_key, config.season);
     let pool = await get(`/event/${target}/teams/simple`, true),
       poolEvent = target,
       poolStatus = 'confirmed';
     if (pool === null || (Array.isArray(pool) && pool.length === 0)) {
-      poolEvent = historyKeys[0];
+      poolEvent = baselineEvent;
       poolStatus = 'provisional';
       pool = await get(`/event/${poolEvent}/teams/simple`);
     }
@@ -212,7 +206,16 @@ export async function syncFrcLeague(
     const imported = [];
     for (const key of [...new Set([...historyKeys, ...scoringKeys, target])]) {
       const year = Number(key.slice(0, 4));
-      const event = await loadEvent(get, key, year, now, year === config.season);
+      const event = await loadEvent(
+        get,
+        key,
+        year,
+        now,
+        year === config.season || key === bonusEvent,
+        {
+          allowOffseason: key === bonusEvent,
+        },
+      );
       if (event) imported.push(event);
     }
     if (poolStatus === 'confirmed' && !imported.some((event) => event.key === target))
@@ -221,9 +224,13 @@ export async function syncFrcLeague(
         502,
       );
     const history = imported.filter((event) => historyKeys.includes(event.key));
-    if (!history.some((event) => event.status === 'complete'))
+    if (
+      !history.some(
+        (event) => (legacy || event.key === baselineEvent) && event.status === 'complete',
+      )
+    )
       throw new LeagueError(
-        'Completed 2026 REBUILT qualification results are required before pricing teams.',
+        'Completed 2026 REBUILT qualification results from the baseline event are required before pricing teams.',
         409,
       );
     const oldEvents = await all(
@@ -242,7 +249,6 @@ export async function syncFrcLeague(
           409,
         );
     }
-    const previous = JSON.parse(config.catalog_json);
     const ids = (list) =>
       list
         .map((team) => team.number)
@@ -254,17 +260,23 @@ export async function syncFrcLeague(
         409,
       );
     // Once a roster exists, retain every quoted price and its historical evidence.
-    const catalog = count.n ? previous : priceFrcTeams(teams, history);
-    const version = await hash({
-      method: OPR_METHOD,
-      catalog,
-      season: config.season,
-      sourceSeason: config.source_season,
-      budget: config.budget,
-      maxTeams: config.max_teams,
-      historyKeys,
-      scoringKeys,
-    });
+    const catalog = count.n
+      ? previous
+      : priceFrcTeams(teams, history, { baselineEvent, bonusEvent });
+    const version = count.n
+      ? config.catalog_version
+      : await hash({
+          method: OPR_METHOD,
+          pricingMethod: FRC_PRICING_METHOD,
+          bonusWeight: FRC_OFFSEASON_WEIGHT,
+          catalog,
+          season: config.season,
+          sourceSeason: config.source_season,
+          budget: config.budget,
+          maxTeams: config.max_teams,
+          historyKeys,
+          scoringKeys,
+        });
     const publishNow = Date.now(),
       syncedAt = new Date(publishNow).toISOString();
     const statements = imported.map((event) =>
@@ -431,14 +443,18 @@ export async function submitFrcRoster(db, context, input) {
   return { ok: true, roster: roster(entry), message: 'Your staging test roster is saved.' };
 }
 
-function eventList(value, season) {
+function eventList(value, season, maximum = 5) {
   if (
     !Array.isArray(value) ||
     !value.length ||
-    value.length > 5 ||
+    value.length > maximum ||
     new Set(value).size !== value.length
   )
-    throw new LeagueError('Choose 1–5 different events.');
+    throw new LeagueError(
+      maximum === 2
+        ? 'Choose one baseline event and, optionally, one different off-season bonus event.'
+        : 'Choose 1–5 different events.',
+    );
   return value.map((key) => eventKey(key, season));
 }
 export async function frcAdminMutation(db, env, context, input, fetcher = fetch) {
@@ -473,7 +489,7 @@ export async function frcAdminMutation(db, env, context, input, fetcher = fetch)
   }
   if (input.action === 'configure') {
     const target = eventKey(input.eventKey, config.season);
-    const history = eventList(input.historyEvents, config.source_season),
+    const history = eventList(input.historyEvents, config.source_season, 2),
       scoring = eventList(input.scoringEvents, config.season);
     const result = await db
       .prepare(

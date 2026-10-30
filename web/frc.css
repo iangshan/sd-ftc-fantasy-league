@@ -148,6 +148,33 @@
   font: 700 20px var(--numbers);
   color: var(--accent-text);
 }
+.frc-evidence {
+  display: grid;
+  gap: 8px;
+  margin: 4px 0;
+  font-size: 12px;
+}
+.frc-evidence > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.frc-evidence dt {
+  color: var(--muted);
+}
+.frc-evidence dd {
+  margin: 0;
+  text-align: right;
+  font-family: var(--numbers);
+}
+.frc-evidence > div:last-child {
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  font-weight: 600;
+}
+.frc-evidence > div:last-child dt {
+  color: var(--ink);
+}
 .frc-budget {
   display: flex;
   align-items: baseline;

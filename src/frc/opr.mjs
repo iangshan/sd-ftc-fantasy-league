@@ -1,6 +1,8 @@
 // Qualification-only least squares: each alliance's robot points are the sum
 // of its three teams' estimated contributions. Opponent-awarded fouls are removed.
 export const OPR_METHOD = 'qualification-opr-without-fouls-v1';
+export const FRC_PRICING_METHOD = 'regional-opr-plus-offseason-bonus-v1';
+export const FRC_OFFSEASON_WEIGHT = 0.5;
 
 function solve(matrix, values) {
   const n = values.length;
@@ -92,26 +94,56 @@ export function calculateEventOpr(matches) {
   };
 }
 
-export function priceFrcTeams(teams, eventResults) {
+export function priceFrcTeams(teams, eventResults, { baselineEvent, bonusEvent } = {}) {
+  const baseline =
+    baselineEvent === undefined
+      ? eventResults[0]
+      : eventResults.find((event) => event.key === baselineEvent);
+  const candidate =
+    bonusEvent === undefined
+      ? eventResults[1]
+      : eventResults.find((event) => event.key === bonusEvent);
+  const offseason =
+    candidate &&
+    candidate !== baseline &&
+    !(baseline?.key !== undefined && baseline.key === candidate.key)
+      ? candidate
+      : undefined;
+  const measured = (event, number) => {
+    if (event?.status !== 'complete') return null;
+    const value = event.teams.find((team) => team.number === number)?.opr;
+    return Number.isFinite(value) ? value : null;
+  };
   const catalog = teams.map((team) => {
-    const observations = eventResults
-      .filter((event) => event.status === 'complete')
-      .flatMap((event) =>
-        event.teams.filter((result) => result.number === team.number).map((result) => result.opr),
-      );
-    const opr = observations.length
-      ? observations.reduce((a, b) => a + b, 0) / observations.length
-      : null;
-    return { ...team, opr, measuredEvents: observations.length };
+    const baselineOpr = measured(baseline, team.number);
+    const offseasonOpr = measured(offseason, team.number);
+    const bonus =
+      baselineOpr !== null && offseasonOpr !== null
+        ? FRC_OFFSEASON_WEIGHT * Math.max(0, offseasonOpr - baselineOpr)
+        : 0;
+    const rating = baselineOpr === null ? null : baselineOpr + bonus;
+    return {
+      ...team,
+      baselineOpr,
+      offseasonOpr,
+      bonus,
+      rating,
+      opr: rating,
+      measuredEvents: Number(baselineOpr !== null) + Number(offseasonOpr !== null),
+      bonusApplied: bonus > 0,
+      missingBaseline: baselineOpr === null,
+    };
   });
-  const peak = Math.max(0, ...catalog.map((team) => team.opr ?? 0));
+  // Keep the scale anchored to the Regional. Another team's off-season bonus
+  // must never change the price of a team that skipped the off-season event.
+  const peak = Math.max(0, ...catalog.map((team) => team.baselineOpr ?? 0));
   // 3–11 Pollen: 11+4, 7+5+3, and 5+5+5 all fit the proposed 15-Pollen budget.
   return catalog.map((team) => ({
     ...team,
     // Ignore solver rounding noise at an exact integer price boundary.
     price:
-      team.opr === null || peak === 0
+      team.rating === null || peak === 0
         ? 3
-        : Math.max(3, Math.min(11, Math.ceil((11 * Math.max(0, team.opr)) / peak - 1e-10))),
+        : Math.max(3, Math.min(11, Math.ceil((11 * Math.max(0, team.rating)) / peak - 1e-10))),
   }));
 }

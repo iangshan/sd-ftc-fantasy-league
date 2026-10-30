@@ -78,7 +78,10 @@ if (
     initialError;
   do {
     const result = await api(`/d1/database/${database}/query`, {
-      sql: 'SELECT last_sync_at,pool_status,json_array_length(catalog_json) AS team_count,sync_error FROM frc_settings WHERE league_id = ?',
+      sql: `SELECT last_sync_at,pool_status,json_array_length(catalog_json) AS team_count,sync_error,
+        (SELECT COUNT(*) FROM json_each(catalog_json) WHERE json_extract(value, '$.bonusApplied') = 1) AS bonus_count,
+        (SELECT status FROM frc_events WHERE league_id = frc_settings.league_id AND event_key = json_extract(history_events_json, '$[1]')) AS bonus_status
+        FROM frc_settings WHERE league_id = ?`,
       params: ['san-diego-frc'],
     });
     const row = result?.[0]?.results?.[0];
@@ -106,7 +109,7 @@ if (
       Date.parse(row.last_sync_at) >= started - 10 * 60 * 1000
     ) {
       await report(
-        `FRC connected: ${row.team_count} teams; ${row.pool_status === 'confirmed' ? '2027 field' : '2026 provisional field'}`,
+        `FRC connected: ${row.team_count} teams; ${row.pool_status === 'confirmed' ? '2027 field' : '2026 provisional field'}; ${row.bonus_status === 'complete' ? `${row.bonus_count} Stay Classy bonuses` : `bonus ${row.bonus_status || 'not available'}`}`,
       );
       ready = true;
       break;
