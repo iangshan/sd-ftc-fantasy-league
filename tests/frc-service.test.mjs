@@ -266,15 +266,11 @@ test('submission retries and concurrent saves retain one original roster; sync f
     409,
   );
 });
+const quoted = ({ number, name, price, opr }) => ({ number, name, price, opr });
 test('a saved legacy catalog keeps its original prices, version, and historical evidence', async (t) => {
   const f = setup(t);
   await sync(f);
-  const legacy = (await snapshot(f)).catalog.map(({ number, name, price, opr }) => ({
-    number,
-    name,
-    price,
-    opr,
-  }));
+  const legacy = (await snapshot(f)).catalog.map(quoted);
   f.sql
     .prepare('UPDATE frc_settings SET catalog_json = ?, catalog_version = ?')
     .run(JSON.stringify(legacy), 'legacy-average-pricing');
@@ -289,14 +285,21 @@ test('a saved legacy catalog keeps its original prices, version, and historical 
   }
   await sync(f);
   const data = await snapshot(f);
-  assert.deepEqual(data.catalog, legacy);
+  assert.deepEqual(data.catalog.map(quoted), legacy);
+  assert.equal(
+    f.sql.prepare('SELECT catalog_json FROM frc_settings').get().catalog_json,
+    JSON.stringify(legacy),
+  );
+  // Weight classes are derived from the frozen prices, not stored beside them.
+  assert.ok(data.catalog.every((team) => team.weightClass >= 1));
   assert.equal(data.catalogVersion, 'legacy-average-pricing');
   assert.equal(data.pricingMethod, null);
+  assert.equal(data.scoringMethod, 'weight-class-relative-opr-v1');
   assert.equal(data.roster.total, 15);
   // Old history retains the official-event gate, even in its second position.
   f.responses.get('/event/2026oldtwo/simple').event_type = 99;
   await fail(() => sync(f), 502);
-  assert.deepEqual((await snapshot(f)).catalog, legacy);
+  assert.deepEqual((await snapshot(f)).catalog.map(quoted), legacy);
 });
 
 test('failed providers, missing results, and concurrent refresh preserve the last good data', async (t) => {
@@ -371,6 +374,12 @@ test('2027 scores sum counted events once, accept corrections, and lock drafting
   await admin(f, { action: 'setOpen', open: true });
   await submitFrcRoster(f.db, await f.context(), await input(f));
   assert.equal((await snapshot(f)).roster.points, 0);
+  const stacker = f.member('frc-stacker', FRC_LEAGUE);
+  await submitFrcRoster(
+    f.db,
+    await f.context(stacker),
+    await input(f, { teamNumbers: [104, 105, 102] }),
+  );
   t.mock.timers.setTime(new Date('2027-03-20T00:00:00Z').getTime());
   assert.equal((await snapshot(f)).open, false);
   await fail(() => admin(f, { action: 'setOpen', open: true }), 409);
@@ -385,14 +394,183 @@ test('2027 scores sum counted events once, accept corrections, and lock drafting
   f.responses.set('/event/2027test/matches', matches('2027test', [100, 80, 60, 40, 35, 15]));
   await sync(f);
   await sync(f);
-  assert.ok(Math.abs((await snapshot(f)).roster.points - 310) < 1e-8);
-  f.responses.set('/event/2027casd/matches', matches('2027casd', [130, 80, 60, 50, 35, 15]));
+  // Earned totals across both counted events are 220, 160, 120, 90, 70, and 30.
+  // Team 100 leads the 7–11 Pollen class outright; team 103 is measured against
+  // team 102, the strongest 4–5 Pollen earner.
+  assert.ok(Math.abs((await snapshot(f)).roster.points - (100 + (100 * 90) / 120)) < 1e-8);
+  f.responses.set('/event/2027casd/matches', matches('2027casd', [130, 80, 60, 70, 35, 15]));
   await sync(f);
   const data = await snapshot(f);
-  assert.ok(Math.abs(data.roster.points - 320) < 1e-8);
+  assert.ok(Math.abs(data.roster.points - (100 + (100 * 110) / 120)) < 1e-8);
   assert.equal(data.roster.total, 15);
+  assert.equal(data.maxPoints, 300);
+  assert.equal(data.classPoints, 100);
+  const board = new Map(data.catalog.map((team) => [team.number, team]));
+  // Leading the cheapest class is worth exactly as much as leading the dearest.
+  assert.equal(board.get(104).classScore, 100);
+  assert.equal(board.get(100).classScore, 100);
+  assert.ok(Math.abs(board.get(105).classScore - (100 * 30) / 70) < 1e-8);
+  assert.ok(Math.abs(board.get(101).classScore - (100 * 160) / 230) < 1e-8);
+  assert.deepEqual(
+    data.weightClasses.map(({ tier, name, minPrice, maxPrice, teams, leader }) => [
+      tier,
+      name,
+      minPrice,
+      maxPrice,
+      teams,
+      leader,
+    ]),
+    [
+      [1, 'Light', 3, 3, 2, 104],
+      [2, 'Middle', 4, 5, 2, 102],
+      [3, 'Heavy', 7, 11, 2, 100],
+    ],
+  );
+  assert.deepEqual(
+    data.roster.picks.map((pick) => [pick.number, pick.weightClass, pick.competingClass]),
+    [
+      [100, 3, 3],
+      [103, 2, 2],
+    ],
+  );
+  // The second player stacked the Light class: team 104 holds it on 70 earned
+  // OPR and team 105 competes in the Heavy class against team 100's 230.
+  const stacked = await snapshot(f, await f.context(stacker));
+  assert.deepEqual(
+    stacked.roster.picks.map((pick) => [pick.number, pick.competingClass, pick.promoted]),
+    [
+      [104, 1, false],
+      [105, 3, true],
+      [102, 2, false],
+    ],
+  );
+  assert.ok(Math.abs(stacked.roster.points - (200 + (100 * 30) / 230)) < 1e-8);
+  assert.equal(stacked.standings.length, 2);
+  assert.equal(stacked.standings[0].points > stacked.standings[1].points, true);
   assert.equal(data.standings[0].rank, 1);
   assert.equal(f.sql.prepare('SELECT COUNT(*) AS n FROM frc_events').get().n, 3);
+});
+
+test('weight classes rank rosters without restricting what a roster may contain', async (t) => {
+  const f = setup(t);
+  await sync(f);
+  await admin(f, { action: 'setOpen', open: true });
+  const data = await snapshot(f);
+  assert.equal(data.maxPoints, 300);
+  assert.equal(data.scored, false);
+  assert.ok(data.catalog.every((team) => team.classScore === null && team.earned === null));
+  assert.ok(data.weightClasses.every((band) => band.bestEarned === null && band.leader === null));
+  // One team per class must stay affordable: 3 + 4 + 7 fits the 15-Pollen budget.
+  assert.ok(
+    data.weightClasses.reduce((sum, band) => sum + band.minPrice, 0) <= data.budget,
+    'a full roster must fit the budget',
+  );
+  // Stacked classes stay draftable; only the budget and roster size are enforced.
+  const stacked = await submitFrcRoster(
+    f.db,
+    await f.context(),
+    await input(f, { teamNumbers: [104, 105, 102] }),
+  );
+  assert.equal(stacked.roster.total, 11);
+  assert.deepEqual(
+    stacked.roster.picks.map((team) => team.price),
+    [3, 3, 5],
+  );
+  const person = f.member('frc-spread', FRC_LEAGUE);
+  const spread = await submitFrcRoster(
+    f.db,
+    await f.context(person),
+    await input(f, { teamNumbers: [104, 102, 101] }),
+  );
+  assert.equal(spread.roster.total, 15);
+});
+
+test('weight-class ranking is read-only and never alters a saved entry', async (t) => {
+  const f = setup(t);
+  await sync(f);
+  await admin(f, { action: 'setOpen', open: true });
+  await submitFrcRoster(f.db, await f.context(), await input(f));
+  const second = f.member('frc-second', FRC_LEAGUE);
+  await submitFrcRoster(
+    f.db,
+    await f.context(second),
+    await input(f, { teamNumbers: [104, 105, 102] }),
+  );
+  // An unrelated FTC entry must be just as untouched.
+  f.sql
+    .prepare('INSERT INTO account_rosters VALUES (?,?,?,?,?,?)')
+    .run(owner.uid, '2026-2027', 'ftc-receipt', '{"total":9}', '[]', 'ftc-version');
+  const tables = f.sql
+    .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'")
+    .all()
+    .map((row) => row.name);
+  const dump = () =>
+    Object.fromEntries(tables.map((name) => [name, f.sql.prepare(`SELECT * FROM ${name}`).all()]));
+  const viewer = f.member('frc-viewer', FRC_LEAGUE);
+  const before = dump();
+  assert.ok(tables.includes('frc_rosters') && tables.includes('account_rosters'));
+
+  // Viewing the standings, repeatedly and as different members, writes nothing.
+  for (let round = 0; round < 3; round++) {
+    await snapshot(f);
+    await snapshot(f, await f.context(second));
+    await snapshot(f, await f.context(viewer));
+  }
+  assert.deepEqual(dump(), before, 'ranking must not write to any table');
+
+  // A refresh with different results reprices nothing and rewrites no roster.
+  const rosters = f.sql.prepare('SELECT * FROM frc_rosters ORDER BY uid').all();
+  const paid = f.sql.prepare('SELECT catalog_json FROM frc_settings').get().catalog_json;
+  f.responses.set('/event/2026casd/matches', matches('2026casd', [10, 100, 50, 110, 30, 40]));
+  await sync(f);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM frc_rosters ORDER BY uid').all(), rosters);
+  assert.equal(f.sql.prepare('SELECT catalog_json FROM frc_settings').get().catalog_json, paid);
+  assert.deepEqual(
+    f.sql.prepare('SELECT * FROM account_rosters').all(),
+    before.account_rosters,
+    'FTC entries are outside this change',
+  );
+  const data = await snapshot(f);
+  assert.equal(data.roster.total, 15);
+  assert.equal(data.roster.receiptId, rosters.find((row) => row.uid === owner.uid).receipt_id);
+  assert.deepEqual(
+    data.roster.picks.map((pick) => [pick.number, pick.price, pick.name]),
+    JSON.parse(rosters.find((row) => row.uid === owner.uid).picks_json).map((pick) => [
+      pick.number,
+      pick.price,
+      pick.name,
+    ]),
+  );
+  assert.equal(data.standings.length, 2);
+});
+
+test('a drafted team missing from the catalog keeps its saved roster intact', async (t) => {
+  const f = setup(t);
+  await sync(f);
+  await admin(f, { action: 'setOpen', open: true });
+  await submitFrcRoster(f.db, await f.context(), await input(f));
+  const saved = f.sql.prepare('SELECT * FROM frc_rosters').get();
+  const catalog = JSON.parse(
+    f.sql.prepare('SELECT catalog_json FROM frc_settings').get().catalog_json,
+  );
+  // Imports refuse to drop a drafted team; this covers the defensive path only.
+  f.sql
+    .prepare('UPDATE frc_settings SET catalog_json = ?')
+    .run(JSON.stringify(catalog.filter((team) => team.number !== 100)));
+  const data = await snapshot(f);
+  assert.equal(data.catalog.length, 5);
+  assert.equal(data.roster.total, 15);
+  assert.equal(data.roster.receiptId, saved.receipt_id);
+  assert.deepEqual(
+    data.roster.picks.map((pick) => [pick.number, pick.price]),
+    [
+      [100, 11],
+      [103, 4],
+    ],
+  );
+  assert.equal(data.roster.picks[0].weightClass, null);
+  assert.equal(data.roster.picks[0].promoted, false);
+  assert.deepEqual(f.sql.prepare('SELECT * FROM frc_rosters').all(), [saved]);
 });
 
 test('refresh is atomic on audit failure, and a provider cannot silently replace a drafted participant pool', async (t) => {

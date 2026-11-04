@@ -1,6 +1,8 @@
 # FIRST Fantasy League development
 
-Read this file before making changes. Use `README.md` and `docs/DEVELOPERS.md` for the build and deployment workflow; league access is documented in `docs/LEAGUES.md`.
+Read [CLAUDE.md](CLAUDE.md) first for the project briefing, the rules that protect saved rosters, and the commands. This file holds the owner's current directives on top of it. Use `README.md` and `docs/DEVELOPERS.md` for the build and deployment workflow; league access is documented in `docs/LEAGUES.md`.
+
+Keep `CLAUDE.md` current when a rule, formula, route, schema, or command changes.
 
 ## Current FRC setup
 
@@ -9,7 +11,8 @@ Read this file before making changes. Use `README.md` and `docs/DEVELOPERS.md` f
 - Use the owner-confirmed San Diego event `2026casnd` as the baseline and Stay Classy Classic `2026casan1` as an optional improvement bonus. Missing or lower off-season results must not reduce baseline ratings or alter absentee prices. Do not infer event keys from names.
 - Clearly distinguish the confirmed 2027 participant list from a provisional 2026 field. Do not invent teams, registrations, match scores, or OPR values.
 - FRC drafting proposes 15 Pollen, one to three teams, and whole-number costs. Keep FTC data, rosters, prices, and deployment settings isolated.
-- Explain the season, pricing source, scoring rule, and data status on the FRC page.
+- FRC **standings** use weight classes: prices form contiguous Pollen bands, each class awards the same 100 points to its strongest earner, and classmates score in proportion. A class pays once per roster; an extra team in a drafted class competes in the dearest class. This is a ranking rule only — it must never restrict drafting, reprice a team, or alter a saved roster. Only robot-game OPR counts; awards, wins, and advancement never add points.
+- Explain the season, pricing source, scoring rule, weight classes, and data status on the FRC page.
 
 ## Implementation and verification
 

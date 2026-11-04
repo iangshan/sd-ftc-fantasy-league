@@ -1,5 +1,14 @@
 import { LeagueError } from '../leagues.mjs';
-import { OPR_METHOD, FRC_PRICING_METHOD, FRC_OFFSEASON_WEIGHT, priceFrcTeams } from './opr.mjs';
+import {
+  OPR_METHOD,
+  FRC_PRICING_METHOD,
+  FRC_OFFSEASON_WEIGHT,
+  FRC_SCORING_METHOD,
+  FRC_CLASS_POINTS,
+  priceFrcTeams,
+  scoreWeightClasses,
+  scoreFrcRoster,
+} from './opr.mjs';
 import { tbaClient, loadEvent, normalizeTeams, eventKey, hash } from './tba.mjs';
 
 export const FRC_LEAGUE = 'san-diego-frc';
@@ -72,19 +81,26 @@ export async function frcSnapshot(db, env, context) {
     config.season,
   );
   const counted = new Set(JSON.parse(config.scoring_events_json));
-  const scores = new Map();
-  for (const event of events.filter(
+  const completed = events.filter(
     (event) =>
       event.season === config.season && event.status === 'complete' && counted.has(event.event_key),
-  ))
+  );
+  const scores = new Map();
+  for (const event of completed)
     for (const team of JSON.parse(event.results_json))
       scores.set(team.number, (scores.get(team.number) || 0) + team.opr);
-  const earned = (entry) =>
-    JSON.parse(entry.picks_json).reduce((sum, team) => sum + (scores.get(team.number) || 0), 0);
+  const catalog = JSON.parse(config.catalog_json);
+  // Weight-class awards are relative to the whole eligible pool, never to the
+  // teams that happened to be drafted.
+  const board = scoreWeightClasses(catalog, {
+    budget: config.budget,
+    maxTeams: config.max_teams,
+    earned: completed.length ? scores : null,
+  });
   const ranked = entries
     .map((entry) => ({
       displayName: entry.display_name,
-      points: earned(entry),
+      points: scoreFrcRoster(JSON.parse(entry.picks_json), board).points,
       yours: entry.uid === context.user.uid,
     }))
     .sort((a, b) => b.points - a.points);
@@ -96,7 +112,7 @@ export async function frcSnapshot(db, env, context) {
     return { ...entry, rank };
   });
   const own = entries.find((entry) => entry.uid === context.user.uid);
-  const catalog = JSON.parse(config.catalog_json);
+  const ownRanking = own ? scoreFrcRoster(JSON.parse(own.picks_json), board) : null;
   return {
     leagueId: context.league.id,
     leagueName: context.league.name,
@@ -107,16 +123,21 @@ export async function frcSnapshot(db, env, context) {
     pricingMethod: catalog.some((team) => !Object.hasOwn(team, 'baselineOpr'))
       ? null
       : FRC_PRICING_METHOD,
+    scoringMethod: FRC_SCORING_METHOD,
     bonusWeight: FRC_OFFSEASON_WEIGHT,
     budget: config.budget,
     maxTeams: config.max_teams,
+    weightClasses: board.classes,
+    classPoints: FRC_CLASS_POINTS,
+    maxPoints: board.maxPoints,
+    scored: completed.length > 0,
     open:
       config.draft_open === 1 &&
       catalog.length > 0 &&
       config.sync_until <= Date.now() &&
       !eventStarted(config, events),
     refreshing: config.sync_until > Date.now(),
-    catalog,
+    catalog: board.teams,
     catalogVersion: config.catalog_version,
     poolStatus: config.pool_status,
     poolEvent: config.pool_event,
@@ -135,7 +156,7 @@ export async function frcSnapshot(db, env, context) {
       end: event.end_date,
       status: event.status,
     })),
-    roster: own ? { ...roster(own), points: earned(own) } : null,
+    roster: own ? { ...roster(own), picks: ownRanking.picks, points: ownRanking.points } : null,
     standings,
     canAdmin: administrator(context),
     ...(administrator(context)

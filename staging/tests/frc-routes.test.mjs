@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { Script } from 'node:vm';
 import { frcFixture } from '../../tests/support/frc-fixture.mjs';
 import { createStagingWorker, STAGING_SHEET } from '../worker.mjs';
 import { owner, user, request, FRC_LEAGUE } from './support/leagues-fixture.mjs';
@@ -50,12 +51,26 @@ test('FRC routes require verified membership and keep the legacy FTC engine isol
     const html = await response.text();
     assert.match(html, /2027 season/);
     assert.match(html, /2026 REBUILT/);
+    assert.match(html, /Standings rank rosters by weight class/);
+    assert.match(html, /best earned OPR in the class/);
+    assert.match(html, /Drafting itself is unchanged/);
   }
+  const client = await f.fetch('/assets/frc.js');
+  assert.equal(client.status, 200);
+  const source = await client.text();
+  assert.doesNotThrow(() => new Script(source));
   const sync = await f.fetch('/api/frc/admin', {
     body: { action: 'sync', contextLeagueId: FRC_LEAGUE },
   });
   assert.equal(sync.status, 200);
-  assert.equal((await (await f.fetch('/api/frc')).json()).catalog.length, 6);
+  const board = await (await f.fetch('/api/frc')).json();
+  assert.equal(board.catalog.length, 6);
+  assert.equal(board.maxPoints, 300);
+  assert.deepEqual(
+    board.weightClasses.map((band) => `${band.name} ${band.minPrice}-${band.maxPrice}`),
+    ['Light 3-3', 'Middle 4-5', 'Heavy 7-11'],
+  );
+  assert.ok(board.catalog.every((team) => team.weightClass >= 1));
   for (const path of ['/api/submit', '/api/admin', '/api/account/recover'])
     assert.equal((await f.fetch(path, { body: {} })).status, path === '/api/submit' ? 409 : 404);
   assert.deepEqual(f.hits, []);

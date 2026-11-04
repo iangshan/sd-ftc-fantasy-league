@@ -148,6 +148,12 @@
   font: 700 20px var(--numbers);
   color: var(--accent-text);
 }
+.frc-class {
+  font: 600 11px var(--numbers);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
 .frc-evidence {
   display: grid;
   gap: 8px;

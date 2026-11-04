@@ -15,7 +15,9 @@ The repository is public, including the source for private staging. Access to th
 
 Private staging includes an FRC draft board, saved test rosters, earned standings, and administrator data controls. The proposed rules are **15 Pollen, one to three teams, and whole-number prices from 3–11**.
 
-The pool is all San Diego Regional participants. Initial prices use foul-adjusted qualification OPR from the **2026 REBUILT** San Diego event, plus half of any positive OPR improvement at Stay Classy Classic. Missing or lower off-season results do not reduce the baseline rating, and the price scale stays anchored to Regional results. Until the provider publishes the 2027 participant list, the board explicitly labels the 2026 field as provisional. Historical results set prices and never count as earned 2027 points.
+Standings rank rosters by **weight class**. Prices sort the pool into contiguous Pollen bands that hold a similar share of the field and always leave one team per class affordable. Every class awards the same 100 points to its strongest 2027 earner, and its classmates score in proportion to it, so the best 3-Pollen team is worth exactly as much as the best 11-Pollen team. A roster's score is the sum of its picks' class points. A class pays once per roster: draft two teams from the same class and the second competes in the dearest class instead, against the strongest team in the field. Drafting stays unrestricted, and a single expensive team can still contest only one class. Weight classes affect standings only — never prices, saved rosters, or what a roster may contain.
+
+The pool is all San Diego Regional participants. Initial prices use foul-adjusted qualification OPR from the **2026 REBUILT** San Diego event, plus half of any positive OPR improvement at Stay Classy Classic. Those prices set both a team's cost and its standings weight class. Missing or lower off-season results do not reduce the baseline rating, and the price scale stays anchored to Regional results. Until the provider publishes the 2027 participant list, the board explicitly labels the 2026 field as provisional. Historical results set prices and never count as earned 2027 points.
 
 The Blue Alliance supplies registrations and match scores through a server-side read key. Missing data stays unmeasured. See [FRC setup, formulas, and data validation](docs/FRC.md). FRC drafting on the public website remains disabled during staging review.
 
@@ -55,7 +57,7 @@ Cloudflare Workers serve the website and API. Google Sheets stores the FTC catal
 
 The production entry point, shared build, and production configuration remain at the root as `worker.mjs`, `build.mjs`, and `wrangler.jsonc`. `team-names.json` holds current team names. Builds generate `dist/`, which is excluded from Git.
 
-See [the developer guide](docs/DEVELOPERS.md) for setup, checks, source editing, and contribution workflow.
+New contributors should start with [CLAUDE.md](CLAUDE.md), the shared briefing for this repository: what the project is, the rules that protect saved rosters and participant data, the commands, and how each league scores. It applies to human and AI contributors alike, and it is expected to be kept current alongside the code. See [the developer guide](docs/DEVELOPERS.md) for setup, checks, source editing, and contribution workflow.
 
 ## Deployment boundaries
 

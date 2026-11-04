@@ -55,19 +55,40 @@ A team without a measured baseline receives a provisional price of 3 Pollen and 
 
 The catalog and its quoted historical evidence freeze once the first roster is saved. Each receipt preserves team names, prices, and the catalog version. Refreshing results does not retroactively change paid prices. Without any saved rosters, refreshed history may update prices.
 
+## Weight classes
+
+Weight classes exist only to rank rosters. They do not restrict drafting, change prices, or alter any saved roster.
+
+Prices sort the pool into **weight classes**: contiguous Pollen bands over the prices the pool actually contains. The bands are chosen to satisfy two requirements, in order:
+
+1. **Affordability.** The sum of the bands' cheapest prices must not exceed the budget, so a roster holding one team from every class always fits inside 15 Pollen. When no split at that many bands is affordable, the pool uses one fewer class instead of pricing a full roster out of reach.
+2. **Balance.** Among affordable splits, the implementation minimizes the squared deviation of each band's team count from an equal share. Equally balanced splits take the one whose smallest class is largest, then the one with the cheapest boundaries. A class therefore holds a comparable share of the field and is not led by default.
+
+With up to three teams per roster, a typical San Diego field yields three classes — **Light**, **Middle**, and **Heavy**. Because OPR distributions are right-skewed, the cheapest band is usually the single 3-Pollen price while the dearest spans most of the upper range. Pools with two affordable bands are named Light and Heavy; a single band is named Open. Classes are derived from the quoted prices, so a catalog frozen by the first saved roster keeps its classes unchanged, and nothing extra is stored alongside the prices.
+
 ## Earned standings and test rosters
 
 ```text
-roster points = sum of each drafted team's finalized OPR at each counted 2027 event
+earned OPR    = sum of a team's finalized OPR at each counted 2027 event
+class points  = 100 × max(0, earned OPR) / the best earned OPR in the competing class
+roster points = sum of the class points of a roster's picks
 ```
 
-An event contributes once. Re-imports replace its results by event key, so corrected scores update standings without duplicating points. A team absent from a counted event earns no points from that event. Both historical 2026 events, including Stay Classy Classic, contribute zero earned 2027 points. The off-season improvement bonus is used only for prices. This page shows earned standings, not the retired prediction leaderboard.
+Every weight class awards the same 100 points. Its strongest earner takes the full award and its classmates are scored against it, so the leading 3-Pollen team earns exactly as much as the leading 11-Pollen team. A higher price buys a better chance of leading a class, never a larger award. Class awards are relative to the whole eligible pool, never to the teams that happened to be drafted. Only robot-game OPR counts; awards, wins, and advancement add no points.
+
+A class awards its points once per roster. If a roster drafts two teams from the same class, one competes in that class and the other competes in the **dearest class**, where it is measured against the strongest team in the field. The implementation keeps whichever arrangement totals highest for that roster, so neither the order of the picks nor the order of the catalog changes a rank. Teams already in the dearest class are never moved. A promoted team is not a member of the class it competes in and can out-earn that class's leader, so its award is capped at the class's points; no team scores more than one award. Stacking a class remains a legal, unrestricted choice; it simply costs a roster the easier comparison.
+
+The published maximum is one class award per pick: 300 for a full three-team roster. Reaching it requires every pick to lead the class it competes in, which realistically means contesting separate classes — a promoted team has to match the strongest team in the field, and a single expensive team can only ever earn one award. A pool thin enough to hold just one weight class still lets every pick contest it, so the maximum is never capped below what a roster can score.
+
+A team absent from every counted event earns no class points. A negative contribution estimate scores zero instead of deducting from its classmates, and a class in which no team finished above zero awards nothing to anyone. Earned OPR itself still retains negative estimates.
+
+An event contributes once. Re-imports replace its results by event key, so corrected scores update standings without duplicating points; a correction can change which team leads a class and therefore every classmate's share. Both historical 2026 events, including Stay Classy Classic, contribute zero earned 2027 points. The off-season improvement bonus is used only for prices. This page shows earned standings, not the retired prediction leaderboard.
 
 The server validates membership, the current league, season, catalog version, team eligibility, roster size, and budget. Each verified user has one roster for this league and season. Repeated submissions return the original receipt. Test drafting closes at the start of a counted event (conservatively at midnight UTC on its published start date). An open staging draft permits a user to reset only their own test roster; this is unavailable after a counted event begins.
 
 ## Implementation and verification
 
-- `src/frc/opr.mjs`: qualification least squares and Pollen pricing.
+- `src/frc/opr.mjs`: qualification least squares, Pollen pricing, weight-class bands, and roster ranking.
 - `src/frc/tba.mjs`: fixed-origin provider client and evidence validation.
 - `src/frc/service.mjs`: transactional imports, settings, saved rosters, and earned standings.
 - `web/frc.*`: shared-design draft board, roster, and administrator screens.
@@ -76,6 +97,6 @@ The server validates membership, the current league, season, catalog version, te
 
 The `STAGING_FRC_ENABLED` flag enables this implementation only for San Diego FRC. A refresh lease prevents overlapping imports and roster saves during publication. Event updates, catalog publication, and the sync audit commit in one D1 batch. Provider failures retain the last successful snapshot. The existing Google verification, invitation, same-origin, and league-role boundaries also protect every FRC route.
 
-Tests use synthetic, explicitly labeled local match fixtures. They check known OPR recovery, foul removal, incomplete evidence, bonus-only pricing, missing baseline and off-season results, unchanged absentee prices, repeated and corrected scoring, whole-number pricing, server-enforced budgets, migration replay, transaction rollback, role boundaries, and isolation from FTC. Browser checks use simulated verified identities; they do not substitute for a real Google sign-in by a participant.
+Tests use synthetic, explicitly labeled local match fixtures. They check known OPR recovery, foul removal, incomplete evidence, bonus-only pricing, missing baseline and off-season results, unchanged absentee prices, repeated and corrected scoring, whole-number pricing, balanced and affordable weight classes, class points relative to a class leader, equal awards for the cheapest and dearest classes, zero awards for negative or absent results, a stacked class promoting its extra team to the dearest class independently of pick order, a published maximum that no roster shape can exceed, ranking that writes to no table, a saved roster surviving a team missing from the catalog, server-enforced budgets, migration replay, transaction rollback, role boundaries, and isolation from FTC. Browser checks drive the real draft-board script against the page's own element ids with a real API payload, so a view cannot reference an element the template lacks. They use simulated verified identities and do not substitute for a real Google sign-in by a participant.
 
 Data attribution: [The Blue Alliance](https://www.thebluealliance.com/) and [its API documentation](https://www.thebluealliance.com/apidocs/v3). This project's MIT license covers its code, not third-party competition data or FIRST trademarks.

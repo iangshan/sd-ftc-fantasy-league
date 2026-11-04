@@ -18,6 +18,14 @@
     selected = new Set();
   const number = (value) => (Number.isFinite(value) ? value.toFixed(1) : 'Not measured');
   const rating = (team) => (team.rating === undefined ? team.opr : team.rating);
+  const points = (value) => (Number.isFinite(value) ? value.toFixed(1) : '—');
+  const bands = () => data.weightClasses ?? [];
+  const bandOf = (team) => bands().find((band) => band.tier === team.weightClass);
+  const bandName = (tier) => bands().find((band) => band.tier === tier)?.name ?? 'Unclassified';
+  const bandRange = (band) =>
+    band.minPrice === band.maxPrice
+      ? `${band.minPrice} Pollen`
+      : `${band.minPrice}–${band.maxPrice} Pollen`;
   const say = (text) => {
     el('frcMessage').textContent = text;
   };
@@ -82,6 +90,7 @@
       const legacy = team.baselineOpr === undefined;
       const baseline = legacy ? team.opr : team.baselineOpr;
       const bonus = team.bonus ?? 0;
+      const band = bandOf(team);
       const evidence = node('dl', undefined, 'frc-evidence');
       const stats = [
         [legacy ? 'Saved historical OPR' : 'Regional OPR', number(baseline)],
@@ -92,6 +101,14 @@
         ['Improvement bonus', legacy ? 'Not recorded' : `+${number(bonus)}`],
         ['Pricing rating', number(rating(team))],
       ];
+      if (data.scored)
+        stats.push(
+          ['2027 earned OPR', number(team.earned)],
+          [
+            band?.leader === team.number ? 'Class points · class leader' : 'Class points',
+            `${points(team.classScore)} / ${data.classPoints}`,
+          ],
+        );
       for (const [label, value] of stats) {
         const row = node('div');
         row.append(node('dt', label), node('dd', value));
@@ -101,6 +118,11 @@
         node('small', `TEAM ${team.number}`),
         node('h3', team.name),
         node('strong', `${team.price} Pollen`, 'frc-price'),
+        node(
+          'span',
+          band ? `${band.name} class · ${bandRange(band)} · ${band.teams} teams` : 'Unclassified',
+          'frc-class',
+        ),
         evidence,
         node(
           'p',
@@ -181,11 +203,34 @@
       link.href = '/';
       target.append(link);
     } else {
-      for (const team of data.roster.picks)
-        target.append(node('p', `#${team.number} ${team.name} · ${team.price} Pollen`));
+      for (const team of data.roster.picks) {
+        const row = node('div', undefined, 'frc-pick');
+        row.append(node('strong', `#${team.number} ${team.name} · ${team.price} Pollen`));
+        row.append(
+          node(
+            'p',
+            team.promoted
+              ? `${bandName(team.weightClass)} class drafted twice · ranked in the ${bandName(team.competingClass)} class`
+              : `${bandName(team.weightClass)} class`,
+          ),
+        );
+        if (data.scored)
+          row.append(
+            node(
+              'p',
+              `${points(team.classScore)} / ${data.classPoints} class points · ${number(team.earned)} earned OPR`,
+            ),
+          );
+        target.append(row);
+      }
       target.append(
         node('strong', `${data.roster.total} / ${data.budget} Pollen`),
-        node('p', `2027 earned points: ${number(data.roster.points)}`),
+        node(
+          'p',
+          data.scored
+            ? `2027 earned points: ${points(data.roster.points)} / ${data.maxPoints}`
+            : '2027 earned points start after a counted event finishes.',
+        ),
         node(
           'p',
           `Saved ${new Date(data.roster.submittedAt).toLocaleString()} · Receipt ${data.roster.receiptId}`,
@@ -207,20 +252,14 @@
     }
     const standings = el('frcStandings');
     standings.replaceChildren();
-    const finished = data.events.some(
-      (event) =>
-        event.season === data.season &&
-        event.status === 'complete' &&
-        data.scoringEvents.includes(event.key),
-    );
-    if (!finished)
+    if (!data.scored)
       standings.append(node('p', '2027 points will appear after a counted event finishes.'));
     else
       for (const entry of data.standings) {
         const row = node('div', undefined, 'frc-standing');
         row.append(
           node('span', `${entry.rank}. ${entry.displayName}${entry.yours ? ' (you)' : ''}`),
-          node('strong', number(entry.points)),
+          node('strong', `${points(entry.points)} / ${data.maxPoints}`),
         );
         standings.append(row);
       }
@@ -282,6 +321,13 @@
           : 'Teams will appear after your league administrator connects competition data.';
     const legacy = data.pricingMethod === null;
     el('frcLegacyPricing').hidden = !legacy;
+    el('frcClassNote').textContent = bands().length
+      ? `Weight classes: ${bands()
+          .map((band) => `${band.name} ${bandRange(band)} (${band.teams} teams)`)
+          .join(
+            ' · ',
+          )}. Standings award ${data.classPoints} points per class to its strongest 2027 earner; a class pays once per roster, and a second team from one class is ranked in the dearest class instead. Drafting is unrestricted.`
+      : '';
     el('frcEventNote').textContent = legacy
       ? `Saved historical sources: ${data.historyEvents.join(', ')}. Counted 2027 events: ${data.scoringEvents.join(', ')}.`
       : `2026 baseline: ${data.historyEvents[0]}. Optional off-season bonus: ${data.historyEvents[1] || 'none'}. Counted 2027 events: ${data.scoringEvents.join(', ')}.`;

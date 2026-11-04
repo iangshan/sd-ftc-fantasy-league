@@ -47,7 +47,9 @@
         <section class="panel frc-intro">
           <p>
             <strong>2027 season. Priced using 2026 REBUILT.</strong> Draft one to three teams from
-            the San Diego Regional field with 15 Pollen. Pollen is a free game resource.
+            the San Diego Regional field with 15 Pollen. Standings rank rosters by weight class:
+            every class awards the same 100 points to its strongest 2027 earner, so the best cheap
+            team is worth as much as the best expensive one. Pollen is a free game resource.
           </p>
           <p>
             Prices start with each team’s foul-adjusted qualification OPR at the 2026 San Diego
@@ -63,9 +65,37 @@
             <summary>How scoring and prices work</summary>
             <p>
               For each counted 2027 event, we estimate a team’s scoring contribution from
-              qualification matches after subtracting points awarded for opponents’ fouls. Your
-              roster earns the sum of its teams’ finalized event OPRs. Awards, wins, and advancement
-              add no separate points.
+              qualification matches after subtracting points awarded for opponents’ fouls. A team’s
+              earned OPR is the sum of those finalized estimates. Awards, wins, and advancement add
+              no separate points.
+            </p>
+            <p>
+              Teams are grouped into weight classes by price, and every class is worth the same 100
+              points. The strongest earner in a class takes all 100 and its classmates are scored
+              against it:
+              <code>class points = 100 × max(0, earned OPR) / best earned OPR in the class</code>.
+              The leading 3-Pollen team therefore earns exactly as much as the leading 11-Pollen
+              team.
+            </p>
+            <p>
+              Your roster score is the sum of your picks’ class points. A class awards its points
+              once, so if you draft two teams from the same class, only one of them competes there;
+              the other competes in the dearest class, measured against the strongest team in the
+              field. The server keeps whichever arrangement scores highest for you, so the order of
+              your picks never matters, and no team can score more than one class award.
+            </p>
+            <p>
+              Drafting itself is unchanged: one to three different teams within 15 Pollen, with no
+              restriction on which teams you combine. Stacking a class is allowed and simply costs
+              you the easier comparison. A single 11-Pollen team can still reach only one class
+              award, however well it performs, and a higher price buys a better chance of leading a
+              class rather than a larger award. Classes are contiguous Pollen bands holding a
+              similar share of the pool, and one team from every class always fits the budget.
+            </p>
+            <p>
+              A class where no team finished above zero awards nothing, and a team absent from a
+              counted event earns no class points. A negative contribution estimate scores zero
+              rather than deducting from its classmates.
             </p>
             <p>
               All six robots in each match are included when calculating OPR, including teams
@@ -104,6 +134,7 @@
             <div><span>Last data update</span><strong id="frcUpdated"></strong></div>
           </section>
           <p id="frcPoolNote" class="muted"></p>
+          <p id="frcClassNote" class="muted"></p>
           <p id="frcEventNote" class="muted"></p>
           <section id="frcDraftView" hidden>
             <div class="frc-draft-layout">
@@ -157,8 +188,9 @@
             <section class="panel">
               <h2>2027 standings</h2>
               <p class="muted">
-                Earned robot-game points from completed, counted events. Historical pricing data
-                never adds points.
+                Weight-class points from completed, counted events: 100 for each class a roster
+                leads, scaled down for the rest of that class. Historical pricing data never adds
+                points.
               </p>
               <div id="frcStandings"></div>
             </section>
